@@ -566,8 +566,6 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
 <h2><code class="docutils literal notranslate"><span class="pre">local_config.py</span></code><a class="headerlink" href="#local-config-py" title="Link to this heading">¶</a></h2>
 <p>本地模板建议保持最小配置：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BasicConfig</span><span class="p">:</span>
-    <span class="n">ak</span> <span class="o">=</span> <span class="s2">""</span>
-    <span class="n">sk</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">disable_browser</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">no_update_feedback</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">log_level</span> <span class="o">=</span> <span class="s2">"INFO"</span>
@@ -580,7 +578,7 @@ python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </sp
     <span class="n">ws_ping_timeout</span> <span class="o">=</span> <span class="mi">8</span>
 </pre></div>
 </div>
-<p>本地控制面不需要 AK/SK，所以示例保持空值。不要把真实凭证写进 Git。<code class="docutils literal notranslate"><span class="pre">disable_browser=True</span></code> 只是不让进程自动拉起浏览器，不会关闭 <code class="docutils literal notranslate"><span class="pre">/console/</span></code>；<code class="docutils literal notranslate"><span class="pre">no_update_feedback=True</span></code> 降低设备反馈刷新；<code class="docutils literal notranslate"><span class="pre">log_level</span></code> 支持 <code class="docutils literal notranslate"><span class="pre">TRACE</span></code>、<code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>、<code class="docutils literal notranslate"><span class="pre">INFO</span></code>、<code class="docutils literal notranslate"><span class="pre">WARNING</span></code>、<code class="docutils literal notranslate"><span class="pre">ERROR</span></code>、<code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code>。</p>
+<p>本地控制面不需要 AK/SK，设备包的 <code class="docutils literal notranslate"><span class="pre">local_config.py</span></code> 不应声明或保存它们。<code class="docutils literal notranslate"><span class="pre">disable_browser=True</span></code> 只是不让进程自动拉起浏览器，不会关闭 <code class="docutils literal notranslate"><span class="pre">/console/</span></code>；<code class="docutils literal notranslate"><span class="pre">no_update_feedback=True</span></code> 降低设备反馈刷新；<code class="docutils literal notranslate"><span class="pre">log_level</span></code> 支持 <code class="docutils literal notranslate"><span class="pre">TRACE</span></code>、<code class="docutils literal notranslate"><span class="pre">DEBUG</span></code>、<code class="docutils literal notranslate"><span class="pre">INFO</span></code>、<code class="docutils literal notranslate"><span class="pre">WARNING</span></code>、<code class="docutils literal notranslate"><span class="pre">ERROR</span></code>、<code class="docutils literal notranslate"><span class="pre">CRITICAL</span></code>。</p>
 <p>当前 Workspace Host 会显式决定进程职责、ROS backend、bridge、端口和 action mode。不要在 <code class="docutils literal notranslate"><span class="pre">local_config.py</span></code> 中与启动计划重复维护这些字段。</p>
 </section>
 <section id="id4">

@@ -57,14 +57,12 @@ new-lab/
 
 ```python
 class BasicConfig:
-    ak = ""
-    sk = ""
     disable_browser = True
     no_update_feedback = True
     log_level = "INFO"
 ```
 
-这一步只让 Workbench 能识别并打开该 Workspace，以便独立启动的 Agent 继续建立 Package。此时默认 启动图 和包结构尚不存在，Uni-Lab OS 启动失败是预期现象；它不代表设备包已可安装或能启动设备。不要在文件中填写真实密钥。
+这一步只让 Workbench 能识别并打开该 Workspace，以便独立启动的 Agent 继续建立 Package。此时默认 启动图 和包结构尚不存在，Uni-Lab OS 启动失败是预期现象；它不代表设备包已可安装或能启动设备。本地配置不得保存 AK/SK 等凭证。
 
 ## 在 Workbench 中确认 Agent 和 Skill
 
