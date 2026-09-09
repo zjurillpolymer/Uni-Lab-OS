@@ -272,6 +272,19 @@ jobs:
           )
           $process = Start-Process -FilePath $installer.FullName -ArgumentList $arguments -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Installer exited with $($process.ExitCode)" }
+          # A constructor-installed prefix is not activated by the installer
+          # itself.  Export the same activation contract that Workbench uses
+          # so Python's Windows DLL search path includes RoboStack libraries.
+          $env:CONDA_PREFIX = $prefix
+          $env:CONDA_DEFAULT_ENV = Split-Path $prefix -Leaf
+          $env:CONDA_SHLVL = "1"
+          $env:AMENT_PREFIX_PATH = Join-Path $prefix "Library"
+          $env:AMENT_PYTHON_EXECUTABLE = Join-Path $prefix "python.exe"
+          $env:ROS_DISTRO = "humble"
+          $env:ROS_VERSION = "2"
+          $env:ROS_PYTHON_VERSION = "3"
+          $env:ROS_OS_OVERRIDE = "conda:win64"
+          $env:PYTHONHOME = ""
           $env:PATH = "$prefix;$prefix\Scripts;$prefix\Library\bin;$env:PATH"
           & "$prefix\python.exe" -c "import unilabos; print(unilabos.__version__)"
           if ($LASTEXITCODE -ne 0) { throw "unilabos import failed" }
