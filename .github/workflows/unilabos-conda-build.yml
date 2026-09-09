@@ -114,6 +114,7 @@ jobs:
             mamba install -n build-env --override-channels -c conda-forge rattler-build anaconda-client -y
           fi
           echo "CONDA_NO_PLUGINS=true" >> "$GITHUB_ENV"
+          echo "ANACONDA_CLIENT_FORCE_STANDALONE=1" >> "$GITHUB_ENV"
           echo "PYTHONUTF8=1" >> "$GITHUB_ENV"
           echo "PYTHONIOENCODING=utf-8" >> "$GITHUB_ENV"
 
