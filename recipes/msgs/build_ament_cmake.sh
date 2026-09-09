@@ -47,11 +47,12 @@ if [[ $target_platform =~ linux.* ]]; then
     export CXXFLAGS="${CXXFLAGS} -D__STDC_FORMAT_MACROS=1"
 fi;
 
-# libc++ 18+ removes the C++17 std::wstring_convert API by default.  The
-# ROS 2 Humble generated message headers still use it, so re-enable the
-# compatibility definitions for macOS Runtime builds.
+# ROS 2 Humble's generated message headers include <codecvt> but use the
+# std::wstring_convert declaration supplied by <locale> as a transitive
+# include.  Newer libc++ no longer provides that transitive include, so force
+# <locale> into the macOS compilation unit.
 if [[ $target_platform =~ osx.* ]]; then
-    export CXXFLAGS="${CXXFLAGS} -D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES"
+    export CXXFLAGS="${CXXFLAGS} -include locale"
 fi;
 
 # Needed for qt-gui-cpp ..
