@@ -123,7 +123,9 @@ jobs:
           conda info
           conda list -n build-env | grep -E "(rattler-build|anaconda-client)"
           conda run -n build-env rattler-build --version
-          conda run -n build-env anaconda --version
+          # anaconda-client 1.14 removed the legacy top-level --version option.
+          # Use the standalone binstar-client entry point for a stable version check.
+          conda run -n build-env python -m binstar_client.scripts.cli --version
           echo "Platform: ${{ matrix.platform }}"
           echo "OS: ${{ matrix.os }}"
           echo "Build full package: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.build_full == 'true' }}"
