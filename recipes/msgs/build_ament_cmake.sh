@@ -18,6 +18,13 @@ else
   OSX_DEPLOYMENT_TARGET="11.0"
 fi
 
+# Native arm64 builds cannot target macOS 10.15.  Besides being unsupported
+# by the platform, that deployment target disables libc++ localization APIs
+# used by ROS Humble's generated C++ message headers.
+if [[ "$target_platform" == "osx-arm64" ]]; then
+  OSX_DEPLOYMENT_TARGET="11.0"
+fi
+
 echo "USING PYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}"
 echo "USING PKG_CONFIG_EXECUTABLE=${PKG_CONFIG_EXECUTABLE}"
 
