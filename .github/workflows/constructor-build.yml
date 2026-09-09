@@ -5,6 +5,7 @@ on:
     paths:
       - '.conda/constructor/**'
       - '.github/workflows/constructor-build.yml'
+      - 'frontend/**'
       - 'tests/integration/test_managed_runtime_supervisor_windows.py'
       - 'unilabos/__init__.py'
       - 'unilabos/managed_runtime/**'
@@ -31,7 +32,7 @@ on:
         required: false
         type: string
       publish_release:
-        description: '将安装器上传到 GitHub Release（按平台分别发布）'
+        description: '只发布到 GitHub Release，不上传 Actions artifact（适用于 artifact 配额不足）'
         required: false
         default: false
         type: boolean
@@ -144,6 +145,27 @@ jobs:
         if: steps.select.outputs.enabled == 'true'
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
+
+      - name: Setup Node.js for embedded console
+        if: steps.select.outputs.enabled == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build embedded React console
+        if: steps.select.outputs.enabled == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify embedded console output
+        if: steps.select.outputs.enabled == 'true'
+        run: |
+          test -s unilabos/app/web/static/console/index.html
+          test "$(find unilabos/app/web/static/console -type f | wc -l | tr -d ' ')" -gt 1
 
       - name: Configure UTF-8 locale for Windows Constructor
         if: steps.select.outputs.enabled == 'true' && matrix.platform == 'win-64'
@@ -324,8 +346,9 @@ jobs:
             --notes "Uni-Lab-OS Runtime ${UNILABOS_INSTALLER_VERSION}; source ref ${{ github.sha }}."
 
       - name: Upload installer and manifests
-        if: steps.select.outputs.enabled == 'true'
-        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' }}
+        if: |
+          steps.select.outputs.enabled == 'true' &&
+          !(github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true')
         uses: actions/upload-artifact@v6
         with:
           name: Uni-Lab-OS-constructor-${{ matrix.platform }}
