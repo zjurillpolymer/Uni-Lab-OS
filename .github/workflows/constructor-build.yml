@@ -289,8 +289,17 @@ jobs:
           $env:PATH = "$prefix;$prefix\Scripts;$prefix\Library\bin;$env:PATH"
           & "$prefix\python.exe" -c "import unilabos; print(unilabos.__version__)"
           if ($LASTEXITCODE -ne 0) { throw "unilabos import failed" }
-          & "$prefix\python.exe" -c "import rclpy; print('rclpy: OK')"
-          if ($LASTEXITCODE -ne 0) { throw "rclpy import failed" }
+          # Import through UniLabOS's startup path so the packaged Windows DLL
+          # bootstrap is exercised before importing the ROS extension.
+          & "$prefix\python.exe" -c "from unilabos.app import utils; import rclpy; print('rclpy: OK')"
+          $bootstrapExitCode = $LASTEXITCODE
+          if ($bootstrapExitCode -eq 75) {
+            # The source-level fallback may patch the installed ROS loaders
+            # and request one clean process restart.
+            & "$prefix\python.exe" -c "from unilabos.app import utils; import rclpy; print('rclpy: OK')"
+            $bootstrapExitCode = $LASTEXITCODE
+          }
+          if ($bootstrapExitCode -ne 0) { throw "rclpy import failed" }
           & "$prefix\python.exe" -c "from opcua import Client, ua; print('opcua: OK')"
           if ($LASTEXITCODE -ne 0) { throw "opcua import failed" }
           & "$prefix\Scripts\unilab.exe" --help
