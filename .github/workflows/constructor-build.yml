@@ -30,6 +30,14 @@ on:
         description: '留空时读取 unilabos/__init__.py'
         required: false
         type: string
+      publish_release:
+        description: '将安装器上传到 GitHub Release（按平台分别发布）'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
   validate:
@@ -267,8 +275,25 @@ jobs:
           & "$prefix\Scripts\unilab-supervisor.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "unilab-supervisor --help failed" }
 
+      - name: Publish installer to GitHub Release
+        if: steps.select.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          installer="$(find dist/constructor -maxdepth 1 -type f \( -name '*.exe' -o -name '*.sh' \) -print -quit)"
+          test -n "$installer"
+          release_tag="runtime-v${UNILABOS_INSTALLER_VERSION}-${PLATFORM}-run.${{ github.run_number }}"
+          release_title="Uni-Lab-OS Runtime ${UNILABOS_INSTALLER_VERSION} (${PLATFORM})"
+          gh release create "$release_tag" "$installer" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$release_title" \
+            --notes "Uni-Lab-OS Runtime ${UNILABOS_INSTALLER_VERSION}; source ref ${{ github.sha }}."
+
       - name: Upload installer and manifests
         if: steps.select.outputs.enabled == 'true'
+        continue-on-error: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true' }}
         uses: actions/upload-artifact@v6
         with:
           name: Uni-Lab-OS-constructor-${{ matrix.platform }}
