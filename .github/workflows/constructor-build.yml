@@ -95,7 +95,10 @@ jobs:
             platform: linux-64
           - os: macos-15-intel
             platform: osx-64
-          - os: macos-latest
+          # macOS 14 keeps the ROS Humble C++14 toolchain compatible with
+          # rosidl_runtime_cpp; macOS latest currently ships libc++ without
+          # std::wstring_convert and cannot build the messages package.
+          - os: macos-14
             platform: osx-arm64
           - os: windows-latest
             platform: win-64
