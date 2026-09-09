@@ -145,6 +145,15 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
+      - name: Configure UTF-8 locale for Windows Constructor
+        if: steps.select.outputs.enabled == 'true' && matrix.platform == 'win-64'
+        shell: pwsh
+        run: |
+          # Constructor reads construct.yaml with Python's default encoding.
+          # Force UTF-8 so Chinese metadata is decoded consistently on Windows.
+          "PYTHONUTF8=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PYTHONIOENCODING=utf-8" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - uses: conda-incubator/setup-miniconda@v4
         if: steps.select.outputs.enabled == 'true'
         with:
