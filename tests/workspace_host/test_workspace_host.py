@@ -94,6 +94,7 @@ def test_detached_windows_runtime_restores_conda_ros_activation(tmp_path: Path) 
     assert result["AMENT_PYTHON_EXECUTABLE"] == str(prefix / "python.exe")
     assert result["ROS_DISTRO"] == "humble"
     assert result["ROS_VERSION"] == "2"
+    assert result["CONDA_DLL_SEARCH_MODIFICATION_ENABLE"] == "1"
     assert result["PYTHONHOME"] == ""
     assert result["PATH"].split(os.pathsep)[0] == str(library / "bin")
 

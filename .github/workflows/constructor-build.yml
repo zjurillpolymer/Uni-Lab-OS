@@ -284,6 +284,7 @@ jobs:
           $env:ROS_VERSION = "2"
           $env:ROS_PYTHON_VERSION = "3"
           $env:ROS_OS_OVERRIDE = "conda:win64"
+          $env:CONDA_DLL_SEARCH_MODIFICATION_ENABLE = "1"
           $env:PYTHONHOME = ""
           $env:PATH = "$prefix;$prefix\Scripts;$prefix\Library\bin;$env:PATH"
           & "$prefix\python.exe" -c "import unilabos; print(unilabos.__version__)"
