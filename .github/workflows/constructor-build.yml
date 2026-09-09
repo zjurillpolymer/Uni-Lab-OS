@@ -150,10 +150,10 @@ jobs:
           TARGET_PLATFORM: ${{ matrix.platform }}
         run: |
           if [[ "$TARGET_PLATFORM" == "win-64" ]]; then
-            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 -y
+            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 rattler-build -y
             conda_exe="$(python -c 'import os; from pathlib import Path; print(Path(os.environ["CONDA_PREFIX"], "standalone_conda", "conda.exe"))')"
           else
-            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 micromamba=2.8.1 -y
+            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 micromamba=2.8.1 rattler-build -y
             conda_exe="$(command -v micromamba)"
           fi
           python -c 'from pathlib import Path; import sys; assert Path(sys.argv[1]).is_file()' "$conda_exe"
@@ -168,6 +168,42 @@ jobs:
           source_version="$(python -c 'import runpy; print(runpy.run_path("unilabos/__init__.py")["__version__"])')"
           echo "UNILABOS_INSTALLER_VERSION=${REQUESTED_VERSION:-$source_version}" >> "$GITHUB_ENV"
           echo "UNILABOS_INSTALLER_PACKAGE=${REQUESTED_PACKAGE:-unilabos}" >> "$GITHUB_ENV"
+
+      - name: Build local Runtime package channel
+        if: steps.select.outputs.enabled == 'true'
+        env:
+          TARGET_PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          rb=(conda run -n constructor-build rattler-build build)
+          "${rb[@]}" -r recipes/msgs/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c robostack -c robostack-staging -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/environment/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c uni-lab -c robostack-staging -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/rfc8785/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/opcua/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/msgcenterpy/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/pylabrobot/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/base/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c uni-lab -c robostack-staging -c conda-forge --channel ./output --output-dir ./output
+
+          runtime_package_count="$(find output -type f -name "unilabos-$UNILABOS_INSTALLER_VERSION-*.conda" | wc -l | tr -d ' ')"
+          test "$runtime_package_count" = 1
+          runtime_package="$(find output -type f -name "unilabos-$UNILABOS_INSTALLER_VERSION-*.conda" -print -quit)"
+          runtime_package_name="${runtime_package##*/}"
+          runtime_package_name="${runtime_package_name%.conda}"
+          package_prefix="unilabos-$UNILABOS_INSTALLER_VERSION-"
+          package_build="${runtime_package_name#"$package_prefix"}"
+          channel_uri="$(python -c 'from pathlib import Path; print(Path("output").resolve().as_uri())')"
+          echo "UNILABOS_INSTALLER_CHANNEL=$channel_uri" >> "$GITHUB_ENV"
+          echo "UNILABOS_INSTALLER_BUILD=$package_build" >> "$GITHUB_ENV"
+          echo "Using local Runtime package: $runtime_package_name"
+          echo "Using local Runtime channel: $channel_uri"
 
       - name: Validate Windows managed process-tree lifecycle
         if: steps.select.outputs.enabled == 'true' && matrix.platform == 'win-64'
