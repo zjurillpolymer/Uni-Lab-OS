@@ -65,10 +65,11 @@ def main() -> int:
     )
     os.environ.pop("UNILABOS_PROCESS_OUTPUT_CAPTURED", None)
     os.environ["ROS_LOG_DIR"] = str(root / "native-spdlog-must-stay-empty")
-    ros_args = prepare_ros_logging(config=config)
     import rclpy
     from rcl_interfaces.msg import Log
-    from rclpy.qos import qos_profile_rosout_default
+    from rclpy.qos import QoSProfile
+
+    ros_args = prepare_ros_logging(config=config)
 
     node = None
     received: list[str] = []
@@ -77,7 +78,8 @@ def main() -> int:
     try:
         rclpy.init(args=ros_args, domain_id=options.domain_id)
         node = rclpy.create_node(f"unilab_log_acceptance_{os.getpid()}")
-        node.create_subscription(Log, "/rosout", lambda msg: received.append(msg.msg), qos_profile_rosout_default)
+        # Humble 未导出 rosout 预设；默认可靠、volatile 订阅可接收验收期间的新消息。
+        node.create_subscription(Log, "/rosout", lambda msg: received.append(msg.msg), QoSProfile(depth=1000))
         library = _native_logger()
         location = _LogLocation(b"native_acceptance", __file__.encode(), 1)
         logger_name = node.get_logger().name.encode()
