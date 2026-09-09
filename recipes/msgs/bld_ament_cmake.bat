@@ -13,10 +13,13 @@ rd /s /q build
 mkdir build
 pushd build
 
-:: set "CMAKE_GENERATOR=Ninja"
-
-:: try to fix long paths issues by using default generator
-set "CMAKE_GENERATOR=Visual Studio %VS_MAJOR% %VS_YEAR%"
+:: Use Ninja with the compiler environment prepared by conda-forge.  The
+:: GitHub Windows runner may provide a newer Visual Studio instance than the
+:: VS 2022 generator requested by the recipe, which makes CMake reject the
+:: build before compiling anything.
+set "CMAKE_GENERATOR=Ninja"
+set "CMAKE_GENERATOR_PLATFORM="
+set "CMAKE_GENERATOR_TOOLSET="
 
 set PYTHON="%PREFIX%\python.exe"
 set PYTHON=%PYTHON:\=/%
