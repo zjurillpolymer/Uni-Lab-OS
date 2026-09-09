@@ -40,6 +40,13 @@ if [[ $target_platform =~ linux.* ]]; then
     export CXXFLAGS="${CXXFLAGS} -D__STDC_FORMAT_MACROS=1"
 fi;
 
+# libc++ 18+ removes the C++17 std::wstring_convert API by default.  The
+# ROS 2 Humble generated message headers still use it, so re-enable the
+# compatibility definitions for macOS Runtime builds.
+if [[ $target_platform =~ osx.* ]]; then
+    export CXXFLAGS="${CXXFLAGS} -D_LIBCPP_ENABLE_CXX17_REMOVED_FEATURES"
+fi;
+
 # Needed for qt-gui-cpp ..
 if [[ $target_platform =~ linux.* ]]; then
   ln -s $GCC ${BUILD_PREFIX}/bin/gcc
