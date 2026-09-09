@@ -364,10 +364,16 @@ while not stopping:
         _wait_for_file(simulator_pid_path)
         status = _request(supervisor, "GET", "/v1/status")
         assert status.body["status"] == "idle"
+        simulator_log = Path(status.body["simulator"]["logPath"])
+        assert simulator_log.parent == tmp_path / "managed-runtime"
+        assert simulator_log.name.startswith("simulator-")
+        assert simulator_log.suffix == ".log"
+        assert simulator_log.is_file()
         assert status.body["simulator"] == {
             "status": "running",
             "pid": int(simulator_pid_path.read_text(encoding="utf-8")),
             "error": None,
+            "logPath": str(simulator_log),
         }
 
         stopped = _request(
@@ -380,6 +386,7 @@ while not stopping:
             "status": "idle",
             "pid": None,
             "error": None,
+            "logPath": str(simulator_log),
         }
 
 

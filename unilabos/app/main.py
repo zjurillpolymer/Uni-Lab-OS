@@ -760,6 +760,9 @@ def main():
     convert_argv_dashes_to_underscores(parser)
     args = parser.parse_args()
     args_dict = vars(args)
+    if args_dict.get("backend") == "ros":
+        # rcutils 可能在注册表导入设备类型时提前初始化，须在此之前指定 fd2。
+        os.environ["RCUTILS_LOGGING_USE_STDOUT"] = "0"
 
     # 控制面已收敛为本地模式。即使调用方绕过命令包装器直接传入参数，
     # 这里也再次校验，避免未来新增入口时意外恢复 Backend 出站连接。
@@ -1042,18 +1045,20 @@ def main():
 
     # 根据配置重新设置日志级别
     from unilabos.utils.log import configure_logger, configure_comm_logger, logger
+    from unilabos.utils.log_storage import LogPolicy
 
-    if hasattr(BasicConfig, "log_level"):
-        logger.info(f"Log level set to '{BasicConfig.log_level}' from config file.")
+    log_policy = LogPolicy.from_config(BasicConfig)
     file_path = configure_logger(
-        loglevel=BasicConfig.log_level, working_dir=working_dir
+        loglevel=BasicConfig.log_level, working_dir=working_dir, policy=log_policy,
+        file_log_level=BasicConfig.file_log_level, log_detailed=BasicConfig.log_detailed,
     )
     if file_path is not None:
         logger.info(f"[LOG_FILE] {file_path}")
 
     # 为服务端通信(WebSocket)配置独立日志，避免与主日志混在一起，便于排查通信机制
     comm_log_path = configure_comm_logger(
-        loglevel=BasicConfig.log_level, working_dir=working_dir
+        loglevel=BasicConfig.log_level, working_dir=working_dir, policy=log_policy,
+        file_log_level=BasicConfig.file_log_level, log_detailed=BasicConfig.log_detailed,
     )
     if comm_log_path is not None:
         logger.info(f"[COMM_LOG_FILE] {comm_log_path}")

@@ -93,7 +93,7 @@ from unilabos.resources.resource_tracker import (
 from unilabos.ros.utils.driver_creator import WorkstationNodeCreator, PyLabRobotCreator, DeviceClassCreator
 from rclpy.task import Task, Future
 from unilabos.utils.import_manager import default_manager
-from unilabos.utils.log import info, debug, warning, error, critical, logger, trace
+from unilabos.utils.log import info, debug, warning, error, critical, logger, trace, is_detailed_logging_enabled
 from unilabos.utils.tracing import (
     add_event,
     attach_workflow_execution_identity,
@@ -472,7 +472,8 @@ class PropertyPublisher:
     def get_property(self):
         if asyncio.iscoroutinefunction(self.get_method):
             # 如果是异步函数，运行事件循环并等待结果
-            self.node.lab_logger().trace(f"【.get_property】获取异步属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property】获取异步属性: {self.name}")
             loop = self.__loop
             if loop:
                 future = asyncio.run_coroutine_threadsafe(self.get_method(), loop)
@@ -483,14 +484,16 @@ class PropertyPublisher:
                 return None
         else:
             # 如果是同步函数，直接调用并返回结果
-            self.node.lab_logger().trace(f"【.get_property】获取同步属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property】获取同步属性: {self.name}")
             self._value = self.get_method()
             return self._value
 
     async def get_property_async(self):
         try:
             # 获取异步属性值
-            self.node.lab_logger().trace(f"【.get_property_async】异步获取属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property_async】异步获取属性: {self.name}")
             self._value = await self.get_method()
         except Exception as e:
             self.node.lab_logger().error(f"【.get_property_async】获取异步属性出错: {str(e)}")

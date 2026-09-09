@@ -7,6 +7,9 @@ import time
 from typing import Optional, Dict, Any, List
 import uuid
 
+# rcutils 会缓存首次日志初始化时的输出流，必须先固定到受控的 stderr。
+os.environ["RCUTILS_LOGGING_USE_STDOUT"] = "0"
+
 import rclpy
 from unilabos_msgs.srv._serial_command import SerialCommand_Response
 
@@ -32,6 +35,7 @@ from unilabos.ros.hostlink_runtime import (
     start_hostlink_server as _start_hostlink_server,
 )
 from unilabos.ros.initialize_device import initialize_device_from_dict
+from unilabos.ros.logging import close_ros_logging, prepare_ros_logging
 from unilabos.ros.nodes.presets.host_node import HostNode
 from unilabos.utils import logger
 from unilabos.config.config import BasicConfig
@@ -53,7 +57,10 @@ def exit() -> None:
             if hasattr(device_node, "destroy_node"):
                 device_node.ros_node_instance.destroy_node()
         host_instance.destroy_node()
-    rclpy.shutdown()
+    try:
+        rclpy.shutdown()
+    finally:
+        close_ros_logging()
 
 
 def main(
@@ -65,13 +72,16 @@ def main(
     bridges: List[Any] = [],
     visual: str = "disable",
     resources_mesh_config: dict = {},
-    rclpy_init_args: List[str] = ["--log-level", "debug"],
+    rclpy_init_args: Optional[List[str]] = None,
     discovery_interval: float = 15.0,
 ) -> None:
     """主函数"""
 
     _setup_host_network_before_ros()
 
+    rclpy_init_args = prepare_ros_logging(
+        rclpy_init_args, context_initialized=rclpy.ok()
+    )
     # Support restart - check if rclpy is already initialized
     if not rclpy.ok():
         rclpy.init(args=rclpy_init_args)
@@ -162,7 +172,7 @@ def slave(
     bridges: List[Any] = [],
     visual: str = "disable",
     resources_mesh_config: dict = {},
-    rclpy_init_args: List[str] = ["--log-level", "debug"],
+    rclpy_init_args: Optional[List[str]] = None,
 ) -> None:
     """从节点函数"""
     # 0. Slave 网络连接与 ROS 配置由微后端统一管理；此处只在
@@ -177,6 +187,9 @@ def slave(
         device_ids=require_slave_startup_device_ids(devices_config)
     )
 
+    rclpy_init_args = prepare_ros_logging(
+        rclpy_init_args, context_initialized=rclpy.ok()
+    )
     # 1. 初始化 ROS2（domain_id=None 时 rclpy 回退环境变量/默认域）
     if not rclpy.ok():
         try:

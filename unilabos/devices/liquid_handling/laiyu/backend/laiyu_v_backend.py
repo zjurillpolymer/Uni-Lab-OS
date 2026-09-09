@@ -1,5 +1,6 @@
       
 import json
+import sys
 from typing import List, Optional, Union
 
 from pylabrobot.liquid_handling.backends.backend import (
@@ -60,7 +61,9 @@ class UniLiquidHandlerLaiyuBackend(LiquidHandlerBackend):
     self.total_height = total_height
 # rclpy.init()
     if not rclpy.ok():
-        rclpy.init()
+        from unilabos.ros.logging import prepare_ros_logging
+
+        rclpy.init(args=prepare_ros_logging(sys.argv))
     self.joint_state_publisher = None
     self.hardware_interface = PipetteController(port=port)
 

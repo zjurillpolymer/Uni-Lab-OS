@@ -13,6 +13,9 @@ from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.request import Request, urlopen
 
+from unilabos.utils.log_storage import LogPolicy
+from unilabos.utils.process_output import ProcessOutput, session_log_path
+
 from .model import (
     COMPONENT_NAMES,
     SCHEMA_VERSION,
@@ -225,7 +228,7 @@ def ensure_workspace_host(
     except WorkspaceHostError:
         pass
     paths.prepare()
-    log_path = paths.logs / "workspace-host.log"
+    log_path = session_log_path(paths.logs / "workspace-host.log")
     environment = dict(os.environ)
     checkout = Path(__file__).resolve().parents[2]
     inherited = environment.get("PYTHONPATH")
@@ -241,13 +244,13 @@ def ensure_workspace_host(
         "--port",
         "0",
     ]
-    with log_path.open("ab", buffering=0) as stream:
+    with ProcessOutput(log_path, LogPolicy.from_env(environment)) as output:
         subprocess.Popen(
             command,
             cwd=paths.workspace,
-            env=environment,
+            env=output.environment(environment),
             stdin=subprocess.DEVNULL,
-            stdout=stream,
+            stdout=output.stream,
             stderr=subprocess.STDOUT,
             start_new_session=os.name != "nt",
             creationflags=(
