@@ -150,7 +150,7 @@ jobs:
           TARGET_PLATFORM: ${{ matrix.platform }}
         run: |
           if [[ "$TARGET_PLATFORM" == "win-64" ]]; then
-            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 rattler-build -y
+            cmd //D //S //C '%CONDA%\\condabin\\mamba.bat install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 rattler-build -y'
             conda_exe="$(python -c 'import os; from pathlib import Path; print(Path(os.environ["CONDA_PREFIX"], "standalone_conda", "conda.exe"))')"
           else
             mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 micromamba=2.8.1 rattler-build -y
