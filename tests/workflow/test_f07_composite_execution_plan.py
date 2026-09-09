@@ -25,6 +25,7 @@ INVOCATION_SOURCE = "73000000-0000-4000-8000-000000000003"
 INTERNAL_TARGET = "73000000-0000-4000-8000-000000000004"
 INTERNAL_READY = "73000000-0000-4000-8000-000000000005"
 CONSUMER_TARGET = "73000000-0000-4000-8000-000000000006"
+REPEAT_REGION_UUID = "71000000-0000-4000-8000-000000000008"
 
 
 def _node(
@@ -412,6 +413,39 @@ def test_composite_static_passthrough_projects_actual_action_params() -> None:
     assert [
         (edge["source_node_uuid"], edge["target_node_uuid"]) for edge in flattened
     ] == [(INTERNAL_UUID, CONSUMER_UUID)]
+
+
+def test_completion_inside_repeat_uses_region_barrier() -> None:
+    """组合完成来源位于循环成员时，完成边必须提升到循环控制区域。"""
+
+    invocation = _composite_node(static_value=7)
+    invocation["parent_uuid"] = REPEAT_REGION_UUID
+    internal = _node(INTERNAL_UUID, INTERNAL_TEMPLATE)
+    internal["parent_uuid"] = REPEAT_REGION_UUID
+    region = _node(REPEAT_REGION_UUID, REPEAT_REGION_UUID, node_type="repeat_until")
+    nodes = {
+        node["uuid"]: node
+        for node in (invocation, internal, region, _node(CONSUMER_UUID, CONSUMER_TEMPLATE))
+    }
+    flattened, _ = ExecutionPlanGraphNormalizer().flatten_composite_edges(
+        nodes=nodes,
+        edges=[
+            _edge(
+                "74000000-0000-4000-8000-000000000008",
+                INVOCATION_UUID,
+                INVOCATION_SOURCE,
+                CONSUMER_UUID,
+                CONSUMER_TARGET,
+            )
+        ],
+        handles={handle["uuid"]: handle for handle in _handles()},
+    )
+
+    completion_edges = {
+        (edge["source_node_uuid"], edge["source_handle_uuid"], edge["target_node_uuid"])
+        for edge in flattened
+    }
+    assert (REPEAT_REGION_UUID, "", CONSUMER_UUID) in completion_edges
 
 
 def test_composite_output_binding_is_frozen_against_internal_job() -> None:
