@@ -56,6 +56,17 @@ export interface TaskNodeWaitReason {
   waitingSince?: string
 }
 
+export interface WorkflowIntervention {
+  uuid: string
+  workflowTaskUuid: string
+  workflowNodeJobUuid: string
+  revision: number
+  status: string
+  options: { id: string; action: string; label: string; description?: string }[]
+  metaData: Record<string, unknown>
+  openedAt: string
+}
+
 export interface WorkflowDefinition {
   uuid: string
   name: string

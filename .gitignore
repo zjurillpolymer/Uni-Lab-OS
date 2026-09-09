@@ -260,6 +260,12 @@ ros-humble-unilabos-msgs-0.9.13-h6403a04_5.tar.bz2
 *.bz2
 test_config.py
 
+.codegraph/
+.feishu*
+.unilabos/
+.tools/
+unilabos/.ua/
+
 # Python/ROS 的通用 ``lib/`` 忽略规则不能吞掉前端 API 客户端源码。
 !/frontend/src/lib/
 !/frontend/src/lib/**

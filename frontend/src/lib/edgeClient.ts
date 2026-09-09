@@ -25,6 +25,7 @@ import type {
   FailedMaterialTransferSettlementRequest,
   WorkflowTaskPriority,
   WorkflowStepState,
+  WorkflowIntervention,
   ResourceTemplateRecord,
   ActionTemplateRecord,
   ControlTemplateRecord,
@@ -220,6 +221,45 @@ async function writeData<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: s
     if (error instanceof EdgeApiError) throw error
     throw new Error(`${error instanceof Error ? error.message : 'Edge API 业务错误'}（${method} ${path}）`)
   }
+}
+
+function adaptIntervention(value: RawRecord): WorkflowIntervention {
+  return {
+    uuid: String(value.uuid || ''),
+    workflowTaskUuid: String(value.workflow_task_uuid || ''),
+    workflowNodeJobUuid: String(value.workflow_node_job_uuid || ''),
+    revision: Number(value.revision || 1),
+    status: String(value.status || ''),
+    options: Array.isArray(value.options) ? value.options.map((option: RawRecord) => ({
+      id: String(option.id || option.action || ''), action: String(option.action || option.id || ''),
+      label: String(option.label || option.action || option.id || ''),
+      description: typeof option.description === 'string' ? option.description : undefined,
+    })) : [],
+    metaData: value.meta_data && typeof value.meta_data === 'object' ? value.meta_data as RawRecord : {},
+    openedAt: String(value.opened_at || ''),
+  }
+}
+
+export async function loadWorkflowInterventions(signal?: AbortSignal): Promise<WorkflowIntervention[]> {
+  const values = await requestData<RawRecord[]>('/workflow-interventions?status=open&limit=100', signal)
+  return Array.isArray(values) ? values.map(adaptIntervention) : []
+}
+
+export async function decideWorkflowIntervention(intervention: WorkflowIntervention, optionId: string): Promise<void> {
+  const response = await fetch(`${EDGE_API_BASE}/workflow-interventions/${intervention.uuid}/decisions`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json', 'Content-Type': 'application/json',
+      'Idempotency-Key': `${intervention.uuid}:${intervention.revision}:${optionId}`,
+    },
+    body: JSON.stringify({
+    revision: intervention.revision,
+    option_id: optionId,
+  })
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) throw new Error(formatApiError(body, response.status))
+  unwrapEnvelope(body as EdgeEnvelope<unknown>)
 }
 
 function schemaType(schema: unknown): string {

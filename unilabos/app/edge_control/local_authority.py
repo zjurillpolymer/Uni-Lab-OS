@@ -632,6 +632,64 @@ class LocalEdgeAuthorityStore:
             commands.append(command)
         return commands
 
+    def enqueue_error_decision(
+        self,
+        decision_id: str,
+        *,
+        job_id: str,
+        device_id: str,
+        decision: Mapping[str, Any],
+    ) -> bool:
+        """把已选择的异常处理决定持久化为下行 Edge 命令。"""
+
+        command_uuid = str(uuid.UUID(decision_id))
+        normalized_job = str(uuid.UUID(job_id))
+        if not device_id:
+            return False
+        payload = {
+            **dict(decision),
+            "decision_id": command_uuid,
+            "job_id": normalized_job,
+            "device_id": str(device_id),
+        }
+        encoded = json.dumps(payload, ensure_ascii=False, separators=(",", ":"))
+        with self._lock:
+            existing = self._connection.execute(
+                "SELECT type, payload_json FROM local_edge_command WHERE command_uuid = ?",
+                (command_uuid,),
+            ).fetchone()
+            if existing is not None:
+                return (
+                    str(existing["type"]) == "job.error_decision"
+                    and str(existing["payload_json"]) == encoded
+                )
+            job = self._connection.execute(
+                "SELECT local_device_id FROM local_edge_job WHERE job_uuid = ?",
+                (normalized_job,),
+            ).fetchone()
+            if job is None or str(job["local_device_id"]) != str(device_id):
+                return False
+            sequence = self._next_sequence_locked()
+            now = time.time()
+            self._connection.execute(
+                """
+                INSERT INTO local_edge_command(
+                    command_uuid, sequence, type, payload_json,
+                    traceparent, tracestate, status, created_at
+                ) VALUES (?, ?, 'job.error_decision', ?, '', '', 'pending', ?)
+                """,
+                (command_uuid, sequence, encoded, now),
+            )
+            self._connection.execute(
+                """
+                INSERT INTO local_edge_meta(key, value) VALUES ('sequence', ?)
+                ON CONFLICT(key) DO UPDATE SET value = excluded.value
+                """,
+                (str(sequence),),
+            )
+            self._connection.commit()
+        return True
+
     def mark_command_sent(self, command_uuid: str) -> None:
         with self._lock:
             self._connection.execute(
@@ -1392,6 +1450,10 @@ class LocalEdgeControlAuthority:
         self._execution_process_restarted_listeners: list[
             Callable[[tuple[str, ...]], None]
         ] = []
+        self._error_decision_required_listeners: list[
+            Callable[[dict[str, Any]], None]
+        ] = []
+        self._error_decision_reports: dict[str, dict[str, Any]] = {}
 
     def start(self) -> None:
         return
@@ -1401,6 +1463,59 @@ class LocalEdgeControlAuthority:
 
     def dispatch(self, payload: DispatchPayload) -> None:
         self.store.dispatch(payload)
+
+    def add_error_decision_required_listener(
+        self, listener: Callable[[dict[str, Any]], None]
+    ) -> None:
+        if listener not in self._error_decision_required_listeners:
+            self._error_decision_required_listeners.append(listener)
+
+    def remove_error_decision_required_listener(
+        self, listener: Callable[[dict[str, Any]], None]
+    ) -> None:
+        self._error_decision_required_listeners = [
+            current for current in self._error_decision_required_listeners
+            if current != listener
+        ]
+
+    def publish_job_error_decision_required(self, report: dict[str, Any]) -> bool:
+        """接收 Edge 动作异常，并先交给工作流权威持久化。"""
+
+        decision_id = str(report.get("decision_id") or "")
+        job_id = str(report.get("job_id") or "")
+        device_id = str(report.get("device_id") or "")
+        try:
+            uuid.UUID(decision_id)
+            uuid.UUID(job_id)
+        except (TypeError, ValueError):
+            return False
+        if not device_id:
+            return False
+        try:
+            for listener in tuple(self._error_decision_required_listeners):
+                listener(dict(report))
+        except Exception:
+            logger.exception("[LocalEdgeControl] failed to persist error decision %s", decision_id)
+            return False
+        self._error_decision_reports[decision_id] = dict(report)
+        return True
+
+    def resolve_error_decision(self, decision_id: str, decision: dict[str, Any]) -> bool:
+        """把已持久选择的方案作为 Edge 命令投递给原始动作。"""
+
+        report = self._error_decision_reports.get(str(decision_id))
+        job_id = str(
+            (report or {}).get("job_id") or decision.get("job_id") or ""
+        )
+        device_id = str(
+            (report or {}).get("device_id") or decision.get("device_id") or ""
+        )
+        return self.store.enqueue_error_decision(
+            str(decision_id),
+            job_id=job_id,
+            device_id=device_id,
+            decision=decision,
+        )
 
     def add_job_finished_listener(
         self, listener: Callable[[str, bool, Any, str], None]
@@ -1738,6 +1853,18 @@ def create_local_edge_control_router(
         except (TypeError, ValueError) as error:
             raise HTTPException(status_code=409, detail=str(error)) from error
         return _envelope(result)
+
+    @router.post("/error-decisions")
+    def report_error_decision_required(
+        payload: dict[str, Any],
+        authorization: str | None = Header(default=None),
+    ) -> dict[str, Any]:
+        """接收 Edge 动作异常，并建立等待人工处理的工作流干预。"""
+
+        authorize(authorization)
+        if not authority.publish_job_error_decision_required(payload):
+            raise HTTPException(status_code=409, detail="错误决策报告未被工作流权威接受")
+        return _envelope({"accepted": True})
 
     @router.get("/jobs/{job_uuid}")
     def fetch_job(

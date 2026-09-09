@@ -272,6 +272,61 @@ def test_dispatch_is_idempotent_and_rejects_changed_identity(tmp_path: Path) -> 
         authority.stop()
 
 
+def test_error_decision_report_is_forwarded_back_to_edge(tmp_path: Path) -> None:
+    """Edge 的错误报告必须进入工作流端口，并可作为下行命令回到同一设备。"""
+
+    authority = _authority(tmp_path / "authority.db")
+    payload = _payload()
+    received: list[dict[str, object]] = []
+    try:
+        authority.dispatch(payload)
+        authority.add_error_decision_required_listener(received.append)
+        report = {
+            "decision_id": str(uuid.uuid4()),
+            "task_id": payload["task_id"],
+            "job_id": payload["job_id"],
+            "device_id": payload["device_id"],
+            "action_name": payload["action"],
+            "options": [{"id": "retry", "action": "retry", "label": "重试"}],
+        }
+
+        assert authority.publish_job_error_decision_required(report) is True
+        assert received == [report]
+        assert authority.resolve_error_decision(report["decision_id"], {"action": "retry"}) is True
+
+        command = authority.store.pending_commands()[-1]
+        assert command["type"] == "job.error_decision"
+        assert command["payload"] == {
+            "decision_id": report["decision_id"],
+            "job_id": payload["job_id"],
+            "device_id": payload["device_id"],
+            "action": "retry",
+        }
+    finally:
+        authority.stop()
+
+
+def test_error_decision_can_use_persisted_delivery_identity(tmp_path: Path) -> None:
+    """重启后由 intervention 元数据恢复 job/device 路由，不依赖内存报告。"""
+
+    authority = _authority(tmp_path / "authority.db")
+    payload = _payload()
+    decision_id = str(uuid.uuid4())
+    try:
+        authority.dispatch(payload)
+        assert authority.resolve_error_decision(
+            decision_id,
+            {
+                "action": "retry",
+                "job_id": payload["job_id"],
+                "device_id": payload["device_id"],
+            },
+        ) is True
+        assert authority.store.pending_commands()[-1]["payload"]["decision_id"] == decision_id
+    finally:
+        authority.stop()
+
+
 def test_http_websocket_round_trip_projects_one_terminal_outcome(
     tmp_path: Path,
 ) -> None:

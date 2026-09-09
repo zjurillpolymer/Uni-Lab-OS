@@ -10,9 +10,9 @@ from typing import Any, Dict, List, Literal, Mapping, NotRequired, TypedDict
 DEFAULT_ERROR_CLASS = "*"
 
 SUCCESS_TYPE_NORMAL = "normal"
-SUCCESS_TYPE_SKIP = "skip"
+SUCCESS_TYPE_SKIP = "user_bypass_error"
 SUCCESS_TYPE_OPERATOR_INTERVENTION = "operator_intervention"
-SuccessType = Literal["normal", "skip", "operator_intervention"]
+SuccessType = Literal["normal", "user_bypass_error", "operator_intervention"]
 
 
 class FallbackAction(TypedDict):
@@ -29,6 +29,7 @@ class ErrorPolicyOption(TypedDict):
     label: str
     description: NotRequired[str]
     fallback_action: NotRequired[FallbackAction]
+    then: NotRequired[Literal["retry", "skip", "abort"]]
 
 
 class ErrorPolicy(TypedDict):
@@ -46,6 +47,7 @@ class ActionDecisionOutcome:
 
     value: Any
     suc_type: SuccessType
+    audit_error: str = ""
 
 
 def _normalize_fallback_action(value: Any) -> FallbackAction:
@@ -83,11 +85,18 @@ def _normalize_option(value: Any) -> ErrorPolicyOption:
         option["fallback_action"] = _normalize_fallback_action(
             value["fallback_action"]
         )
+    then = value.get("then")
+    if then is not None:
+        if then not in {"retry", "skip", "abort"}:
+            raise ValueError("error_policy option.then 仅支持 retry/skip/abort")
+        option["then"] = then
     return option
 
 
 def normalize_error_policy(
     policy: Mapping[str, Any] | None,
+    *,
+    default_on_user_timeout: str | None = None,
 ) -> Dict[str, Any] | None:
     """Validate and copy a policy into a registry-safe representation.
 
@@ -98,8 +107,23 @@ def normalize_error_policy(
     if not policy:
         return None
     raw_options = policy.get("options")
+    # 2.6 的公开写法是一个扁平 options 列表，并用 allow_retry/
+    # allow_skip 打开框架选项。旧的“异常类名 -> options”格式继续保留，
+    # 以免已接入的驱动被本次升级破坏。
+    is_flat_policy = raw_options is None or isinstance(raw_options, list)
+    if raw_options is None:
+        raw_options = []
     if isinstance(raw_options, list):
-        raw_options = {DEFAULT_ERROR_CLASS: raw_options}
+        options_list = list(raw_options)
+        if policy.get("allow_retry"):
+            options_list.insert(0, {"action": "retry", "label": "重试"})
+        if policy.get("allow_skip"):
+            options_list.append({"action": "skip", "label": "跳过"})
+        # 未声明 error_policy 时不会调用本函数；显式空策略仍需要一个
+        # 可见的终止选项，否则人工会话无法收敛。
+        if not options_list:
+            options_list.append({"action": "abort", "label": "终止"})
+        raw_options = {DEFAULT_ERROR_CLASS: options_list}
     if not isinstance(raw_options, Mapping) or not raw_options:
         raise ValueError("error_policy.options 必须是非空的异常类名到 option 列表映射")
 
@@ -126,10 +150,19 @@ def normalize_error_policy(
         raise ValueError("error_policy.decision_timeout_seconds 必须大于 0")
     normalized["decision_timeout_seconds"] = float(decision_timeout)
 
-    timeout_action = policy.get("default_on_decision_timeout", "abort")
+    timeout_action = policy.get(
+        "default_on_user_timeout",
+        policy.get(
+            "default_on_decision_timeout",
+            default_on_user_timeout or "abort",
+        ),
+    )
     if timeout_action not in {"abort", "retry", "skip"}:
         raise ValueError("default_on_decision_timeout 仅支持 abort/retry/skip")
     normalized["default_on_decision_timeout"] = timeout_action
+    if is_flat_policy:
+        normalized["allow_retry"] = bool(policy.get("allow_retry", False))
+        normalized["allow_skip"] = bool(policy.get("allow_skip", False))
     return normalized
 
 

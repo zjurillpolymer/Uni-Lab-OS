@@ -1009,12 +1009,31 @@ def _extract_class_body(
             action_args.setdefault("parent", False)
             action_args.setdefault("estimate_duration_fixed", 60.0)
             action_args.setdefault("estimate_duration_express", "")
+            action_args.setdefault("exception_handling", True)
+            action_args.setdefault("timeout", None)
+            action_args.setdefault("execution_timeout", None)
+            action_args.setdefault("default_on_user_timeout", "abort")
             action_args.setdefault("error_policy", None)
             action_args.setdefault("resource_contract", None)
+            for field_name in ("timeout", "execution_timeout"):
+                value = action_args[field_name]
+                if value is not None and (
+                    not isinstance(value, (int, float))
+                    or isinstance(value, bool)
+                    or value <= 0
+                ):
+                    raise ValueError(f"{field_name} 必须是大于 0 的秒数或 None")
+            if not isinstance(action_args["exception_handling"], bool):
+                raise TypeError("exception_handling 必须是布尔值")
+            if action_args["default_on_user_timeout"] not in {"abort", "retry", "skip"}:
+                raise ValueError("default_on_user_timeout 仅支持 abort/retry/skip")
             if action_args["error_policy"]:
                 from unilabos.registry.action_policy import normalize_error_policy
 
-                action_args["error_policy"] = normalize_error_policy(action_args["error_policy"])
+                action_args["error_policy"] = normalize_error_policy(
+                    action_args["error_policy"],
+                    default_on_user_timeout=action_args["default_on_user_timeout"],
+                )
             if typed_action and canonical_schema is not None:
                 from unilabos.registry.action_resource_contract import (
                     ActionResourceContractError,
