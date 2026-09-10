@@ -38,7 +38,8 @@ from unilabos.workflow.workflow_type import normalize_workflow_type
 
 _NODE_ANCHOR = re.compile(
     r"^[ \t]*#[ \t]*unilab:node_uuid=([0-9a-fA-F-]{36})"
-    r"(?:[ \t]+disabled=(true))?[ \t]*$"
+    r"(?:[ \t]+disabled=(true))?"
+    r"(?:[ \t]+manual_confirmation_timeout_seconds=([0-9]{1,5}))?[ \t]*$"
 )
 _NODE_METADATA_PREFIX = re.compile(r"^[ \t]*#[ \t]*\[")
 _MAX_CONTROL_NESTING_DEPTH = 8
@@ -242,6 +243,7 @@ class WorkflowProgram:
     order_dependencies: tuple[tuple[str, str], ...]
     source_order: tuple[str, ...]
     disabled_node_uuids: tuple[str, ...]
+    manual_confirmation_timeouts: tuple[tuple[str, int], ...]
     outputs: tuple[tuple[str, ValueBinding], ...]
 
 
@@ -417,6 +419,12 @@ def parse_authoring_source(
         order_dependencies=tuple(order_dependencies),
         source_order=tuple(authoring_source_order),
         disabled_node_uuids=tuple(sorted(disabled_node_uuids)),
+        manual_confirmation_timeouts=tuple(
+            (anchors[line_number], int(match.group(3)))
+            for line_number, line in enumerate(source_lines(python_source), start=1)
+            if (match := _NODE_ANCHOR.fullmatch(line)) is not None
+            and match.group(3) is not None
+        ),
         outputs=tuple(outputs),
     )
 

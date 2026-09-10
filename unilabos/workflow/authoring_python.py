@@ -21,12 +21,14 @@ from unilabos.workflow.authoring_material import (
     RenderedMaterialSource,
     render_material_source_call,
 )
+from unilabos.workflow.manual_confirmation import normalize_manual_confirmation_config
 from unilabos.workflow.material_graph_validation import (
     MaterialGraphValidationError,
     validate_material_graph_projection,
 )
 from unilabos.workflow.models import CandidateSourceMapEntry, validate_uuid
 from unilabos.workflow.source_coordinates import utf16_length
+from unilabos.workflow.store import StoreConflict
 
 
 @dataclass(frozen=True, slots=True)
@@ -1881,9 +1883,15 @@ _NO_DEFAULT = _NoDefault()
 
 
 def _node_anchor(node_uuid: str, node: Mapping[str, Any]) -> str:
-    """把静态禁用事实编码进仍与动作声明相邻的稳定 UUID 锚点。"""
+    """在稳定 UUID 锚点保留禁用和人工确认配置，避免冷编译退化为普通动作。"""
 
     suffix = " disabled=true" if node.get("disabled") is True else ""
+    if str(node.get("type", "")).lower() == "manual_confirm":
+        try:
+            config = normalize_manual_confirmation_config(node.get("manual_confirmation"))
+        except StoreConflict as error:
+            raise AuthoringGraphError("invalid_manual_confirmation", str(error)) from error
+        suffix += f" manual_confirmation_timeout_seconds={config['timeout_seconds']}"
     return f"# unilab:node_uuid={node_uuid}{suffix}"
 
 

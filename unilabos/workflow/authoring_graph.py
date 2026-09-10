@@ -45,6 +45,7 @@ from unilabos.workflow.composite_compatibility import (
     classify_pinned_published_workflow_invocation,
 )
 from unilabos.workflow.composite_graph_rewrite import merge_expanded_resource_scopes
+from unilabos.workflow.manual_confirmation import normalize_manual_confirmation_config
 from unilabos.workflow.material_graph_validation import (
     MaterialGraphValidationError,
     validate_material_graph_projection,
@@ -54,6 +55,7 @@ from unilabos.workflow.resource_reference import (
     ResourceReferenceResolver,
     resolve_resource_reference,
 )
+from unilabos.workflow.store import StoreConflict
 from unilabos.workflow.workflow_io import (
     WorkflowIOValidationError,
     handle_value_schema,
@@ -572,6 +574,7 @@ def build_candidate_graph(
     # ``reconcile_applied_authoring_projection`` 会保留已应用节点的运行属性；作者
     # 源码中的显式禁用标记必须在该固定点之后覆盖旧值，否则从 enabled 改为
     # disabled 的保存会被已应用图悄悄还原。
+    manual_timeouts = dict(program.manual_confirmation_timeouts)
     for projected_node in projection.nodes:
         projected_uuid = str(projected_node.get("uuid"))
         if projected_uuid in source_order:
@@ -579,6 +582,35 @@ def build_candidate_graph(
                 projected_node["disabled"] = True
             elif "disabled" in projected_node:
                 projected_node["disabled"] = False
+            if projected_uuid in manual_timeouts:
+                # 包装只改变本节点的放行条件，不能改变设备模板或动作参数。
+                if (
+                    str(projected_node.get("type", "")).lower()
+                    not in {
+                        "ilab", "device_action", "device", "action",
+                        "resource_action", "manual_confirm",
+                    }
+                    or not projected_node.get("material_uuid")
+                ):
+                    raise AuthoringGraphError(
+                        "invalid_manual_confirmation",
+                        "人工确认只能包装已绑定固定设备的动作",
+                    )
+                try:
+                    config = normalize_manual_confirmation_config(
+                        {"timeout_seconds": manual_timeouts[projected_uuid]}
+                    )
+                except StoreConflict as error:
+                    raise AuthoringGraphError(
+                        "invalid_manual_confirmation", str(error)
+                    ) from error
+                projected_node["type"] = "manual_confirm"
+                projected_node["manual_confirmation"] = config
+            elif str(projected_node.get("type", "")).lower() == "manual_confirm":
+                # 原生人工确认动作同样规范化默认超时，保证首次编译就达到固定点。
+                projected_node["manual_confirmation"] = (
+                    normalize_manual_confirmation_config(None)
+                )
 
     graph = {
         "workflow": workflow,
