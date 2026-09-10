@@ -362,6 +362,9 @@ class ExecutionPlanGraphNormalizer:
         result: list[Mapping[str, Any]] = []
         for edge in edges:
             source_handle_uuid = str(edge.get("source_handle_uuid") or "")
+            # 控制区域完成屏障只携带顺序，不参与组合输入的值来源计数。
+            if edge.get("dependency_only") is True and not source_handle_uuid:
+                continue
             source_handle = handles.get(source_handle_uuid)
             if not isinstance(source_handle, Mapping):
                 raise ExecutionPlanBuildError(
@@ -466,13 +469,19 @@ class ExecutionPlanGraphNormalizer:
                 target_handle_uuid,
             )
         )
-        return {
+        rewired: dict[str, Any] = {
             "uuid": str(uuid5(UUID(invocation_uuid), f"execution-plan:{seed}")),
             "source_node_uuid": source_node_uuid,
             "source_handle_uuid": source_handle_uuid,
             "target_node_uuid": target_node_uuid,
             "target_handle_uuid": target_handle_uuid,
         }
+        # 提升到控制区域的完成边没有来源连接点；后续组合改写须保留此语义。
+        if source_edge.get("dependency_only") is True or (
+            label == "completion" and not source_handle_uuid
+        ):
+            rewired["dependency_only"] = True
+        return rewired
 
     @staticmethod
     def _project_static_parameter(
@@ -720,6 +729,28 @@ class ExecutionPlanGraphNormalizer:
         target_template = str(edge.get("target_handle_uuid") or "")
         source_handle = handles.get(source_template)
         target_handle = handles.get(target_template)
+        if edge.get("dependency_only") is True and not source_template:
+            # 只有显式完成屏障允许无来源连接点；目标仍须有合法的节点作用域身份。
+            if target_handle is None:
+                raise ExecutionPlanBuildError(
+                    "edge_handle_identity_mismatch", "工作流边引用快照外连接点"
+                )
+            if (target, target_template) not in runtime_handle_ids:
+                raise ExecutionPlanBuildError(
+                    "edge_handle_identity_mismatch", "工作流边端点不属于对应节点模板"
+                )
+            return {
+                "uuid": str(edge.get("uuid") or ""),
+                "source_node_uuid": source,
+                "target_node_uuid": target,
+                "source_handle_uuid": "",
+                "target_handle_uuid": "",
+                "source_data_key": "",
+                "target_data_key": "",
+                "source_type": "",
+                "target_type": "",
+                "dependency_only": True,
+            }
         if source_handle is None or target_handle is None:
             raise ExecutionPlanBuildError(
                 "edge_handle_identity_mismatch", "工作流边引用快照外连接点"

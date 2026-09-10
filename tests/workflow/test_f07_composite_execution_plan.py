@@ -4,7 +4,12 @@ from __future__ import annotations
 
 from typing import Any
 
-from unilabos.workflow._execution_plan_graph import ExecutionPlanGraphNormalizer
+import pytest
+
+from unilabos.workflow._execution_plan_graph import (
+    ExecutionPlanBuildError,
+    ExecutionPlanGraphNormalizer,
+)
 from unilabos.workflow.execution_plan import ExecutionPlanBuilder
 from unilabos.workflow.task_input import prepare_task_input
 
@@ -415,18 +420,33 @@ def test_composite_static_passthrough_projects_actual_action_params() -> None:
     ] == [(INTERNAL_UUID, CONSUMER_UUID)]
 
 
-def test_completion_inside_repeat_uses_region_barrier() -> None:
-    """组合完成来源位于循环成员时，完成边必须提升到循环控制区域。"""
+@pytest.mark.parametrize("region_type", ["repeat_until", "condition"])
+@pytest.mark.parametrize("composite_consumer", [False, True])
+def test_completion_inside_control_region_uses_region_barrier(
+    region_type: str,
+    composite_consumer: bool,
+) -> None:
+    """组合完成边提升到控制区域后仍可编译，并阻止普通或组合后续动作提前执行。"""
 
     invocation = _composite_node(static_value=7)
     invocation["parent_uuid"] = REPEAT_REGION_UUID
     internal = _node(INTERNAL_UUID, INTERNAL_TEMPLATE)
     internal["parent_uuid"] = REPEAT_REGION_UUID
-    region = _node(REPEAT_REGION_UUID, REPEAT_REGION_UUID, node_type="repeat_until")
+    region = _node(REPEAT_REGION_UUID, REPEAT_REGION_UUID, node_type=region_type)
     nodes = {
         node["uuid"]: node
         for node in (invocation, internal, region, _node(CONSUMER_UUID, CONSUMER_TEMPLATE))
     }
+    consumer_uuid = CONSUMER_UUID
+    consumer_handle = CONSUMER_TARGET
+    if composite_consumer:
+        nodes[SECOND_INVOCATION_UUID] = _composite_node(
+            invocation_uuid=SECOND_INVOCATION_UUID,
+            internal_uuid=CONSUMER_UUID,
+        )
+        nodes[CONSUMER_UUID] = _node(CONSUMER_UUID, INTERNAL_TEMPLATE)
+        consumer_uuid = SECOND_INVOCATION_UUID
+        consumer_handle = INVOCATION_TARGET
     flattened, _ = ExecutionPlanGraphNormalizer().flatten_composite_edges(
         nodes=nodes,
         edges=[
@@ -434,8 +454,8 @@ def test_completion_inside_repeat_uses_region_barrier() -> None:
                 "74000000-0000-4000-8000-000000000008",
                 INVOCATION_UUID,
                 INVOCATION_SOURCE,
-                CONSUMER_UUID,
-                CONSUMER_TARGET,
+                consumer_uuid,
+                consumer_handle,
             )
         ],
         handles={handle["uuid"]: handle for handle in _handles()},
@@ -446,6 +466,64 @@ def test_completion_inside_repeat_uses_region_barrier() -> None:
         for edge in flattened
     }
     assert (REPEAT_REGION_UUID, "", CONSUMER_UUID) in completion_edges
+    active = {key: nodes[key] for key in (REPEAT_REGION_UUID, CONSUMER_UUID)}
+    handles = {handle["uuid"]: handle for handle in _handles()}
+    normalizer = ExecutionPlanGraphNormalizer()
+    _, runtime_ids = normalizer.runtime_handles(active=active, handles=handles)
+    planned = normalizer.contract_edges(
+        nodes=nodes,
+        active=active,
+        edges=flattened,
+        handles=handles,
+        runtime_handle_ids=runtime_ids,
+    )
+    assert len(planned) == 1
+    assert planned[0]["dependency_only"] is True
+    assert planned[0]["source_handle_uuid"] == ""
+    assert planned[0]["target_handle_uuid"] == ""
+    assert planned[0]["source_data_key"] == ""
+    assert planned[0]["target_data_key"] == ""
+    assert normalizer.topological_order(active, planned) == [
+        REPEAT_REGION_UUID,
+        CONSUMER_UUID,
+    ]
+
+
+@pytest.mark.parametrize(
+    "source_handle,marked", [("", False), ("missing", False), ("missing", True)]
+)
+def test_missing_source_handle_is_not_implicitly_a_completion_barrier(
+    source_handle: str,
+    marked: bool,
+) -> None:
+    """普通数据边缺失来源连接点时仍拒绝；标记不能掩盖错误的非空连接点。"""
+
+    edge: dict[str, Any] = _edge(
+        "edge", PRODUCER_UUID, source_handle, CONSUMER_UUID, CONSUMER_TARGET
+    )
+    edge["dependency_only"] = marked
+    with pytest.raises(ExecutionPlanBuildError, match="工作流边引用快照外连接点"):
+        ExecutionPlanGraphNormalizer._direct_edge(
+            edge,
+            handles={h["uuid"]: h for h in _handles()},
+            runtime_handle_ids={(CONSUMER_UUID, CONSUMER_TARGET): "consumer-runtime"},
+        )
+
+
+@pytest.mark.parametrize("target_handle", ["missing", CONSUMER_TARGET])
+def test_completion_barrier_still_validates_target(target_handle: str) -> None:
+    """纯依赖完成边仍须验证目标连接点存在且属于目标节点。"""
+
+    edge: dict[str, Any] = _edge(
+        "edge", REPEAT_REGION_UUID, "", CONSUMER_UUID, target_handle
+    )
+    edge["dependency_only"] = True
+    with pytest.raises(ExecutionPlanBuildError):
+        ExecutionPlanGraphNormalizer._direct_edge(
+            edge,
+            handles={h["uuid"]: h for h in _handles()},
+            runtime_handle_ids={},
+        )
 
 
 def test_composite_output_binding_is_frozen_against_internal_job() -> None:
