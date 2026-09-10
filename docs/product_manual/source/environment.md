@@ -121,6 +121,8 @@ PLC-Sim 联调必须让 Driver 真正连接 OPC UA，所以使用 `normal`，同
 
 ```python
 class BasicConfig:
+    ak = ""
+    sk = ""
     disable_browser = True
     no_update_feedback = True
     log_level = "INFO"
@@ -133,7 +135,7 @@ class WSConfig:
     ws_ping_timeout = 8
 ```
 
-本地控制面不需要 AK/SK，设备包的 `local_config.py` 不应声明或保存它们。`disable_browser=True` 只是不让进程自动拉起浏览器，不会关闭 `/console/`；`no_update_feedback=True` 降低设备反馈刷新；`log_level` 支持 `TRACE`、`DEBUG`、`INFO`、`WARNING`、`ERROR`、`CRITICAL`。
+本地控制面不需要 AK/SK，所以示例保持空值。不要把真实凭证写进 Git。`disable_browser=True` 只是不让进程自动拉起浏览器，不会关闭 `/console/`；`no_update_feedback=True` 降低设备反馈刷新；`log_level` 支持 `TRACE`、`DEBUG`、`INFO`、`WARNING`、`ERROR`、`CRITICAL`。
 
 当前 Workspace Host 会显式决定进程职责、ROS backend、bridge、端口和 action mode。不要在 `local_config.py` 中与启动计划重复维护这些字段。
 

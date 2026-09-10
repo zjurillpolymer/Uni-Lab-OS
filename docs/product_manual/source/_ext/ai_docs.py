@@ -85,7 +85,7 @@ _DESCRIPTIONS: dict[str, str] = {
     "interfaces": "了解开发工具、接口入口、适用场景和能力边界。",
     "unilabos-installation": "按工作区、设备、物料、启动图和工作流的顺序完成设备包开发与系统启动。",
     "workspace": "规划设备包目录、文件职责、命名规则和交付检查。",
-    "workspace-init": "使用 unilab workspace init 安全创建带教学驱动和工作流的设备包，并核对包身份、初始配置和失败边界。",
+    "workspace-init": "在命令尚未提供时手工创建设备包骨架，并了解未来初始化命令的预期行为。",
     "device-template": "根据控制方式选择设备接入模板，并完成设备合同和验证。",
     "template-library": "按设备能力选择类别、动作和模拟实现，不依赖固定类别数量。",
     "device-registration": "登记设备、动作参数和状态，并验证页面表单与设备联动。",

@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="1. 设备接入模板" href="device-template.html"><link rel="prev" title="工作区" href="workspace.html">
 
-    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
         <title>初始化工作区（unilab workspace init） - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -353,7 +353,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="unilab-workspace-init">
-<h1>初始化工作区（unilab workspace init）<a class="headerlink" href="#unilab-workspace-init" title="链接到此标题。">¶</a></h1>
+<h1>初始化工作区（unilab workspace init）<a class="headerlink" href="#unilab-workspace-init" title="Link to this heading">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -362,13 +362,13 @@
 <li><p><strong>验收人员</strong>：确认没有覆盖既有项目，且生成结构符合设备包规范。</p></li>
 </ul>
 </div>
-<div class="admonition note">
-<p class="admonition-title">备注</p>
-<p>当前版本已经提供 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span></code>。该命令只创建全新的工作区；目标路径已经存在时会直接失败，不会合并或覆盖任何文件。</p>
+<div class="admonition warning">
+<p class="admonition-title">警告</p>
+<p>当前版本尚未提供 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span></code> 子命令。现阶段请按照本页的“当前操作步骤”手工创建工作区，不要直接执行规划命令。</p>
 </div>
 <section id="id1">
-<h2>这一步要得到什么<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
-<p>完成后，你会得到一个带教学示例的设备包项目：一个无硬件副作用的回显驱动、一个调用该动作的工作流，以及只装载示例设备的 <code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 启动图。它可以立即接受静态检查和测试，但还不能连接真实设备；接下来仍需填写真实设备、物料、启动图（Graph JSON）和工作流。</p>
+<h2>这一步要得到什么<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<p>完成后，你会得到一个新的设备包项目骨架。它只包含目录和基础文件，还不能直接连接设备；接下来仍需填写设备、物料、启动图（Graph JSON）和工作流。</p>
 <p>开始前由业务负责人确认：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -404,90 +404,92 @@
 </div>
 </section>
 <section id="id2">
-<h2>使用命令初始化<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
+<h2>当前操作步骤<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
 <section id="id3">
-<h3>步骤一：设置名称与路径<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h3>
-<p>打开终端，把下面两项替换为自己的值。目标目录必须尚不存在；包名可以使用发布形式 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code>，也可以使用 Python 形式 <code class="docutils literal notranslate"><span class="pre">sample_lab</span></code>：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/new-device-package&quot;</span>
-<span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_NAME</span><span class="o">=</span><span class="s2">&quot;sample-lab&quot;</span>
+<h3>步骤一：设置名称与路径<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<p>打开终端，把下面两项替换为自己的值。目标目录必须尚不存在：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">"/absolute/path/to/new-device-package"</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_NAME</span><span class="o">=</span><span class="s2">"sample_lab"</span>
 </pre></div>
 </div>
-<p>执行初始化：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--output<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--name<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">&quot;</span>
+<p>检查目标是否安全：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="k">if</span><span class="w"> </span><span class="o">[</span><span class="w"> </span>-e<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="o">]</span><span class="p">;</span><span class="w"> </span><span class="k">then</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"目标已存在，请换一个新目录"</span>
+<span class="k">else</span>
+<span class="w">  </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"目标目录可用，可以继续"</span>
+<span class="k">fi</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">--name</span></code> 可以省略。省略时，命令会把输出目录名转换为包身份，例如目录 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code> 会得到发布名称 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code> 和 Python 包名 <code class="docutils literal notranslate"><span class="pre">sample_lab</span></code>。如果目标目录已存在，命令返回 <code class="docutils literal notranslate"><span class="pre">workspace_exists</span></code>，已有内容保持不变。</p>
-<p>普通输出会直接显示工作区路径、两种包名、首先要填写的需求卡和下一组检查命令；自动化脚本或 Agent 使用 <code class="docutils literal notranslate"><span class="pre">--json</span></code> 可取得相同信息和 <code class="docutils literal notranslate"><span class="pre">nextCommands</span></code> 数组。</p>
+<p>看到“目标已存在”时立即停止，选择其他目录。没有输出表示可以继续。</p>
 </section>
 <section id="id4">
-<h3>步骤二：检查生成的目录骨架<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h3>
-<p>命令成功后会一次性生成：</p>
+<h3>步骤二：创建目录骨架<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mkdir<span class="w"> </span>-p<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/devices"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/resources"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/experiment_operations"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/workflows"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/deployment/graphs"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/tests"</span>
+
+touch<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/__init__.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/devices/__init__.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/resources/__init__.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/experiment_operations/__init__.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/</span><span class="nv">$DEVICE_PACKAGE_NAME</span><span class="s2">/workflows/__init__.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/pyproject.toml"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/package.yaml"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/deployment/local_config.py"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/deployment/graphs/dry-run.json"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/README.md"</span>
+</pre></div>
+</div>
+<p>生成结果应为：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>new-device-package/
-├── .gitignore                         # 排除运行状态、构建和 Python 缓存
-├── DEVICE_PACKAGE_REQUIREMENTS.md     # 先填写设备、物料、协议和验收事实
 ├── package.yaml
 ├── pyproject.toml
 ├── sample_lab/
 │   ├── __init__.py
 │   ├── devices/
-│   │   ├── __init__.py
-│   │   └── demo_device.py              # 示例设备和 echo 动作
 │   ├── resources/
 │   ├── experiment_operations/
 │   └── workflows/
-│       ├── __init__.py
-│       └── demo_workflow.py            # 调用示例设备动作
 ├── deployment/
 │   ├── local_config.py
 │   └── graphs/
 │       └── dry-run.json
 ├── tests/
-│   └── test_workspace_contract.py     # 立即可运行的包身份与启动文件检查
 └── README.md
 </pre></div>
 </div>
 <p>Python 包必须直接位于工作区根目录，并包含 <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>。不要把它放到额外的 <code class="docutils literal notranslate"><span class="pre">src/</span></code> 目录中。</p>
-<p><code class="docutils literal notranslate"><span class="pre">demo_device.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">echo</span></code> 动作只回显输入文本，不连接或控制任何硬件；<code class="docutils literal notranslate"><span class="pre">demo_workflow.py</span></code> 展示设备类型导入、固定设备实例选择、节点 UUID、动作调用和结果返回。它们是可编译的教学示例，不代表真实设备能力。先运行 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pytest</span> <span class="pre">-q</span></code> 和 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">package</span> <span class="pre">inspect</span> <span class="pre">--path</span> <span class="pre">.</span> <span class="pre">--out</span> <span class="pre">dist/inspect</span></code>，再根据 <code class="docutils literal notranslate"><span class="pre">DEVICE_PACKAGE_REQUIREMENTS.md</span></code> 中确认的设备资料、动作单位、物料位置和安全联锁替换示例。</p>
 </section>
 <section id="id5">
-<h3>步骤三：填写最小包身份<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
-<p>命令会按照<a class="reference internal" href="workspace.html#id3"><span class="std std-ref">工作区的“统一包身份”</span></a>填写 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>。发布名称、Python 包名和清单包名指向同一个设备包；初始版本为 <code class="docutils literal notranslate"><span class="pre">0.1.0</span></code>。</p>
-<p>生成的 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 为：</p>
+<h3>步骤三：填写最小包身份<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<p>目录创建完成后，按照<a class="reference internal" href="workspace.html#id3"><span class="std std-ref">工作区的“统一包身份”</span></a>填写 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>。发布名称、Python 包名和清单包名必须指向同一个设备包。</p>
+<p>在 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 中先写入：</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">package</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sample_lab</span>
 
-<span class="nt">workflows</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">workflow_uuid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">f0e636c3-021e-5833-a9d5-da041f66fd8a</span>
-<span class="w">    </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">sample_lab/workflows/demo_workflow.py</span>
+<span class="nt">workflows</span><span class="p">:</span><span class="w"> </span><span class="p p-Indicator">[]</span>
 </pre></div>
 </div>
-<p>其中 <code class="docutils literal notranslate"><span class="pre">sample_lab</span></code> 会替换为步骤一确定的 Python 包名，工作流 UUID 会根据包名稳定派生，并与源码中的 <code class="docutils literal notranslate"><span class="pre">&#64;workflow</span></code> 完全一致。删除教学工作流时，应同时删除这条清单记录；清单没有工作流时写 <code class="docutils literal notranslate"><span class="pre">workflows:</span> <span class="pre">[]</span></code>，不能写 <code class="docutils literal notranslate"><span class="pre">null</span></code> 或不存在的源文件。</p>
+<p>将 <code class="docutils literal notranslate"><span class="pre">sample_lab</span></code> 替换为步骤一确定的 Python 包名。尚未创建工作流时必须使用空列表 <code class="docutils literal notranslate"><span class="pre">[]</span></code>，不能写 <code class="docutils literal notranslate"><span class="pre">null</span></code> 或虚构源文件。</p>
 </section>
 <section id="id6">
-<h3>步骤四：准备安全的初始启动图<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
-<p>命令创建的 <code class="docutils literal notranslate"><span class="pre">deployment/graphs/dry-run.json</span></code> 只装载无硬件副作用的示例设备，不包含生产设备地址、账号或密钥。以 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code> 为例，其核心内容为：</p>
+<h3>步骤四：准备安全的初始启动图<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<p><code class="docutils literal notranslate"><span class="pre">deployment/graphs/dry-run.json</span></code> 只用于最初的结构检查，不填写生产设备地址、账号或密钥。至少先写入一个合法的空结构：</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
-<span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;demo_device_01&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;uuid&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;579acffc-36dd-55bb-b3bf-90a1800b114e&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;示例设备&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.sample_lab.demo_device&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;device&quot;</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{},</span>
-<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
-<span class="w">    </span><span class="p">}</span>
-<span class="w">  </span><span class="p">],</span>
-<span class="w">  </span><span class="nt">&quot;links&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
+<span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">"links"</span><span class="p">:</span><span class="w"> </span><span class="p">[]</span>
 <span class="p">}</span>
 </pre></div>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">demo_workflow.py</span></code> 中的 <code class="docutils literal notranslate"><span class="pre">device(&quot;demo_device_01&quot;)</span></code> 必须与这里的 <code class="docutils literal notranslate"><span class="pre">id</span></code> 一致。接入设备和物料后，再按照<a class="reference internal" href="startup-files.html"><span class="std std-doc">启动文件</span></a>增加实际实例；模拟配置与生产配置必须使用不同文件，不能把真实连接参数补进这个教学图后直接上线。</p>
+<p>接入设备和物料后，再按照<a class="reference internal" href="startup-files.html"><span class="std std-doc">启动文件</span></a>增加实际实例。模拟配置与生产配置必须使用不同文件。</p>
 </section>
 <section id="id7">
-<h3>步骤五：记录交付信息<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
+<h3>步骤五：记录交付信息<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
 <p>在 <code class="docutils literal notranslate"><span class="pre">README.md</span></code> 中记录：</p>
 <ul class="simple">
 <li><p>设备包名称、用途和负责人；</p></li>
@@ -500,48 +502,21 @@
 </section>
 </section>
 <section id="id8">
-<h2>命令参数与失败行为<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
-<p>查看当前安装版本的完整参数：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--help
+<h2>规划中的命令行为<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<p>后续版本提供该能力时，预期通过下面的形式指定生成目录：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--output<span class="w"> </span>/absolute/path/to/new-device-package
 </pre></div>
 </div>
-<div class="table-wrapper colwidths-auto docutils container">
-<table class="docutils align-default">
-<thead>
-<tr class="row-odd"><th class="head"><p>参数</p></th>
-<th class="head"><p>是否必填</p></th>
-<th class="head"><p>作用</p></th>
-</tr>
-</thead>
-<tbody>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--output</span> <span class="pre">PATH</span></code></p></td>
-<td><p>是</p></td>
-<td><p>创建新的设备包工作区；目标必须不存在</p></td>
-</tr>
-<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">--name</span> <span class="pre">NAME</span></code></p></td>
-<td><p>否</p></td>
-<td><p>指定包名；接受 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code> 或 <code class="docutils literal notranslate"><span class="pre">sample_lab</span></code>，省略时从输出目录名派生</p></td>
-</tr>
-<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">--json</span></code></p></td>
-<td><p>否</p></td>
-<td><p>使用稳定 JSON 结果，便于脚本和 Agent 读取</p></td>
-</tr>
-</tbody>
-</table>
-</div>
-<p>命令在写文件前完成路径和名称校验。目标已经存在时返回 <code class="docutils literal notranslate"><span class="pre">workspace_exists</span></code>；包名不符合规范时返回 <code class="docutils literal notranslate"><span class="pre">invalid_package_name</span></code>；写入中途失败时会清理本次新建的目标，不留下半个工作区。</p>
+<p><code class="docutils literal notranslate"><span class="pre">--output</span></code> 应创建新的设备包目录并生成与本页相同的骨架，不应覆盖已有目录。正式使用前必须先通过 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span> <span class="pre">--help</span></code> 确认当前安装版本已经提供该命令；若帮助信息中没有 <code class="docutils literal notranslate"><span class="pre">init</span></code>，继续使用上面的手工步骤。</p>
 </section>
 <section id="id9">
-<h2>完成标准<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
+<h2>完成标准<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
 <ul class="simple">
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span></code> 执行成功，目标目录为新建的专用目录；</p></li>
+<li><p>[ ] 目标目录为新建的专用目录，没有覆盖已有设备包；</p></li>
 <li><p>[ ] Python 包直接位于工作区根目录，并包含 <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>；</p></li>
 <li><p>[ ] <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、<code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 与 Python 包名一致；</p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 已登记 <code class="docutils literal notranslate"><span class="pre">demo_workflow.py</span></code>，工作流 UUID 与源码一致；</p></li>
-<li><p>[ ] 已填写 <code class="docutils literal notranslate"><span class="pre">DEVICE_PACKAGE_REQUIREMENTS.md</span></code> 中的设备、物料、协议和安全事实；</p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pytest</span> <span class="pre">-q</span></code> 已验证包身份、示例目录、启动图和示例驱动动作；</p></li>
-<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">package</span> <span class="pre">inspect</span></code> 能发现一个示例设备定义和一个示例工作流定义；</p></li>
-<li><p>[ ] 初始启动图只含示例设备，不包含生产地址、账号或密钥；</p></li>
+<li><p>[ ] <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 的空工作流清单写为 <code class="docutils literal notranslate"><span class="pre">workflows:</span> <span class="pre">[]</span></code>；</p></li>
+<li><p>[ ] 初始启动图不包含生产地址、账号或密钥；</p></li>
 <li><p>[ ] README 已记录负责人、用途、版本和安全边界；</p></li>
 <li><p>[ ] 可以继续执行<a class="reference internal" href="workspace.html#id6"><span class="std std-ref">工作区的四道验证门</span></a>。</p></li>
 </ul>
@@ -606,15 +581,15 @@
             <ul>
 <li><a class="reference internal" href="#">初始化工作区（unilab workspace init）</a><ul>
 <li><a class="reference internal" href="#id1">这一步要得到什么</a></li>
-<li><a class="reference internal" href="#id2">使用命令初始化</a><ul>
+<li><a class="reference internal" href="#id2">当前操作步骤</a><ul>
 <li><a class="reference internal" href="#id3">步骤一：设置名称与路径</a></li>
-<li><a class="reference internal" href="#id4">步骤二：检查生成的目录骨架</a></li>
+<li><a class="reference internal" href="#id4">步骤二：创建目录骨架</a></li>
 <li><a class="reference internal" href="#id5">步骤三：填写最小包身份</a></li>
 <li><a class="reference internal" href="#id6">步骤四：准备安全的初始启动图</a></li>
 <li><a class="reference internal" href="#id7">步骤五：记录交付信息</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id8">命令参数与失败行为</a></li>
+<li><a class="reference internal" href="#id8">规划中的命令行为</a></li>
 <li><a class="reference internal" href="#id9">完成标准</a></li>
 </ul>
 </li>
@@ -628,10 +603,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=fd6eb6e6"></script>
-    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=540d3cec"></script>
+    <script src="_static/translations.js?v=beaddf03"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

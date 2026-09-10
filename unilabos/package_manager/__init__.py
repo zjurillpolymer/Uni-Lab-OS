@@ -157,11 +157,6 @@ if TYPE_CHECKING:
     from .workspace_runtime import (
         prepare_workspace_startup as prepare_workspace_startup,
     )
-    from .workspace_runtime import (
-        InitializedWorkspace as InitializedWorkspace,
-    )
-    from .workspace_runtime import WorkspaceInitError as WorkspaceInitError
-    from .workspace_runtime import initialize_workspace as initialize_workspace
 
 # ``_EXPORT_GROUPS`` 按所有权 Module 集中维护公开名字，防止门面出现重复映射。
 _EXPORT_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
@@ -230,12 +225,10 @@ _EXPORT_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
         (
             "AuthoringWorkerError",
             "AuthoringWorkerResult",
-            "InitializedWorkspace",
             "PreparedWorkspaceProductGeneration",
             "StableWorkspaceFileMonitor",
             "StableWorkspaceGenerationMonitor",
             "WorkspaceGenerationChangedError",
-            "WorkspaceInitError",
             "WorkspaceGenerationPublisher",
             "WorkspaceInputGeneration",
             "WorkspacePackageRuntime",
@@ -251,7 +244,6 @@ _EXPORT_GROUPS: tuple[tuple[str, tuple[str, ...]], ...] = (
             "compose_workspace_product_lifecycle",
             "get_workspace_product_lifecycle",
             "install_workspace_product_lifecycle",
-            "initialize_workspace",
             "prepare_stable_workspace_product_generation",
             "prepare_stable_workspace_product_generation_in_worker",
             "prepare_workspace_registry_runtime",

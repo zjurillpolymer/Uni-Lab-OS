@@ -140,12 +140,14 @@ workflows:
 
 ```python
 class BasicConfig:
+    ak = ""
+    sk = ""
     disable_browser = True
     no_update_feedback = True
     log_level = "INFO"
 ```
 
-本地控制面不需要 `ak`、`sk`，不要在设备包中声明或保存它们。远程客户端如需凭证，应通过登录会话、环境变量或部署密钥注入。
+本地开发时 `ak`、`sk` 保持为空。真实凭证使用环境变量或部署密钥注入，不得提交到设备包。
 
 ## 步骤五：通过四道验证门
 

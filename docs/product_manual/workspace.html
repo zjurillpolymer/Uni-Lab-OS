@@ -524,12 +524,14 @@ package.yaml ────────────────► 本次允许加
 <h2>步骤四：准备本地配置<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code> 中保存非敏感的本地运行设置：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BasicConfig</span><span class="p">:</span>
+    <span class="n">ak</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">sk</span> <span class="o">=</span> <span class="s2">""</span>
     <span class="n">disable_browser</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">no_update_feedback</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">log_level</span> <span class="o">=</span> <span class="s2">"INFO"</span>
 </pre></div>
 </div>
-<p>本地控制面不需要 <code class="docutils literal notranslate"><span class="pre">ak</span></code>、<code class="docutils literal notranslate"><span class="pre">sk</span></code>，不要在设备包中声明或保存它们。远程客户端如需凭证，应通过登录会话、环境变量或部署密钥注入。</p>
+<p>本地开发时 <code class="docutils literal notranslate"><span class="pre">ak</span></code>、<code class="docutils literal notranslate"><span class="pre">sk</span></code> 保持为空。真实凭证使用环境变量或部署密钥注入，不得提交到设备包。</p>
 </section>
 <section id="id6">
 <h2>步骤五：通过四道验证门<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
