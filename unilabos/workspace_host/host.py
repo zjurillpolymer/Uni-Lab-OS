@@ -37,6 +37,7 @@ from .launch import (
     resolve_backend_launch,
     resolve_edge_launch,
     resolve_plc_launch,
+    resolve_workspace_graph,
 )
 from .model import (
     COMPONENT_NAMES,
@@ -375,9 +376,10 @@ class WorkspaceHost:
             if isinstance(metadata, dict)
             else None
         )
-        graph_path = graph_path or _optional_text(configuration.get("graphPath"))
-        graph_path = graph_path or "deployment/graphs/szlab-local-debug.json"
-        return MaterialLayoutWorkspace(self.paths, graph_path)
+        selected_graph = resolve_workspace_graph(
+            self.paths, graph_path=graph_path, configuration=configuration
+        )
+        return MaterialLayoutWorkspace(self.paths, selected_graph)
 
     def _validate_material_templates(self) -> dict[str, object]:
         """Compile the full workspace catalog in an isolated, disposable process."""

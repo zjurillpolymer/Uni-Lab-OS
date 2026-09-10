@@ -73,9 +73,7 @@ def resolve_backend_launch(
     """
 
     config = load_environment_configuration(paths)
-    selected_graph = graph_path or _optional_text(config.get("graphPath"))
-    selected_graph = selected_graph or "deployment/graphs/szlab-local-debug.json"
-    graph = _workspace_file(paths, selected_graph, code="graph_not_found")
+    graph = resolve_workspace_graph(paths, graph_path=graph_path, configuration=config)
     local_config = _workspace_file(
         paths,
         "deployment/local_config.py",
@@ -520,6 +518,48 @@ def _with_conda_ros_environment(
         preserved.append(part)
     environment["PATH"] = os.pathsep.join(preserved)
     return environment
+
+
+def resolve_workspace_graph(
+    paths: WorkspacePaths,
+    *,
+    graph_path: str | None = None,
+    configuration: dict[str, object] | None = None,
+) -> Path:
+    """按显式参数、本地环境、设备包声明的优先级解析图，不猜测设备包文件名。"""
+
+    config = (
+        load_environment_configuration(paths) if configuration is None else configuration
+    )
+    selected = graph_path or _optional_text(config.get("graphPath"))
+    if not selected:
+        from unilabos.package_manager.package_catalog.project_metadata import (
+            parse_project_metadata,
+        )
+
+        project_path = paths.workspace / "pyproject.toml"
+        try:
+            raw_project = project_path.read_bytes()
+        except FileNotFoundError:
+            raw_project = None
+        except OSError as error:
+            raise WorkspaceHostError(
+                "workspace_project_invalid", f"无法读取设备包声明：{project_path}"
+            ) from error
+        if raw_project is not None:
+            try:
+                selected = parse_project_metadata(raw_project).startup_graph
+            except (ValueError, TypeError) as error:
+                raise WorkspaceHostError(
+                    "workspace_project_invalid", f"设备包声明无效：{error}"
+                ) from error
+    if not selected:
+        raise WorkspaceHostError(
+            "graph_not_configured",
+            "未指定启动图，请使用 --graph 或在 pyproject.toml 的 "
+            "[tool.unilabos.startup] 中配置 graph",
+        )
+    return _workspace_file(paths, selected, code="graph_not_found")
 
 
 def _workspace_file(paths: WorkspacePaths, value: str, *, code: str) -> Path:
