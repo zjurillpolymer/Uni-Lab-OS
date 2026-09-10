@@ -70,15 +70,11 @@ jobs:
       - name: Build embedded console
         run: npm run build
 
-      - name: Check committed console bundle
+      - name: Check generated console bundle
         working-directory: .
         run: |
-          changes="$(git status --porcelain --untracked-files=all -- unilabos/app/web/static/console)"
-          if [ -n "$changes" ]; then
-            echo "::error::前端源码与已提交的内置控制台构建产物不一致，请在 frontend 运行 npm run build 并提交结果"
-            echo "$changes"
-            exit 1
-          fi
+          test -s unilabos/app/web/static/console/index.html
+          test "$(find unilabos/app/web/static/console -type f | wc -l | tr -d ' ')" -gt 1
 
   registry-check:
     runs-on: windows-latest

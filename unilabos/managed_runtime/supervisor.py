@@ -428,6 +428,11 @@ class ManagedRuntimeSupervisor:
         environment["CONDA_PREFIX"] = str(self._runtime_prefix)
         environment["CONDA_DEFAULT_ENV"] = self._runtime_prefix.name
         environment["CONDA_SHLVL"] = "1"
+        # conda-forge's Windows Python build uses this opt-in hook to restore
+        # the environment's DLL search directory for native ROS extensions.
+        # A detached Supervisor cannot rely on an activated shell, so export
+        # it explicitly before spawning the Runtime Worker.
+        environment["CONDA_DLL_SEARCH_MODIFICATION_ENABLE"] = "1"
         environment["PYTHONUNBUFFERED"] = "1"
         return environment
 

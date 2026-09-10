@@ -496,6 +496,10 @@ def _with_conda_ros_environment(
     environment.setdefault("ROS_PYTHON_VERSION", str(sys.version_info.major))
     environment.setdefault("ROS_VERSION", "2")
     environment["PYTHONHOME"] = ""
+    # Workspace Host is commonly launched from Electron rather than an
+    # activated shell; enable conda-forge Python's Windows DLL search hook so
+    # rclpy and rosidl native extensions resolve their Library/bin DLLs.
+    environment["CONDA_DLL_SEARCH_MODIFICATION_ENABLE"] = "1"
 
     existing_path = environment.get("PATH", "")
     path_entries = [

@@ -4,6 +4,7 @@ UniLabOS 应用工具函数
 提供清理、重启等工具函数
 """
 
+import ctypes
 import glob
 import os
 import shutil
@@ -12,6 +13,7 @@ import sys
 
 _PATCH_MARKER = "# UniLabOS DLL Patch"
 _PATCH_END_MARKER = "# End UniLabOS DLL Patch"
+_UNILAB_DLL_HANDLE = None
 
 # 75 = EX_TEMPFAIL: 临时失败、重试即可，避免与业务退出码冲突
 _RESTART_EXIT_CODE = 75
@@ -139,6 +141,30 @@ def patch_rclpy_dll_windows():
     if sys.platform != "win32" or not os.environ.get("CONDA_PREFIX"):
         return
 
+    global _UNILAB_DLL_HANDLE
+
+    # Configure the native DLL search path before importing rclpy.  Detached
+    # Runtime workers inherit CONDA_PREFIX and PATH, but Windows Python 3.8+
+    # and newer does not consistently use PATH for extension dependencies.
+    # Preloading the rclpy module also avoids the first-launch patch/restart
+    # cycle when the prefix is started directly by Workbench.
+    cp = os.environ["CONDA_PREFIX"]
+    lib_bin = os.path.join(cp, "Library", "bin")
+    site_packages = os.path.join(cp, "Lib", "site-packages")
+    if os.path.isdir(lib_bin):
+        try:
+            _UNILAB_DLL_HANDLE = os.add_dll_directory(lib_bin)
+        except (AttributeError, OSError):
+            _UNILAB_DLL_HANDLE = None
+        rclpy_pyd_matches = glob.glob(
+            os.path.join(site_packages, "rclpy", "_rclpy_pybind11*.pyd")
+        )
+        if rclpy_pyd_matches:
+            try:
+                ctypes.CDLL(rclpy_pyd_matches[0])
+            except OSError:
+                pass
+
     try:
         import rclpy  # noqa: F401
 
@@ -147,9 +173,6 @@ def patch_rclpy_dll_windows():
         if not str(e).startswith("DLL load failed"):
             return
 
-    cp = os.environ["CONDA_PREFIX"]
-    lib_bin = os.path.join(cp, "Library", "bin")
-    site_packages = os.path.join(cp, "Lib", "site-packages")
     if not os.path.isdir(lib_bin):
         return
 
