@@ -5,6 +5,7 @@ on:
     paths:
       - '.conda/constructor/**'
       - '.github/workflows/constructor-build.yml'
+      - 'frontend/**'
       - 'tests/integration/test_managed_runtime_supervisor_windows.py'
       - 'unilabos/__init__.py'
       - 'unilabos/managed_runtime/**'
@@ -30,6 +31,14 @@ on:
         description: '留空时读取 unilabos/__init__.py'
         required: false
         type: string
+      publish_release:
+        description: '只发布到 GitHub Release，不上传 Actions artifact（适用于 artifact 配额不足）'
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: write
 
 jobs:
   validate:
@@ -95,7 +104,10 @@ jobs:
             platform: linux-64
           - os: macos-15-intel
             platform: osx-64
-          - os: macos-latest
+          # macOS 14 keeps the ROS Humble C++14 toolchain compatible with
+          # rosidl_runtime_cpp; macOS latest currently ships libc++ without
+          # std::wstring_convert and cannot build the messages package.
+          - os: macos-14
             platform: osx-arm64
           - os: windows-latest
             platform: win-64
@@ -134,6 +146,36 @@ jobs:
         with:
           ref: ${{ github.event.workflow_run.head_sha || github.ref }}
 
+      - name: Setup Node.js for embedded console
+        if: steps.select.outputs.enabled == 'true'
+        uses: actions/setup-node@v6
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Build embedded React console
+        if: steps.select.outputs.enabled == 'true'
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run build
+
+      - name: Verify embedded console output
+        if: steps.select.outputs.enabled == 'true'
+        run: |
+          test -s unilabos/app/web/static/console/index.html
+          test "$(find unilabos/app/web/static/console -type f | wc -l | tr -d ' ')" -gt 1
+
+      - name: Configure UTF-8 locale for Windows Constructor
+        if: steps.select.outputs.enabled == 'true' && matrix.platform == 'win-64'
+        shell: pwsh
+        run: |
+          # Constructor reads construct.yaml with Python's default encoding.
+          # Force UTF-8 so Chinese metadata is decoded consistently on Windows.
+          "PYTHONUTF8=1" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+          "PYTHONIOENCODING=utf-8" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
       - uses: conda-incubator/setup-miniconda@v4
         if: steps.select.outputs.enabled == 'true'
         with:
@@ -150,10 +192,10 @@ jobs:
           TARGET_PLATFORM: ${{ matrix.platform }}
         run: |
           if [[ "$TARGET_PLATFORM" == "win-64" ]]; then
-            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 -y
+            cmd //D //S //C '%CONDA%\condabin\mamba.bat install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 conda-standalone=26.3.2.post1 rattler-build -y'
             conda_exe="$(python -c 'import os; from pathlib import Path; print(Path(os.environ["CONDA_PREFIX"], "standalone_conda", "conda.exe"))')"
           else
-            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 micromamba=2.8.1 -y
+            mamba install -n constructor-build --override-channels -c conda-forge constructor=3.16.1 micromamba=2.8.1 rattler-build -y
             conda_exe="$(command -v micromamba)"
           fi
           python -c 'from pathlib import Path; import sys; assert Path(sys.argv[1]).is_file()' "$conda_exe"
@@ -168,6 +210,42 @@ jobs:
           source_version="$(python -c 'import runpy; print(runpy.run_path("unilabos/__init__.py")["__version__"])')"
           echo "UNILABOS_INSTALLER_VERSION=${REQUESTED_VERSION:-$source_version}" >> "$GITHUB_ENV"
           echo "UNILABOS_INSTALLER_PACKAGE=${REQUESTED_PACKAGE:-unilabos}" >> "$GITHUB_ENV"
+
+      - name: Build local Runtime package channel
+        if: steps.select.outputs.enabled == 'true'
+        env:
+          TARGET_PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          mkdir -p output
+          rb=(conda run -n constructor-build rattler-build build)
+          "${rb[@]}" -r recipes/msgs/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c robostack -c robostack-staging -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/environment/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c uni-lab -c robostack-staging -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/rfc8785/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/opcua/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/msgcenterpy/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/vendor/pylabrobot/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c conda-forge --channel ./output --output-dir ./output
+          "${rb[@]}" -r .conda/base/recipe.yaml --target-platform "$TARGET_PLATFORM" \
+            -c uni-lab -c robostack-staging -c conda-forge --channel ./output --output-dir ./output
+
+          runtime_package_count="$(find output -type f -name "unilabos-$UNILABOS_INSTALLER_VERSION-*.conda" | wc -l | tr -d ' ')"
+          test "$runtime_package_count" = 1
+          runtime_package="$(find output -type f -name "unilabos-$UNILABOS_INSTALLER_VERSION-*.conda" -print -quit)"
+          runtime_package_name="${runtime_package##*/}"
+          runtime_package_name="${runtime_package_name%.conda}"
+          package_prefix="unilabos-$UNILABOS_INSTALLER_VERSION-"
+          package_build="${runtime_package_name#"$package_prefix"}"
+          channel_uri="$(python -c 'from pathlib import Path; print(Path("output").resolve().as_uri())')"
+          echo "UNILABOS_INSTALLER_CHANNEL=$channel_uri" >> "$GITHUB_ENV"
+          echo "UNILABOS_INSTALLER_BUILD=$package_build" >> "$GITHUB_ENV"
+          echo "Using local Runtime package: $runtime_package_name"
+          echo "Using local Runtime channel: $channel_uri"
 
       - name: Validate Windows managed process-tree lifecycle
         if: steps.select.outputs.enabled == 'true' && matrix.platform == 'win-64'
@@ -216,11 +294,34 @@ jobs:
           )
           $process = Start-Process -FilePath $installer.FullName -ArgumentList $arguments -Wait -PassThru
           if ($process.ExitCode -ne 0) { throw "Installer exited with $($process.ExitCode)" }
+          # A constructor-installed prefix is not activated by the installer
+          # itself.  Export the same activation contract that Workbench uses
+          # so Python's Windows DLL search path includes RoboStack libraries.
+          $env:CONDA_PREFIX = $prefix
+          $env:CONDA_DEFAULT_ENV = Split-Path $prefix -Leaf
+          $env:CONDA_SHLVL = "1"
+          $env:AMENT_PREFIX_PATH = Join-Path $prefix "Library"
+          $env:AMENT_PYTHON_EXECUTABLE = Join-Path $prefix "python.exe"
+          $env:ROS_DISTRO = "humble"
+          $env:ROS_VERSION = "2"
+          $env:ROS_PYTHON_VERSION = "3"
+          $env:ROS_OS_OVERRIDE = "conda:win64"
+          $env:CONDA_DLL_SEARCH_MODIFICATION_ENABLE = "1"
+          $env:PYTHONHOME = ""
           $env:PATH = "$prefix;$prefix\Scripts;$prefix\Library\bin;$env:PATH"
           & "$prefix\python.exe" -c "import unilabos; print(unilabos.__version__)"
           if ($LASTEXITCODE -ne 0) { throw "unilabos import failed" }
-          & "$prefix\python.exe" -c "import rclpy; print('rclpy: OK')"
-          if ($LASTEXITCODE -ne 0) { throw "rclpy import failed" }
+          # Import through UniLabOS's startup path so the packaged Windows DLL
+          # bootstrap is exercised before importing the ROS extension.
+          & "$prefix\python.exe" -c "from unilabos.app import utils; import rclpy; print('rclpy: OK')"
+          $bootstrapExitCode = $LASTEXITCODE
+          if ($bootstrapExitCode -eq 75) {
+            # The source-level fallback may patch the installed ROS loaders
+            # and request one clean process restart.
+            & "$prefix\python.exe" -c "from unilabos.app import utils; import rclpy; print('rclpy: OK')"
+            $bootstrapExitCode = $LASTEXITCODE
+          }
+          if ($bootstrapExitCode -ne 0) { throw "rclpy import failed" }
           & "$prefix\python.exe" -c "from opcua import Client, ua; print('opcua: OK')"
           if ($LASTEXITCODE -ne 0) { throw "opcua import failed" }
           & "$prefix\Scripts\unilab.exe" --help
@@ -228,8 +329,26 @@ jobs:
           & "$prefix\Scripts\unilab-supervisor.exe" --help
           if ($LASTEXITCODE -ne 0) { throw "unilab-supervisor --help failed" }
 
+      - name: Publish installer to GitHub Release
+        if: steps.select.outputs.enabled == 'true' && github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true'
+        env:
+          GH_TOKEN: ${{ github.token }}
+          PLATFORM: ${{ matrix.platform }}
+        run: |
+          set -euo pipefail
+          installer="$(find dist/constructor -maxdepth 1 -type f \( -name '*.exe' -o -name '*.sh' \) -print -quit)"
+          test -n "$installer"
+          release_tag="runtime-v${UNILABOS_INSTALLER_VERSION}-${PLATFORM}-run.${{ github.run_number }}"
+          release_title="Uni-Lab-OS Runtime ${UNILABOS_INSTALLER_VERSION} (${PLATFORM})"
+          gh release create "$release_tag" "$installer" \
+            --repo "$GITHUB_REPOSITORY" \
+            --title "$release_title" \
+            --notes "Uni-Lab-OS Runtime ${UNILABOS_INSTALLER_VERSION}; source ref ${{ github.sha }}."
+
       - name: Upload installer and manifests
-        if: steps.select.outputs.enabled == 'true'
+        if: |
+          steps.select.outputs.enabled == 'true' &&
+          !(github.event_name == 'workflow_dispatch' && github.event.inputs.publish_release == 'true')
         uses: actions/upload-artifact@v6
         with:
           name: Uni-Lab-OS-constructor-${{ matrix.platform }}
