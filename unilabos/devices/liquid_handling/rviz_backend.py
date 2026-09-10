@@ -1,5 +1,6 @@
 
 import json
+import sys
 import threading
 from typing import List, Optional, Union
 
@@ -60,7 +61,9 @@ class UniLiquidHandlerRvizBackend(LiquidHandlerBackend):
     self.joint_config = kwargs.get("joint_config", None)
     self.lh_device_id = kwargs.get("lh_device_id", "lh_joint_publisher")
     if not rclpy.ok():
-        rclpy.init()
+        from unilabos.ros.logging import prepare_ros_logging
+
+        rclpy.init(args=prepare_ros_logging(sys.argv))
     self.joint_state_publisher = None
     self.executor = None
     self.executor_thread = None

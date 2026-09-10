@@ -176,13 +176,22 @@ class WorkflowInterventionStore:
                     resume_control_status, selected_option_id,
                     selected_option, decision_idempotency_key,
                     delivery_status, opened_at, decided_at, delivered_at
-                ) VALUES (?, ?, ?, NULL, NULL, '{}', ?, ?, ?, ?, 'open', ?, ?,
+                ) VALUES (?, ?, ?, NULL, NULL, ?, ?, ?, ?, ?, 'open', ?, ?,
                           NULL, '{}', NULL, 'none', ?, NULL, NULL)
                 """,
                 (
                     intervention_uuid,
                     now,
                     now,
+                    _json({
+                        "decision_timeout_seconds": report.get("decision_timeout_seconds", 300),
+                        "default_on_decision_timeout": report.get("default_on_decision_timeout", "abort"),
+                        "job_id": job_uuid,
+                        "device_id": str(report.get("device_id") or ""),
+                        "action_name": str(report.get("action_name") or ""),
+                        "exception_type": str(report.get("exception_type") or ""),
+                        "error_message": str(report.get("error_message") or ""),
+                    }),
                     task_uuid,
                     job_uuid,
                     decision_id,
@@ -320,7 +329,10 @@ class WorkflowInterventionStore:
                     normalized_option,
                     _json(selected),
                     normalized_key,
-                    _json({"delivery_payload": delivery_payload}),
+                    _json({
+                        **dict(_load(row["meta_data"])),
+                        "delivery_payload": delivery_payload,
+                    }),
                     now,
                     now,
                     intervention_uuid,

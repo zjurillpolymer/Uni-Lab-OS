@@ -55,8 +55,16 @@ class BasicConfig:
     extra_resource = False  # 是否加载lab_开头的额外资源
     # 'TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'
     log_level: Literal["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = (
-        "DEBUG"
+        "INFO"
     )
+    # 默认仅保留运行信息；显式启用详细日志时文件级别降至 TRACE。
+    file_log_level: Literal["TRACE", "DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"] = "INFO"
+    log_detailed: bool = False
+    log_max_bytes: int = 50 * 1024 * 1024
+    log_backup_count: int = 9
+    log_retention_days: float = 7
+    log_total_max_bytes: int = 2 * 1024 * 1024 * 1024
+    log_cleanup_interval_seconds: float = 600
 
     @classmethod
     def auth_secret(cls):
@@ -179,6 +187,13 @@ def _update_config_from_module(module):
                         setattr(obj, attr, getattr(getattr(module, name), attr))
 
 
+_LOG_CONFIG_FIELDS = frozenset({
+    "log_level", "file_log_level", "log_detailed", "log_max_bytes",
+    "log_backup_count", "log_retention_days", "log_total_max_bytes",
+    "log_cleanup_interval_seconds",
+})
+
+
 def _update_config_from_env():
     prefix = "UNILABOS_"
     for env_key, env_value in os.environ.items():
@@ -218,7 +233,16 @@ def _update_config_from_env():
 
             current_value = getattr(matched_cls, matched_field)
             attr_type = type(current_value)
-            if attr_type == bool:
+            if matched_cls is BasicConfig and matched_field in {"log_retention_days", "log_cleanup_interval_seconds"}:
+                value = float(env_value)
+            elif matched_cls is BasicConfig and matched_field in {"log_max_bytes", "log_backup_count", "log_total_max_bytes"}:
+                value = int(env_value)
+            elif matched_cls is BasicConfig and matched_field == "log_detailed":
+                normalized = env_value.lower()
+                if normalized not in {"true", "1", "yes", "false", "0", "no"}:
+                    raise ValueError("log_detailed 必须为 true/false、1/0 或 yes/no")
+                value = normalized in {"true", "1", "yes"}
+            elif attr_type == bool:
                 value = env_value.lower() in ("true", "1", "yes")
             elif attr_type == int:
                 value = int(env_value)
@@ -237,7 +261,20 @@ def _update_config_from_env():
                 f"[ENV] 设置 {matched_cls.__name__}.{matched_field} = {display_value}"
             )
         except Exception as e:
+            if env_key.upper() in {
+                f"UNILABOS_BASICCONFIG_{field.upper()}" for field in _LOG_CONFIG_FIELDS
+            }:
+                raise ValueError(f"日志配置环境变量 {env_key} 无效: {e}") from e
             logger.warning(f"[ENV] 解析环境变量 {env_key} 失败: {e}")
+
+
+def _validate_log_config() -> None:
+    """日志配置错误不得静默回退为无限增长或错误的诊断模式。"""
+    from unilabos.utils.log import _logging_settings
+    from unilabos.utils.log_storage import LogPolicy
+
+    policy = LogPolicy.from_config(BasicConfig)
+    _logging_settings(BasicConfig.log_level, BasicConfig.file_log_level, BasicConfig.log_detailed, policy)
 
 
 def load_config(config_path=None):
@@ -260,6 +297,7 @@ def load_config(config_path=None):
             _update_config_from_module(module)
             logger.info(f"[ENV] 配置文件 {config_path} 加载成功")
             _update_config_from_env()
+            _validate_log_config()
         except Exception:
             logger.error(f"[ENV] 加载配置文件 {config_path} 失败")
             traceback.print_exc()

@@ -6,6 +6,15 @@ class BasicConfig:
     sk = ""  # 实验室网页给您提供的sk代码，您可以在配置文件中指定，也可以通过运行unilabos时以 --sk 传入，优先按照传入参数解析
     # 当前进程明确授权的工作流源码（Workflow Source）选择目录；空 tuple 禁止隐式扫描。
     workflow_editable_package_roots = ()
+    # 诊断日志滚动及清理；http_reports 等业务原始报送不受此策略影响。
+    log_level = "INFO"
+    file_log_level = "INFO"
+    log_detailed = False  # 排障时设为 True，文件记录 TRACE
+    log_max_bytes = 50 * 1024 * 1024
+    log_backup_count = 9
+    log_retention_days = 7
+    log_total_max_bytes = 2 * 1024 * 1024 * 1024
+    log_cleanup_interval_seconds = 600
 
 
 # WebSocket配置，一般无需调整

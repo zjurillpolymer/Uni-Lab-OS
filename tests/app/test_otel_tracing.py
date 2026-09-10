@@ -383,8 +383,24 @@ def test_edge_cors_allows_w3c_trace_context_headers():
     allowed = {str(value).lower() for value in cors.kwargs["allow_headers"]}
     exposed = {str(value).lower() for value in cors.kwargs["expose_headers"]}
 
-    assert {"trace_id", "traceparent", "tracestate"} <= allowed
+    assert {"trace_id", "traceparent", "tracestate", "idempotency-key"} <= allowed
     assert {"trace_id", "span_id"} <= exposed
+
+
+def test_main_web_cors_allows_idempotency_key():
+    """跨域提交工作流干预决策时，浏览器预检必须放行幂等键。"""
+    from fastapi.middleware.cors import CORSMiddleware
+
+    from unilabos.app.web import server
+
+    cors = next(
+        middleware
+        for middleware in server.app.user_middleware
+        if middleware.cls is CORSMiddleware
+    )
+    allowed = {str(value).lower() for value in cors.kwargs["allow_headers"]}
+
+    assert "idempotency-key" in allowed
 
 
 def test_context_propagates_across_carrier_and_thread(recorder):
@@ -933,7 +949,7 @@ def test_action_retry_and_skip_emit_decision_events(recorder):
 
     event_names = [name for name, _attributes in action_span.events]
     assert retried.value == {"ok": True}
-    assert skipped.suc_type == "skip"
+    assert skipped.suc_type == "user_bypass_error"
     assert "action.retry" in event_names
     assert "action.retry.succeeded" in event_names
     assert "action.skipped" in event_names

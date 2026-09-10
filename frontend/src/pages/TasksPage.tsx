@@ -29,9 +29,11 @@ import {
   commandWorkflowTask,
   createWorkflowTask,
   decideManualConfirmation,
+  decideWorkflowIntervention,
   forceReleaseWorkflowTaskExecutionLock,
   loadFailedMaterialTransferSettlementContext,
   loadWorkflowGraph,
+  loadWorkflowInterventions,
   loadWorkflowTaskDetail,
   loadWorkflowTaskExecutionLocks,
   loadWorkflowTaskStepState,
@@ -43,6 +45,7 @@ import type {
   MaterialRecord,
   TaskNode,
   WorkflowDefinition,
+  WorkflowIntervention,
   WorkflowTarget,
   WorkflowTask,
   WorkflowTaskExecutionLock,
@@ -364,6 +367,62 @@ function jsonEvidence(value: unknown, emptyLabel: string) {
   } catch {
     return String(value)
   }
+}
+
+function ErrorPolicyDialog({ intervention, connected, onNotify }: {
+  intervention: WorkflowIntervention
+  connected: boolean
+  onNotify: (message: string) => void
+}) {
+  const queryClient = useQueryClient()
+  const [now, setNow] = useState(() => Date.now())
+  const timeout = Number(intervention.metaData.decision_timeout_seconds || 300)
+  const defaultAction = String(intervention.metaData.default_on_decision_timeout || 'abort')
+  const defaultActionLabel = { retry: '重试', skip: '跳过', abort: '终止' }[defaultAction] || '终止'
+  const actionName = String(intervention.metaData.action_name || '')
+  const exceptionType = String(intervention.metaData.exception_type || '')
+  const errorMessage = String(intervention.metaData.error_message || '')
+  const deadline = new Date(intervention.openedAt).getTime() + timeout * 1000
+  const remaining = Math.max(0, Math.ceil((deadline - now) / 1000))
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+  const mutation = useMutation({
+    mutationFn: (optionId: string) => decideWorkflowIntervention(intervention, optionId),
+    onSuccess: () => {
+      onNotify('错误处理决定已发送到设备。')
+      void queryClient.invalidateQueries({ queryKey: ['workflow-interventions'] })
+      void queryClient.invalidateQueries({ queryKey: ['edge-tasks'] })
+    },
+    onError: (error) => onNotify(`提交错误处理决定失败：${error instanceof Error ? error.message : '未知错误'}`),
+  })
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <section className="task-dialog error-policy-dialog" role="dialog" aria-modal="true" aria-labelledby="error-policy-title">
+        <form onSubmit={(event) => event.preventDefault()}>
+          <header>
+            <div>
+              <span>ACTION ERROR</span>
+              <h2 id="error-policy-title">设备动作需要处理</h2>
+              <p>该节点已暂停。请选择下一步操作；剩余 {remaining}s 后将按默认策略{defaultActionLabel}。</p>
+            </div>
+            <span className="error-policy-icon"><ShieldAlert size={20} /></span>
+          </header>
+          <div className="dialog-content error-policy-content">
+            {(actionName || exceptionType || errorMessage) ? <div className="error-policy-summary">
+              <strong>{actionName || '设备动作'}{exceptionType ? ` · ${exceptionType}` : ''}</strong>
+              {errorMessage ? <span>{errorMessage}</span> : null}
+            </div> : null}
+            <p>任务 <code>{intervention.workflowTaskUuid.slice(0, 8)}</code> · 节点作业 <code>{intervention.workflowNodeJobUuid.slice(0, 8)}</code></p>
+            <div className="error-policy-options">
+              {intervention.options.map((option) => <Button key={option.id} tone={option.action === 'abort' ? 'danger' : option.action === 'retry' ? 'primary' : undefined} disabled={!connected || mutation.isPending} onClick={() => mutation.mutate(option.id)}>{option.label}{option.description ? `：${option.description}` : ''}</Button>)}
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  )
 }
 
 function TaskNodeInspector({ task, node, onClose }: { task: WorkflowTask; node: TaskNode; onClose: () => void }) {
@@ -1025,6 +1084,13 @@ export function TasksPage({
   const [selectedId, setSelectedId] = useState(tasks[0]?.uuid || '')
   const [selectedNodeRef, setSelectedNodeRef] = useState<{ taskUuid: string; nodeUuid: string }>()
   const [selectedStepNodeUuid, setSelectedStepNodeUuid] = useState('')
+  const interventionsQuery = useQuery({
+    queryKey: ['workflow-interventions'],
+    queryFn: ({ signal }) => loadWorkflowInterventions(signal),
+    enabled: connected,
+    refetchInterval: 1_000,
+  })
+  const openIntervention = interventionsQuery.data?.[0]
 
   const selectTask = useCallback((taskUuid: string) => {
     setSelectedId(taskUuid)
@@ -1276,6 +1342,8 @@ export function TasksPage({
           </div>
         </Panel>
       </section>
+
+      {openIntervention ? <ErrorPolicyDialog intervention={openIntervention} connected={connected} onNotify={onNotify} /> : null}
 
     </div>
   )

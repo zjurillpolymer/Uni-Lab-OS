@@ -47,6 +47,61 @@ def _drain(q: Queue) -> List[Dict[str, Any]]:
     return out
 
 
+def test_send_failure_retains_current_and_remaining_messages_in_pending_buffer():
+    """短暂断线时，已取出的异常决策消息必须留在进程内缓冲等待补发。"""
+
+    processor = _make_processor()
+    messages = [
+        {"action": "job_error_decision_required", "data": {"decision_id": "d-1"}},
+        {"action": "job_error_decision_required", "data": {"decision_id": "d-2"}},
+    ]
+    for message in messages:
+        processor.send_queue.put_nowait(message)
+
+    class DisconnectingSocket:
+        async def send(self, _message):
+            processor.connected = False
+            raise ConnectionError("temporary disconnect")
+
+    processor.connected = True
+    processor.websocket = DisconnectingSocket()
+
+    asyncio.run(processor._send_handler())
+
+    assert [item["data"]["decision_id"] for item in processor._pending_outbound] == [
+        "d-1",
+    ]
+    assert [item["data"]["decision_id"] for item in _drain(processor.send_queue)] == ["d-2"]
+
+
+def test_cancelling_send_task_keeps_inflight_message_for_reconnect():
+    """取消恰好落在 websocket.send 时，队首消息不能从补发缓冲中消失。"""
+
+    async def run() -> None:
+        processor = _make_processor()
+        processor.send_queue.put_nowait(
+            {"action": "job_error_decision_required", "data": {"decision_id": "d-1"}}
+        )
+        send_started = asyncio.Event()
+
+        class BlockingSocket:
+            async def send(self, _message):
+                send_started.set()
+                await asyncio.Event().wait()
+
+        processor.connected = True
+        processor.websocket = BlockingSocket()
+        send_task = asyncio.create_task(processor._send_handler())
+        await send_started.wait()
+        send_task.cancel()
+        with pytest.raises(asyncio.CancelledError):
+            await send_task
+
+        assert [item["data"]["decision_id"] for item in processor._pending_outbound] == ["d-1"]
+
+    asyncio.run(run())
+
+
 class TestWorkflowStart:
     def test_forwards_to_edge_scheduler(self):
         mp = _make_processor()

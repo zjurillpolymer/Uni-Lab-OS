@@ -307,6 +307,10 @@ def cleanup_for_restart() -> bool:
             rclpy.shutdown()
             print_status("[重启] rclpy 已关闭", "info")
 
+        from unilabos.ros.logging import close_ros_logging
+
+        close_ros_logging()
+
     except ImportError as error:
         print_status(f"[重启] ROS 模块不可用: {error}", "warning")
     except Exception as error:

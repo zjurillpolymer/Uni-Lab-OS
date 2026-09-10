@@ -1855,7 +1855,7 @@ class EdgeScheduler:
                 )
                 if node is not None and node.material_requirements:
                     self._inventory.consume_reservation(job.workflow_id, job.node_id)
-                    if suc_type == "skip":
+                    if suc_type in {"skip", "user_bypass_error"}:
                         # skip 表示设备动作没有正常完成，物料却可能已进入物理
                         # 过程。先按实际使用结算，再隔离，禁止把数量虚假放回库存。
                         self._inventory.quarantine_reservation(

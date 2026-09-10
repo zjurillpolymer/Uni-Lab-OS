@@ -140,11 +140,6 @@ class WorkstationHTTPHandler(BaseHTTPRequestHandler):
             parsed_path = urlparse(self.path)
             endpoint = parsed_path.path
 
-            try:
-                self._save_raw_request(endpoint, {"method": "GET"})
-            except Exception:
-                pass
-
             if endpoint == '/status':
                 response = self._handle_status_check()
             elif endpoint == '/health':
@@ -156,10 +151,13 @@ class WorkstationHTTPHandler(BaseHTTPRequestHandler):
                     data={"supported_endpoints": ["/status", "/health"]}
                 )
 
+            # GET 没有业务报送内容；失败经受限诊断日志记录，原始报送仅由 POST 写入。
+            if not response.success:
+                logger.warning("工作站查询失败: %s - %s", endpoint, response.message)
             self._send_response(response)
 
         except Exception as e:
-            logger.error(f"GET请求处理失败: {e}")
+            logger.error("GET请求处理失败: %s - %s", self.path, e)
             error_response = HttpResponse(
                 success=False,
                 message=f"GET请求处理失败: {str(e)}"

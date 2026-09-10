@@ -3,6 +3,23 @@ class DeviceClassInvalid(Exception):
     pass
 
 
+class TimeoutException(RuntimeError):
+    """由动作运行时生成的统一超时异常。
+
+    ``kind`` 只用于审计和前端展示；两类超时都进入同一套人工决策流程。
+    当前运行时不会强杀已经下发给设备的同步调用，因而超时表示该次动作的
+    编排结果已超出等待窗口，而不是对硬件状态作出额外断言。
+    """
+
+    category = "timeout"
+    severity = "error"
+
+    def __init__(self, message: str, *, kind: str = "hard", seconds: float | None = None):
+        self.kind = kind
+        self.seconds = seconds
+        super().__init__(message)
+
+
 class DeviceActionError(RuntimeError):
     """跨设备调用动作失败时抛出。
 

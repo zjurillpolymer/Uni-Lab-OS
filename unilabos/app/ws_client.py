@@ -18,6 +18,7 @@ import traceback
 import websockets
 import ssl as ssl_module
 import copy
+from collections import deque
 from queue import Queue, Empty
 from dataclasses import dataclass, field
 from typing import Optional, Dict, Any, List, Tuple
@@ -394,6 +395,9 @@ class MessageProcessor:
     def __init__(self, websocket_url: str, send_queue: Queue, device_manager: DeviceActionManager):
         self.websocket_url = websocket_url
         self.send_queue = send_queue
+        # 已从线程安全队列取出的消息在成功发送前始终留在这里。连接断开或
+        # send task 被取消时 deque 不会丢失当前消息，下一次连接优先补发。
+        self._pending_outbound: deque[Dict[str, Any]] = deque()
         self.device_manager = device_manager
         self.queue_processor = None  # 延迟设置
         self.websocket_client = None  # 延迟设置
@@ -586,62 +590,46 @@ class MessageProcessor:
                 logger.error(traceback.format_exc())
 
     async def _send_handler(self):
-        """处理发送队列中的消息"""
+        """处理发送队列中的消息，成功发送后才从进程内缓冲移除。"""
         logger.trace("[MessageProcessor] Send handler started")
 
         try:
             while self.connected and self.websocket:
                 try:
-                    # 从发送队列获取消息（非阻塞）
-                    messages_to_send = []
-                    max_batch = 10
-
-                    while len(messages_to_send) < max_batch:
+                    # 每个新连接都先 drain 上次连接遗留的消息；只在缓冲为空时
+                    # 才从跨线程队列取新消息。
+                    if not self._pending_outbound:
                         try:
-                            message = self.send_queue.get_nowait()
-                            messages_to_send.append(message)
+                            self._pending_outbound.append(self.send_queue.get_nowait())
                         except Empty:
-                            break
+                            await asyncio.sleep(0.1)
+                            continue
 
-                    if not messages_to_send:
-                        await asyncio.sleep(0.1)
-                        continue
+                    msg = self._pending_outbound[0]
+                    if str(msg.get("action") or "") in ("ping", "pong"):
+                        message_str = json.dumps(msg, ensure_ascii=False)
+                        await self.websocket.send(message_str)
+                        logger.trace(f"[WS_SEND] {message_str}")
+                    else:
+                        parent = extract_trace_context(msg)
+                        with span(
+                            "ws.send",
+                            kind="producer",
+                            parent_context=parent,
+                            attributes={
+                                "messaging.system": "websocket",
+                                "messaging.operation": "send",
+                                "messaging.message.type": str(msg.get("action") or ""),
+                            },
+                        ):
+                            inject_trace_context(msg)
+                            message_str = json.dumps(msg, ensure_ascii=False)
+                            await self.websocket.send(message_str)
+                            logger.trace(f"[WS_SEND] {message_str}")
 
-                    # 批量发送消息
-                    for msg in messages_to_send:
-                        if not self.connected or not self.websocket:
-                            break
-
-                        try:
-                            if str(msg.get("action") or "") in ("ping", "pong"):
-                                message_str = json.dumps(msg, ensure_ascii=False)
-                                await self.websocket.send(message_str)
-                                logger.trace(f"[WS_SEND] {message_str}")
-                                continue
-                            parent = extract_trace_context(msg)
-                            with span(
-                                "ws.send",
-                                kind="producer",
-                                parent_context=parent,
-                                attributes={
-                                    "messaging.system": "websocket",
-                                    "messaging.operation": "send",
-                                    "messaging.message.type": str(msg.get("action") or ""),
-                                },
-                            ):
-                                inject_trace_context(msg)
-                                message_str = json.dumps(msg, ensure_ascii=False)
-                                await self.websocket.send(message_str)
-                                logger.trace(f"[WS_SEND] {message_str}")
-                        except Exception as e:
-                            logger.error(f"[MessageProcessor] Failed to send message: {str(e)}")
-                            logger.error(f"[WS_SEND_FAILED] {msg}")
-                            logger.error(traceback.format_exc())
-                            break
-
-                    # 批量发送后短暂等待
-                    if len(messages_to_send) > 5:
-                        await asyncio.sleep(0.001)
+                    # 仅在 await send 成功返回后删除。CancelledError 和断线异常
+                    # 都会保留队首消息，供下一次连接重试（允许幂等重复投递）。
+                    self._pending_outbound.popleft()
 
                 except Exception as e:
                     logger.error(f"[MessageProcessor] Error in send handler: {str(e)}")
@@ -1965,11 +1953,15 @@ class WebSocketClient(BaseCommunicationClient):
         logger.trace(f"[WebSocketClient] Job status published: {job_log} - {status}")
 
     def publish_job_error_decision_required(self, report: Dict[str, Any]) -> bool:
-        """Send an action exception and its class-matched options for approval."""
+        """上报动作异常并等待审批；断线时留在发送队列等待重连。
 
-        if self.is_disabled or not self.is_connected():
+        decision_id 是幂等键。这里刻意不要求此刻 WS 在线：动作已经进入
+        人工决策等待窗口，短暂断线后重连只需把同一请求补发即可达到最终一致。
+        """
+
+        if self.is_disabled:
             logger.warning(
-                f"[WebSocketClient] Cannot report action error while disconnected: "
+                f"[WebSocketClient] Cannot report action error while disabled: "
                 f"job={str(report.get('job_id', ''))[:8]} "
                 f"exception={report.get('exception_type', '')}"
             )
@@ -1977,8 +1969,9 @@ class WebSocketClient(BaseCommunicationClient):
         message = {"action": "job_error_decision_required", "data": report}
         queued = self.message_processor.send_message(message)
         if queued:
+            connection_state = "已发送" if self.is_connected() else "等待重连补发"
             logger.info(
-                f"[WebSocketClient] Action error awaiting decision: "
+                f"[WebSocketClient] Action error {connection_state}: "
                 f"decision={report.get('decision_id')} job={str(report.get('job_id', ''))[:8]}"
             )
         return queued

@@ -5470,6 +5470,10 @@ class WorkflowService:
                 ),
             }
         )
+        if isinstance(meta_data, Mapping):
+            for field in ("job_id", "device_id"):
+                if meta_data.get(field):
+                    payload[field] = str(meta_data[field])
         accepted = delivery.resolve_error_decision(
             str(intervention["edge_command_uuid"]),
             payload,
