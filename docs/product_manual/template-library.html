@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="设备登记、动作表单与设备联动" href="device-registration.html"><link rel="prev" title="1. 设备接入模板" href="device-template.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>设备模板库与类别选择 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>设备模板库与类别选择<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>设备模板库与类别选择<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -365,7 +367,7 @@
 <p>设备模板库可以理解为一份“常见设备能力清单”。它按设备用途和可执行操作分类，帮助项目先统一业务名称，再接入具体品牌和型号。用户只需选择与现场设备能力匹配的类别，不需要接入模板库中的全部类别。</p>
 <p>模板类别和数量会随 Uni-Lab OS 版本及用户设备包发生变化。接入时请以当前设备包检查报告和 Uni-Lab OS 实际识别出的设备类别、动作与状态为准，不使用固定数量判断模板是否完整。</p>
 <section id="id2">
-<h2>第一次接入时如何选模板<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>第一次接入时如何选模板<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>按下面顺序描述设备，比直接搜索厂商型号更容易找到可复用模板：</p>
 <ol class="arabic simple">
 <li><p><strong>用途</strong>：设备是移液、温控、读板、存储、搬运，还是检测？</p></li>
@@ -410,7 +412,7 @@
 接近的类别，并记录缺少的动作，避免在工作流里调用私有方法。</p>
 </section>
 <section id="id3">
-<h2>当前代码已经覆盖的主要设备方向<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>当前代码已经覆盖的主要设备方向<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab OS 支持以下主要设备方向。这表示系统具备相应的接入结构，不代表所有品牌型号都已完成真机验证。接入新设备时，仍要以本地设备包检查报告和现场验收结果为准。</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -444,7 +446,7 @@
 <p>业务人员先选择最接近的方向，再由开发人员检查同类实现的动作名称、参数和状态。不能仅凭“代码中有这个目录”就判断某个具体型号已经可用。</p>
 </section>
 <section id="id4">
-<h2>一个合格模板应该说明什么<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>一个合格模板应该说明什么<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -483,7 +485,7 @@
 </div>
 </section>
 <section id="id5">
-<h2>设备包的最小目录<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>设备包的最小目录<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>my-device-package/
 ├── pyproject.toml                  # Python 包与依赖
 ├── package.yaml                    # 包身份和工作流清单
@@ -501,25 +503,25 @@
 内部实现，这样换通信方式时不会改变业务工作流。</p>
 </section>
 <section id="id6">
-<h2>把业务操作登记成系统动作<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>把业务操作登记成系统动作<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">action</span><span class="p">,</span> <span class="n">device</span><span class="p">,</span> <span class="n">topic_config</span>
 
 
 <span class="nd">@device</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"example_reader"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"plate_reader"</span><span class="p">],</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"示例读板机"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"读取微孔板信号"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;example_reader&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;plate_reader&quot;</span><span class="p">],</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;示例读板机&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;读取微孔板信号&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExampleReader</span><span class="p">:</span>
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">(</span><span class="n">period</span><span class="o">=</span><span class="mf">5.0</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">"ready"</span>
+        <span class="k">return</span> <span class="s2">&quot;ready&quot;</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">displayname</span><span class="o">=</span><span class="s2">"读取板信号"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"按协议读取一次板信号"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;读取板信号&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;按协议读取一次板信号&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_plate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">plate_barcode</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">dict</span><span class="p">:</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"plate_barcode"</span><span class="p">:</span> <span class="n">plate_barcode</span><span class="p">,</span> <span class="s2">"result_uri"</span><span class="p">:</span> <span class="s2">"..."</span><span class="p">}</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;plate_barcode&quot;</span><span class="p">:</span> <span class="n">plate_barcode</span><span class="p">,</span> <span class="s2">&quot;result_uri&quot;</span><span class="p">:</span> <span class="s2">&quot;...&quot;</span><span class="p">}</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -530,7 +532,7 @@
 <li><p>内部辅助方法以下划线开头，或用 <code class="docutils literal notranslate"><span class="pre">&#64;not_action</span></code> 明确不作为动作公开。</p></li>
 </ul>
 <section id="id7">
-<h3>动作参数规范<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>动作参数规范<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -576,7 +578,7 @@
 </section>
 </section>
 <section id="id8">
-<h2>怎样检查模板是否可用<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>怎样检查模板是否可用<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>开发人员完成模板后，可在包根目录执行：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w"> </span>my_device_package
 unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>./inspect-output
@@ -592,7 +594,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ul>
 </section>
 <section id="id9">
-<h2>成功后业务人员会看到什么<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>成功后业务人员会看到什么<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>目录中能按类别找到设备，中文名称和用途清楚；</p></li>
 <li><p>动作表单只显示允许填写的字段，并注明单位和范围；</p></li>
@@ -602,7 +604,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ul>
 </section>
 <section id="id10">
-<h2>常见问题<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>常见问题<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -637,7 +639,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </div>
 </section>
 <section id="id11">
-<h2>上线前检查清单<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>上线前检查清单<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>[ ] 已按用途、物料和动作选择类别，而不是只按厂商名称选择；</p></li>
 <li><p>[ ] 设备 ID 唯一稳定，显示名称和 ID 分离；</p></li>
@@ -734,10 +736,10 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

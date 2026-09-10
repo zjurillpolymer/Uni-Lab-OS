@@ -1,11 +1,14 @@
 """本地物料与库位内存忙碌键的层级互斥测试。"""
 
+import pytest
+
 from unilabos.app.scheduler.resource_lock import (
     conflicting_resource_lock_keys,
     material_lock_key,
     normalize_resource_lock_keys,
     site_lock_key,
 )
+from unilabos.workflow.resource_lock_key import device_lock_key
 
 _MATERIAL_UUID = "11111111-1111-4111-8111-111111111111"
 _SITE_UUID_A = "22222222-2222-4222-8222-222222222222"
@@ -48,3 +51,23 @@ def test_whole_material_key_removes_redundant_child_site_key() -> None:
     child = site_lock_key(_MATERIAL_UUID, _SITE_UUID_A)
 
     assert normalize_resource_lock_keys({whole, child}) == {whole}
+
+
+@pytest.mark.parametrize(
+    ("builder", "identities"),
+    [
+        (device_lock_key, ("",)),
+        (device_lock_key, (" reactor ",)),
+        (device_lock_key, ("robot/arm",)),
+        (material_lock_key, ("",)),
+        (site_lock_key, (_MATERIAL_UUID, "site/one")),
+    ],
+)
+def test_lock_key_builders_reject_noncanonical_identity_tokens(
+    builder: object,
+    identities: tuple[str, ...],
+) -> None:
+    """所有生产者共用同一语法，不能构造解析器随后拒绝的锁键。"""
+
+    with pytest.raises(ValueError):
+        builder(*identities)  # type: ignore[operator]

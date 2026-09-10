@@ -973,6 +973,304 @@ describe('TasksPage', () => {
     expect(details).toHaveTextContent('actual_mass_g')
   })
 
+  it('shows active execution locks and backend release eligibility for the selected task', async () => {
+    const task = { ...demoTasks[0], status: 'failed' as const }
+    const fetchMock = vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.endsWith(`/workflow-tasks/${task.uuid}/execution-locks`)) {
+        return response({
+          code: 0,
+          data: {
+            workflow_task_uuid: task.uuid,
+            task_status: 'failed',
+            active_device_tenancy_count: 0,
+            locks: [
+              {
+                uuid: 'lease-device-1',
+                workflow_task_uuid: task.uuid,
+                workflow_node_job_uuid: 'job-lock-1',
+                lock_key: '/devices/reactor-a',
+                scope: 'device',
+                state: 'running',
+                claim_uuid: 'claim-lock-1',
+                fencing_token: 7,
+                job_status: 'failed',
+                claim_state: 'running',
+                can_release: true,
+              },
+              {
+                uuid: 'lease-material-1',
+                workflow_task_uuid: task.uuid,
+                workflow_node_job_uuid: 'job-lock-1',
+                lock_key: '/materials/sample-a',
+                scope: 'material',
+                state: 'running',
+                claim_uuid: 'claim-lock-1',
+                fencing_token: 11,
+                job_status: 'failed',
+                claim_state: 'running',
+                can_release: true,
+              },
+            ],
+          },
+        })
+      }
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithQuery(
+      <TasksPage tasks={[task]} workflows={demoWorkflows} materials={demoMaterials} connected onRefresh={vi.fn()} onNotify={vi.fn()} onOpenWorkflow={vi.fn()} />,
+    )
+
+    await screen.findByText('/devices/reactor-a')
+    const locks = screen.getByRole('region', { name: '任务执行锁' })
+    expect(within(locks).getByText('/devices/reactor-a')).toBeInTheDocument()
+    expect(within(locks).getByText('/materials/sample-a')).toBeInTheDocument()
+    expect(within(locks).getByText('可人工释放')).toBeInTheDocument()
+    expect(within(locks).getByRole('button', { name: '解除这组锁' })).toBeEnabled()
+  })
+
+  it('keeps release disabled and explains an uncertain Claim returned by Edge', async () => {
+    const task = { ...demoTasks[0], status: 'failed' as const }
+    vi.stubGlobal('fetch', vi.fn(async (input: RequestInfo | URL) => {
+      const url = String(input)
+      if (url.endsWith(`/workflow-tasks/${task.uuid}/execution-locks`)) {
+        return response({
+          code: 0,
+          data: {
+            workflow_task_uuid: task.uuid,
+            task_status: 'failed',
+            active_device_tenancy_count: 0,
+            locks: [{
+              uuid: 'lease-uncertain',
+              workflow_task_uuid: task.uuid,
+              workflow_node_job_uuid: 'job-uncertain',
+              lock_key: '/devices/reactor-a',
+              scope: 'device',
+              state: 'uncertain',
+              claim_uuid: 'claim-uncertain',
+              fencing_token: 3,
+              job_status: 'failed',
+              claim_state: 'uncertain',
+              can_release: false,
+              release_block_reason: 'Claim 处于结果不确定状态，必须先完成物理结算',
+            }],
+          },
+        })
+      }
+      throw new Error(`Unexpected URL: ${url}`)
+    }))
+
+    renderWithQuery(
+      <TasksPage tasks={[task]} workflows={demoWorkflows} materials={demoMaterials} connected onRefresh={vi.fn()} onNotify={vi.fn()} onOpenWorkflow={vi.fn()} />,
+    )
+
+    await screen.findByText(/Claim 处于结果不确定状态/)
+    const locks = screen.getByRole('region', { name: '任务执行锁' })
+    expect(within(locks).getByText(/Claim 处于结果不确定状态/)).toBeInTheDocument()
+    expect(within(locks).getByRole('button', { name: '解除这组锁' })).toBeDisabled()
+  })
+
+  // 结果不确定的物料转运必须先读取后端冻结事实，再由操作员选择实际库位完成结算。
+  it('settles an uncertain material transfer at an operator-confirmed source site', async () => {
+    const materialUuid = 'material-transfer-1'
+    const sourceOwnerUuid = 'source-owner-1'
+    const sourceSiteUuid = 'source-site-1'
+    const targetOwnerUuid = 'target-owner-1'
+    const targetSiteUuid = 'target-site-1'
+    const jobUuid = 'job-uncertain-transfer-1'
+    const task = {
+      ...demoTasks[0],
+      status: 'failed' as const,
+      nodes: demoTasks[0].nodes.map((node, index) => index === 0 ? {
+        ...node,
+        job: {
+          uuid: jobUuid,
+          param: {},
+          feedbackData: {},
+          returnInfo: {},
+          errorInfo: [],
+        },
+      } : node),
+    }
+    const movedMaterial = {
+      ...demoMaterials[0],
+      uuid: materialUuid,
+      name: '待核验烧杯',
+      currentLocation: {
+        kind: 'site' as const,
+        label: '来源仓 / L1B2',
+        siteUuid: sourceSiteUuid,
+        ownerMaterialUuid: sourceOwnerUuid,
+      },
+      sites: [],
+      isStructural: false,
+      siteCount: 0,
+    }
+    const sourceOwner = {
+      ...demoMaterials[0],
+      uuid: sourceOwnerUuid,
+      name: '来源仓',
+      sites: [{ uuid: sourceSiteUuid, name: 'L1B2', occupiedMaterialUuid: materialUuid, occupiedMaterialName: '待核验烧杯' }],
+    }
+    const targetOwner = {
+      ...demoMaterials[0],
+      uuid: targetOwnerUuid,
+      name: '目标仓',
+      sites: [{ uuid: targetSiteUuid, name: 'S0721' }],
+    }
+    const materials = [movedMaterial, sourceOwner, targetOwner]
+    const onNotify = vi.fn()
+    let settled = false
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url.endsWith(`/workflow-tasks/${task.uuid}/execution-locks`) && init?.method !== 'POST') {
+        return response({
+          code: 0,
+          data: {
+            workflow_task_uuid: task.uuid,
+            task_status: 'failed',
+            active_device_tenancy_count: 0,
+            locks: settled ? [] : [{
+              uuid: 'lease-uncertain-transfer-1',
+              workflow_task_uuid: task.uuid,
+              workflow_node_job_uuid: jobUuid,
+              lock_key: `material/${materialUuid}/exclusive`,
+              scope: 'material',
+              material_uuid: materialUuid,
+              state: 'uncertain',
+              claim_uuid: 'claim-uncertain-transfer-1',
+              fencing_token: 4,
+              job_status: 'failed',
+              claim_state: 'uncertain',
+              can_release: false,
+              release_block_reason: '作业存在结果不确定原因，需先完成物理结算',
+            }],
+          },
+        })
+      }
+      if (url.endsWith(`/workflow-node-jobs/${jobUuid}`) && init?.method !== 'POST') {
+        return response({
+          code: 0,
+          data: {
+            uuid: jobUuid,
+            status: 'failed',
+            uncertainty_reason: 'material_transfer_inventory_reconciliation_required',
+            expected_change_set: {
+              kind: 'material_transfer',
+              material_uuid: materialUuid,
+              source_site_uuid: sourceSiteUuid,
+              target_site_uuid: targetSiteUuid,
+            },
+          },
+        })
+      }
+      if (url.endsWith(`/workflow-node-jobs/${jobUuid}/settle-material-transfer`) && init?.method === 'POST') {
+        settled = true
+        return response({ code: 0, data: { uuid: jobUuid, status: 'failed', uncertainty_reason: null } })
+      }
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithQuery(
+      <TasksPage tasks={[task]} workflows={demoWorkflows} materials={materials} connected onRefresh={vi.fn()} onNotify={onNotify} onOpenWorkflow={vi.fn()} />,
+    )
+
+    const settleButton = await screen.findByRole('button', { name: '完成物理结算' })
+    expect(settleButton).toBeEnabled()
+    fireEvent.click(settleButton)
+    const dialog = await screen.findByRole('dialog', { name: '转运物理结算' })
+    fireEvent.click(within(dialog).getByLabelText('实际仍在来源库位 来源仓 / L1B2'))
+    fireEvent.change(within(dialog).getByLabelText(/结算原因/), { target: { value: '已核验烧杯仍在来源库位' } })
+    fireEvent.click(within(dialog).getByRole('checkbox'))
+    fireEvent.click(within(dialog).getByRole('button', { name: '确认结算并释放锁' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/workflow-node-jobs/${jobUuid}/settle-material-transfer`,
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          actual_change_set: {
+            kind: 'material_transfer',
+            material_uuid: materialUuid,
+            target_owner_material_uuid: sourceOwnerUuid,
+            target_site_uuid: sourceSiteUuid,
+          },
+          reason: '已核验烧杯仍在来源库位',
+        }),
+      }),
+    ))
+    expect(await screen.findByText('当前任务没有活动执行锁。')).toBeInTheDocument()
+    expect(onNotify).toHaveBeenCalledWith('物理结算已完成，相关执行锁已释放。')
+  })
+
+  it('submits CAS and physical confirmation, then refreshes the lock list', async () => {
+    const task = { ...demoTasks[0], status: 'failed' as const }
+    const onNotify = vi.fn()
+    let released = false
+    const fetchMock = vi.fn(async (input: RequestInfo | URL, init?: RequestInit) => {
+      const url = String(input)
+      if (url.endsWith(`/workflow-tasks/${task.uuid}/execution-locks`) && init?.method !== 'POST') {
+        return response({
+          code: 0,
+          data: {
+            workflow_task_uuid: task.uuid,
+            task_status: 'failed',
+            active_device_tenancy_count: 0,
+            locks: released ? [] : [{
+              uuid: 'lease-release-1',
+              workflow_task_uuid: task.uuid,
+              workflow_node_job_uuid: 'job-release-1',
+              lock_key: '/devices/reactor-a',
+              scope: 'device',
+              state: 'running',
+              claim_uuid: 'claim-release-1',
+              fencing_token: 9,
+              job_status: 'failed',
+              claim_state: 'running',
+              can_release: true,
+            }],
+          },
+        })
+      }
+      if (url.endsWith(`/workflow-tasks/${task.uuid}/execution-locks/lease-release-1/force-release`) && init?.method === 'POST') {
+        released = true
+        return response({ code: 0, data: { status: 'released', released_lock_uuids: ['lease-release-1'] } })
+      }
+      throw new Error(`Unexpected URL: ${url}`)
+    })
+    vi.stubGlobal('fetch', fetchMock)
+
+    renderWithQuery(
+      <TasksPage tasks={[task]} workflows={demoWorkflows} materials={demoMaterials} connected onRefresh={vi.fn()} onNotify={onNotify} onOpenWorkflow={vi.fn()} />,
+    )
+
+    await screen.findByRole('button', { name: '解除这组锁' })
+    const locks = screen.getByRole('region', { name: '任务执行锁' })
+    fireEvent.click(within(locks).getByRole('button', { name: '解除这组锁' }))
+    const dialog = await screen.findByRole('dialog', { name: '人工解除执行锁' })
+    fireEvent.change(within(dialog).getByLabelText(/人工释放原因/), { target: { value: '设备已断电并完成现场确认' } })
+    fireEvent.click(within(dialog).getByRole('checkbox'))
+    fireEvent.click(within(dialog).getByRole('button', { name: '确认解除整组锁' }))
+
+    await waitFor(() => expect(fetchMock).toHaveBeenCalledWith(
+      `/api/v1/workflow-tasks/${task.uuid}/execution-locks/lease-release-1/force-release`,
+      expect.objectContaining({
+        method: 'POST',
+        body: JSON.stringify({
+          expected_claim_uuid: 'claim-release-1',
+          expected_fencing_token: 9,
+          reason: '设备已断电并完成现场确认',
+          physical_settlement_confirmed: true,
+        }),
+      }),
+    ))
+    expect(await screen.findByText('当前任务没有活动执行锁。')).toBeInTheDocument()
+    expect(onNotify).toHaveBeenCalledWith('已释放该作业的 1 把执行锁。')
+  })
+
   it('shows a waiting reason only while its node is hovered or keyboard-focused', () => {
     const task = {
       ...demoTasks[0],

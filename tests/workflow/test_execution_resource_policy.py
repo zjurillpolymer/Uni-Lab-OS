@@ -238,3 +238,30 @@ def test_static_tenancy_rejects_workflow_that_finishes_loaded() -> None:
                 )
             ]
         )
+
+
+@pytest.mark.parametrize("role", ["device", "motion", "tool"])
+def test_v2_roles_resolve_final_device_identity(role):
+    contract = {"version": 2, "resource_params": [{"param": "rail", "role": role}]}
+    policy = merge_action_resource_policy(contract, {})
+    assert resolve_execution_resource_policy(
+        policy, {"rail": _reference(DEVICE_B_UUID)}
+    ).device_lock_keys == (f"/devices/{DEVICE_B_UUID}",)
+    with pytest.raises(ExecutionResourcePolicyError):
+        resolve_execution_resource_policy(policy, {})
+
+
+def test_transfer_static_motion_alias_is_not_a_required_goal_parameter():
+    contract = {
+        "version": 2,
+        "transfer": {
+            "material_param": "sample",
+            "target_owner_param": "target",
+            "target_site_uuid_param": "target_site_uuid",
+            "target_site_name_param": "target_site_name",
+            "gripper_site_role": "gripper",
+            "motion_resource_roles": ["station:rail"],
+        },
+    }
+    policy = merge_action_resource_policy(contract, {})
+    assert resolve_execution_resource_policy(policy, {}).device_lock_keys == ()

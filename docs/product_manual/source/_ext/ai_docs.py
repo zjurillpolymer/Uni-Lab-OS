@@ -27,11 +27,12 @@ _SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
         ),
     ),
     (
-        "设备包开发",
+        "设备包开发规范",
         (
             "unilabos-installation",
+            "repository-builder-skill",
+            "scenario-guide",
             "workspace",
-            "workspace-init",
             "device-template",
             "template-library",
             "device-registration",
@@ -55,15 +56,15 @@ _SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
             "workflow",
             "experiment-operations",
             "complete-workflow",
+            "ai-workflow-authoring",
         ),
     ),
     (
-        "运行、部署与验收",
+        "环境、部署、运行",
         (
-            "workflows",
-            "runtime-safety",
             "deployment",
-            "scenario-guide",
+            "runtime-safety",
+            "workflows",
         ),
     ),
     (
@@ -79,13 +80,13 @@ _SECTIONS: tuple[tuple[str, tuple[str, ...]], ...] = (
 _DESCRIPTIONS: dict[str, str] = {
     "index": "说明书入口、学习路线、能力状态标签和已部署产品链接。",
     "overview": "产品模型、适用角色、核心对象和当前部署边界。",
-    "installation": "安装 Uni-Lab OS 与用户设备包、启动 dry-run 并验收就绪状态。",
+    "installation": "先安装 Uni-Lab OS，再下载示例设备包并以 dry-run 启动。",
     "environment": "Conda 环境、Workspace 文件、启动图（Graph JSON）、本地配置以及运行与启动模式。",
     "console": "浏览 Uni-Lab OS 页面，并了解各入口的当前功能和限制。",
     "interfaces": "了解开发工具、接口入口、适用场景和能力边界。",
     "unilabos-installation": "按工作区、设备、物料、启动图和工作流的顺序完成设备包开发与系统启动。",
+    "repository-builder-skill": "使用仓库内的 AI Skill 新建、迁移、修改或诊断用户自己的设备包。",
     "workspace": "规划设备包目录、文件职责、命名规则和交付检查。",
-    "workspace-init": "在命令尚未提供时手工创建设备包骨架，并了解未来初始化命令的预期行为。",
     "device-template": "根据控制方式选择设备接入模板，并完成设备合同和验证。",
     "template-library": "按设备能力选择类别、动作和模拟实现，不依赖固定类别数量。",
     "device-registration": "登记设备、动作参数和状态，并验证页面表单与设备联动。",
@@ -109,6 +110,7 @@ _DESCRIPTIONS: dict[str, str] = {
     "workflow": "按统一规范编写实验操作和完整工作流，并完成登记、预检和验收。",
     "experiment-operations": "编写职责单一、可发布和可复用的实验操作。",
     "complete-workflow": "组合设备动作、实验操作和物料流，形成完整实验流程。",
+    "ai-workflow-authoring": "让 AI 基于当前设备包证据生成工作流，并由人审查、导入、发布和验证。",
     "workflows": "管理工作流定义、修订、发布、预检和任务运行。",
     "scenario-guide": "按设备、物料、工作流和现场约束验收用户设备包。",
     "runtime-safety": "dry-run 与真实动作、develop 与 product 模式、联锁和恢复规则。",
@@ -252,7 +254,7 @@ def _write_machine_docs(app: Any, exception: Exception | None) -> None:
         "",
         "> 帮助新用户安装 Uni-Lab OS、开发设备包，并安全地预检和运行实验任务。",
         "",
-        "从零使用时，按“系统安装与配置”“设备包开发”“运行、部署与验收”的顺序阅读；遇到问题时进入“排查与参考”。",
+        "从零使用时，按“系统安装与配置”“设备包开发规范”“环境、部署、运行”的顺序阅读；遇到问题时进入“排查与参考”。",
         "",
     ]
     for heading, names in _SECTIONS:

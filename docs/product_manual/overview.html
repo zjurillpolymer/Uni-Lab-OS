@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="Uni-Lab OS 快速上手" href="console.html"><link rel="prev" title="Uni-Lab OS 产品使用说明书" href="index.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>认识 Uni-Lab OS - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul class="current">
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="uni-lab-os">
-<h1>认识 Uni-Lab OS<a class="headerlink" href="#uni-lab-os" title="Link to this heading">¶</a></h1>
+<h1>认识 Uni-Lab OS<a class="headerlink" href="#uni-lab-os" title="链接到此标题。">¶</a></h1>
 <p>Uni-Lab OS 是面向实验室自动化的统一运行与管理平台。它把设备、物料、试剂、实验操作、工作流和执行任务放在同一套业务模型中，让实验从资源准备、流程设计，到自动执行和结果追溯形成完整闭环。</p>
 <p>简单来说，Uni-Lab OS 不只负责“让设备执行一个动作”，还要回答以下问题：</p>
 <ul class="simple">
@@ -364,7 +366,7 @@
 <li><p>实验结束后，能否查清使用了什么、执行了什么，以及得到什么结果。</p></li>
 </ul>
 <section id="id1">
-<h2>从准备到追溯的业务闭环<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>从准备到追溯的业务闭环<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab OS 将一次实验组织为五个连续阶段：</p>
 <ol class="arabic simple">
 <li><p><strong>准备资源</strong>：登记物料和试剂，确认库位、数量、状态以及设备是否在线。</p></li>
@@ -378,14 +380,14 @@
 </div></blockquote>
 </section>
 <section id="id2">
-<h2>八项核心能力<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>八项核心能力<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <section id="id3">
-<h3>设备管理<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h3>
+<h3>设备管理<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h3>
 <p>系统统一识别设备及其业务动作，并记录在线状态、动作参数、执行反馈和状态变化。例如，一台移液设备可以提供“吸液”“排液”等动作，每个动作都要明确体积、速度、位置等参数的名称、类型、单位和允许范围。</p>
 <p>设备能够执行哪些动作，由用户准备的设备包定义。设备包加载后，可通过系统接口或获准使用的调试工具进行单动作测试。设备显示“在线”只代表通信可用，不代表所有动作已经完成现场安全验收。</p>
 </section>
 <section id="id4">
-<h3>试剂管理<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h3>
+<h3>试剂管理<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h3>
 <p>系统分别管理“试剂是什么”和“这份试剂在哪里、有多少”：</p>
 <ul class="simple">
 <li><p>试剂档案记录名称、标识、规格等身份信息；</p></li>
@@ -396,27 +398,27 @@
 <p>数量和浓度必须带有明确单位。自动扣减反映系统账面变化，不代替称重、液位或其他现场检测。</p>
 </section>
 <section id="id5">
-<h3>物料与库位<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<h3>物料与库位<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
 <p>物料模板描述一类物料应具备哪些字段、容量、槽位和约束；物料实例表示现场某一个真实对象，例如一块孔板、一个吸头盒、一个样品瓶载架或一个弹夹。</p>
 <p>系统可记录物料的唯一标识、条码、父子关系、当前位置和历史变化。例如，“样品瓶位于载架第 3 个槽位，载架位于上料工位”。上料、移动、下料和盘点时，应同时更新现场状态和系统记录，不能只修改页面数据。</p>
 </section>
 <section id="id6">
-<h3>实验操作<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>实验操作<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <p>实验操作是可重复使用的一段标准实验步骤。它可以组合多个设备动作，并加入条件判断、重复执行、人工确认和其他已发布操作。</p>
 <p>适合复用的步骤应先整理成实验操作，例如“取样并加入反应容器”或“检测并保存结果”。这样，同一段操作可被不同工作流调用，修改和验证也更集中。</p>
 </section>
 <section id="id7">
-<h3>工作流管理<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>工作流管理<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <p>工作流描述一项完整实验如何完成，包括输入、输出、执行节点以及节点之间的先后依赖。业务人员可以查看、导入、编辑、检查和发布工作流；流程设计人员需要为每个输入和结果说明名称、用途、数据类型、单位、是否必填以及允许范围。</p>
 <p>工作流发布后形成稳定版本。已经创建的任务继续使用创建时对应的版本，不会因为之后再次编辑而悄悄改变。正式运行前，应先完成结构检查、参数检查和隔离环境验证。</p>
 </section>
 <section id="id8">
-<h3>任务执行<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<h3>任务执行<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
 <p>一次工作流运行称为 <strong>Task（任务）</strong>。系统会把任务拆分成若干 <strong>Job（执行步骤）</strong>，再将每个步骤派发给对应设备。</p>
 <p>在任务执行过程中，可以查看整体状态、当前步骤、设备反馈和结果；遇到需要人员判断的环节，可处理人工确认；出现已知异常时，可按获准规程停止、恢复或处理。对于设备已执行但系统未收到明确结果的情况，必须先核对现场，再决定如何结算，不能直接重试可能产生二次动作的步骤。</p>
 </section>
 <section id="id9">
-<h3>并行调度<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>并行调度<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <p>系统可以同时管理多个实验任务，并通过资源锁和库存预留避免冲突：</p>
 <ul class="simple">
 <li><p>设备、物料或工位被一个任务占用时，其他任务等待；</p></li>
@@ -427,15 +429,15 @@
 <p>“并行调度”表示系统可以同时安排不存在资源冲突的任务，不表示同一台物理设备能够同时执行多个动作。真实并发能力必须以设备、工艺和安全联锁的验收结果为准。</p>
 </section>
 <section id="id10">
-<h3>日志与记录<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
+<h3>日志与记录<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h3>
 <p>系统保留与实验执行相关的业务记录，包括任务和步骤状态、设备动作与反馈、人工确认、工作流版本、物料位置变化、试剂库存变化和处理结果。按部署配置启用追踪能力后，还可以关联一次请求在不同执行环节中的记录。</p>
 <p>日志用于还原“系统当时收到和处理了什么”，不能替代现场检查记录、法定审计材料或仪器原始数据。需要长期保存的数据，应按组织的数据管理制度设置归档和备份。</p>
 </section>
 </section>
 <section id="id11">
-<h2>两条常用业务流程<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>两条常用业务流程<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <section id="id12">
-<h3>流程一：实验设计与调试<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h3>
+<h3>流程一：实验设计与调试<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h3>
 <ol class="arabic simple">
 <li><p>在设备包中定义设备连接方式、业务动作、动作参数和返回结果。</p></li>
 <li><p>在安全环境中确认设备上线，并逐项测试动作及失败处理。</p></li>
@@ -446,7 +448,7 @@
 </ol>
 </section>
 <section id="id13">
-<h3>流程二：实验任务执行<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
+<h3>流程二：实验任务执行<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h3>
 <ol class="arabic simple">
 <li><p>准备物料和试剂，完成上料、位置和数量核对。</p></li>
 <li><p>选择已发布且适用于当前场景的工作流。</p></li>
@@ -459,7 +461,7 @@
 </section>
 </section>
 <section id="id14">
-<h2>先理解六个核心对象<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<h2>先理解六个核心对象<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -502,7 +504,7 @@
 </div></blockquote>
 </section>
 <section id="id15">
-<h2>用户设备包的作用<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
+<h2>用户设备包的作用<a class="headerlink" href="#id15" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab OS 提供统一的管理、预检、调度、执行和记录能力，但不会预先知道某个实验室有哪些设备、物料和工艺。用户需要准备与现场一致的设备包，至少说明：</p>
 <ul class="simple">
 <li><p><strong>设备</strong>：有哪些设备实例，如何连接，每台设备提供哪些动作；</p></li>
@@ -515,7 +517,7 @@
 <p>设备包的目录、配置和检查方法见<a class="reference internal" href="unilabos-installation.html"><span class="std std-doc">设备包规范与系统启动</span></a>。从零部署产品时，先完成<a class="reference internal" href="installation.html"><span class="std std-doc">系统安装</span></a>。</p>
 </section>
 <section id="id16">
-<h2>使用边界<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
+<h2>使用边界<a class="headerlink" href="#id16" title="链接到此标题。">¶</a></h2>
 <p>为避免把“系统记录正确”误解为“现场一定安全”，使用时必须遵守以下原则：</p>
 <ul class="simple">
 <li><p>系统中的库存、位置和设备状态需要通过现场操作或设备反馈保持同步；</p></li>
@@ -526,7 +528,7 @@
 </ul>
 </section>
 <section id="id17">
-<h2>建议的首次使用顺序<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
+<h2>建议的首次使用顺序<a class="headerlink" href="#id17" title="链接到此标题。">¶</a></h2>
 <p>如果已有可用环境，先阅读<a class="reference internal" href="console.html"><span class="std std-doc">使用 Uni-Lab OS</span></a>，再按<a class="reference internal" href="quickstart.html"><span class="std std-doc">体验已部署的安全工作流</span></a>熟悉页面和任务过程。</p>
 <p>如果需要从零建设环境，按以下顺序进行：</p>
 <ol class="arabic simple">
@@ -630,10 +632,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

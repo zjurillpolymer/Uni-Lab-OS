@@ -29,6 +29,7 @@ from __future__ import annotations
 import json
 import socket
 import statistics
+import sys
 import time
 import uuid as uuid_mod
 from typing import Any, Dict, List, Optional, Tuple
@@ -259,10 +260,13 @@ def _setup_ros(info: RosNetworkInfo, source: str) -> None:
     import rclpy
 
     if not rclpy.ok():
+        from unilabos.ros.logging import prepare_ros_logging
+
+        ros_args = prepare_ros_logging(sys.argv)
         try:
-            rclpy.init(domain_id=info.domain_id)
+            rclpy.init(args=ros_args, domain_id=info.domain_id)
         except TypeError:  # 旧版 rclpy 无 domain_id 形参
-            rclpy.init()
+            rclpy.init(args=ros_args)
 
 
 def run_talker(

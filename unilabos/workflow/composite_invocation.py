@@ -2,14 +2,22 @@
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from copy import deepcopy
+from dataclasses import dataclass
 from typing import Any
 from uuid import UUID, uuid5
 
 from unilabos.workflow.authoring_identity import (
     authoring_edge_uuid,
     expanded_node_uuid,
+)
+from unilabos.workflow.composite_graph_rewrite import (
+    CompositeGraphRewriteError,
+    materialize_control_arguments,
+    merge_expanded_resource_scopes,
+    project_experiment_operation_resource_scopes,
+    remap_control_references,
 )
 from unilabos.workflow.workflow_type import WORKFLOW_TYPE_EXPERIMENT_OPERATION
 
@@ -18,41 +26,17 @@ class CompositeInvocationInvalid(ValueError):
     """组合调用输入或冻结合同不满足安全展开条件。"""
 
 
-_NODE_REFERENCE_KEYS = frozenset(
-    {
-        "node_uuid",
-        "workflow_node_uuid",
-        "control_region_uuid",
-        "node_uuids",
-        "entry_node_uuids",
-        "exit_node_uuids",
-        "predecessor_node_uuids",
-        "successor_node_uuids",
-    }
-)
+@dataclass(frozen=True, slots=True)
+class CompositeInvocationExpansion:
+    """组合调用生成的节点、边和可原子提交的工作流元数据补丁。"""
+
+    nodes: tuple[dict[str, Any], ...]
+    edges: tuple[dict[str, Any], ...]
+    resource_scopes: tuple[dict[str, Any], ...]
+    workflow_meta_data: dict[str, Any]
 
 
-def _remap_control_references(
-    value: Any,
-    node_uuid_map: Mapping[str, str],
-    *,
-    key: str | None = None,
-) -> Any:
-    """按字段语义重映射控制节点内部的节点/区域 UUID 引用。"""
-
-    if isinstance(value, list):
-        return [
-            _remap_control_references(item, node_uuid_map, key=key)
-            for item in value
-        ]
-    if isinstance(value, Mapping):
-        return {
-            str(name): _remap_control_references(item, node_uuid_map, key=str(name))
-            for name, item in value.items()
-        }
-    if key in _NODE_REFERENCE_KEYS and isinstance(value, str):
-        return node_uuid_map.get(value, value)
-    return deepcopy(value)
+_remap_control_references = remap_control_references
 
 
 def _remap_boundary_value(value: Any, node_uuid_map: Mapping[str, str]) -> Any:
@@ -231,9 +215,11 @@ def _materialize_published_arguments(
     boundary_mapping = contract.get("boundary_mapping")
     input_contract = contract.get("input_contract")
     snapshot = contract.get("graph_snapshot")
-    if not isinstance(boundary_mapping, Mapping) or not isinstance(
-        input_contract, Mapping
-    ) or not isinstance(snapshot, Mapping):
+    if (
+        not isinstance(boundary_mapping, Mapping)
+        or not isinstance(input_contract, Mapping)
+        or not isinstance(snapshot, Mapping)
+    ):
         raise CompositeInvocationInvalid("发布合同缺少输入边界映射")
     target_mappings = boundary_mapping.get("target_mappings")
     descriptors = input_contract.get("parameters")
@@ -243,24 +229,15 @@ def _materialize_published_arguments(
     if not isinstance(target_mappings, Mapping) or not isinstance(descriptors, list):
         raise CompositeInvocationInvalid("发布合同输入边界映射损坏")
 
-    # 控制节点（condition/repeat_until）的输入不会出现在动作目标映射中，
-    # 但仍必须在真实组合展开路径固化为调用实参。该实现位于静态组合编译器，
-    # 这里采用延迟导入以避开 composite_expansion -> composite_invocation 的既有
-    # 反向导入环；两条展开路径因此共享完全相同的控制参数语义。
+    # 控制节点的输入不会出现在动作目标映射中，但仍必须在真实组合展开路径
+    # 固化为调用实参。两条展开路径共同使用中立图重写模块中的规则。
     try:
-        from unilabos.workflow.composite_expansion import (
-            _CompositeFailure,
-            _materialize_control_arguments,
-        )
-
-        _materialize_control_arguments(
+        materialize_control_arguments(
             expanded_nodes,
             keyword_arguments=normalized_param,
         )
-    except _CompositeFailure as error:
-        raise CompositeInvocationInvalid(
-            f"{error.code} ({error.path})"
-        ) from None
+    except CompositeGraphRewriteError as error:
+        raise CompositeInvocationInvalid(f"{error.code} ({error.path})") from None
 
     # 旧版合同可能只有参数描述，没有内部目标映射；这表示展开时继续沿用
     # 冻结图自身的绑定，不应因为新增的快照校验把历史合同判为损坏。
@@ -320,7 +297,9 @@ def _materialize_published_arguments(
             if isinstance(value, Mapping) and value.get("kind") == "workflow_input":
                 parameter = value.get("parameter")
                 if not isinstance(parameter, str):
-                    raise CompositeInvocationInvalid(f"输入参数 {name} 的父参数引用损坏")
+                    raise CompositeInvocationInvalid(
+                        f"输入参数 {name} 的父参数引用损坏"
+                    )
                 bindings[target_uuid] = {"parameter": parameter}
                 continue
             # node_output 与固定值都不能继续携带子工作流自身的参数绑定；
@@ -332,7 +311,7 @@ def _materialize_published_arguments(
             params[data_key] = deepcopy(value)
 
 
-def expand_composite_invocation(
+def compile_composite_invocation(
     *,
     parent_graph: Mapping[str, Any],
     contract: Mapping[str, Any],
@@ -340,12 +319,13 @@ def expand_composite_invocation(
     pose: Mapping[str, Any],
     param: Mapping[str, Any],
     device_bindings: Mapping[str, str],
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """展开一个冻结发布合同并返回要追加到父图的节点与边。
+) -> CompositeInvocationExpansion:
+    """展开冻结发布合同并返回可与父图原子提交的图补丁。
 
     参数：``parent_graph`` 是当前父图，``contract`` 含私有冻结快照；调用身份、
-    画布位置、参数和设备绑定来自公共命令。返回确定性调用根、内部节点和内部边；
-    自引用、递归、身份碰撞或损坏引用抛 ``CompositeInvocationInvalid``。
+    画布位置、参数和设备绑定来自公共命令。返回确定性调用根、内部节点、内部边、
+    合并后的资源作用域和父工作流元数据；自引用、递归、身份碰撞或损坏引用抛
+    ``CompositeInvocationInvalid``。
     """
 
     parent_workflow = parent_graph["workflow"]
@@ -359,8 +339,7 @@ def expand_composite_invocation(
     snapshot_workflow = snapshot.get("workflow")
     if (
         not isinstance(snapshot_workflow, Mapping)
-        or snapshot_workflow.get("workflow_type")
-        != WORKFLOW_TYPE_EXPERIMENT_OPERATION
+        or snapshot_workflow.get("workflow_type") != WORKFLOW_TYPE_EXPERIMENT_OPERATION
     ):
         raise CompositeInvocationInvalid("组合调用只能引用实验操作")
     source_nodes = snapshot.get("nodes")
@@ -502,7 +481,96 @@ def expand_composite_invocation(
         copied["source_node_uuid"] = source_node_uuid
         copied["target_node_uuid"] = target_node_uuid
         expanded_edges.append(copied)
-    return expanded_nodes, expanded_edges
+    try:
+        child_scopes = project_experiment_operation_resource_scopes(
+            snapshot_workflow,
+            invocation_uuid=invocation_uuid,
+            node_uuid_map=node_uuid_map,
+        )
+        parent_meta_data = parent_workflow.get("meta_data")
+        if parent_meta_data is None:
+            parent_meta_data = {}
+        if not isinstance(parent_meta_data, Mapping):
+            raise CompositeGraphRewriteError(
+                "composite_boundary_mapping_invalid",
+                "/workflow/meta_data",
+                "父工作流元数据必须是对象",
+            )
+        workflow_meta_data = deepcopy(dict(parent_meta_data))
+        raw_unilab = workflow_meta_data.get("unilab")
+        if raw_unilab is None:
+            raw_unilab = {}
+        if not isinstance(raw_unilab, Mapping):
+            raise CompositeGraphRewriteError(
+                "composite_boundary_mapping_invalid",
+                "/workflow/meta_data/unilab",
+                "父工作流 unilab 元数据必须是对象",
+            )
+        unilab = deepcopy(dict(raw_unilab))
+        raw_parent_scopes = unilab.get("resource_scopes")
+        if raw_parent_scopes is None:
+            raw_parent_scopes = []
+        if (
+            not isinstance(raw_parent_scopes, Sequence)
+            or isinstance(raw_parent_scopes, (str, bytes))
+            or any(not isinstance(scope, Mapping) for scope in raw_parent_scopes)
+        ):
+            raise CompositeGraphRewriteError(
+                "composite_boundary_mapping_invalid",
+                "/workflow/meta_data/unilab/resource_scopes",
+                "父工作流资源作用域必须是对象数组",
+            )
+        resource_scopes = merge_expanded_resource_scopes(
+            raw_parent_scopes,
+            nested_invocations=(
+                (
+                    invocation_uuid,
+                    (invocation_uuid, *node_uuid_map.values()),
+                    child_scopes,
+                ),
+            ),
+        )
+        if resource_scopes:
+            unilab["resource_scopes"] = list(resource_scopes)
+            workflow_meta_data["unilab"] = unilab
+        elif "unilab" in workflow_meta_data:
+            unilab.pop("resource_scopes", None)
+            workflow_meta_data["unilab"] = unilab
+    except CompositeGraphRewriteError as error:
+        raise CompositeInvocationInvalid(f"{error.code} ({error.path})") from None
+    return CompositeInvocationExpansion(
+        nodes=tuple(expanded_nodes),
+        edges=tuple(expanded_edges),
+        resource_scopes=resource_scopes,
+        workflow_meta_data=workflow_meta_data,
+    )
 
 
-__all__ = ["CompositeInvocationInvalid", "expand_composite_invocation"]
+def expand_composite_invocation(
+    *,
+    parent_graph: Mapping[str, Any],
+    contract: Mapping[str, Any],
+    invocation_uuid: str,
+    pose: Mapping[str, Any],
+    param: Mapping[str, Any],
+    device_bindings: Mapping[str, str],
+) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
+    """兼容旧调用方，仅返回冻结合同展开生成的节点和边。"""
+
+    expansion = compile_composite_invocation(
+        parent_graph=parent_graph,
+        contract=contract,
+        invocation_uuid=invocation_uuid,
+        pose=pose,
+        param=param,
+        device_bindings=device_bindings,
+    )
+    return list(expansion.nodes), list(expansion.edges)
+
+
+__all__ = [
+    "CompositeInvocationExpansion",
+    "CompositeInvocationInvalid",
+    "compile_composite_invocation",
+    "expand_composite_invocation",
+]

@@ -403,7 +403,11 @@ def action(
     feedback_interval: Optional[float] = None,
     action_name: Optional[str] = None,
     displayname: str = "",
+    exception_handling: bool = True,
+    timeout: Optional[float] = None,
+    execution_timeout: Optional[float] = None,
     error_policy: Optional[Dict[str, Any]] = None,
+    default_on_user_timeout: str = "abort",
     resource_contract: Optional[Dict[str, Any]] = None,
     estimate_duration_fixed: Optional[float] = 60.0,
     estimate_duration_express: str = "",
@@ -443,8 +447,11 @@ def action(
                    不填写时不写入注册表。
         executor_kind: 动作的运行时执行器类型。该字段与画布节点类型解耦；
                        不填写时由节点类型决定执行器。
-        error_policy: 按异常类名匹配审批选项的策略。结构见
-                      unilabos.registry.action_policy.ErrorPolicy。
+        exception_handling: 是否将异常和超时上报给人工决策通道。
+        timeout: 动作执行硬超时（秒）。
+        execution_timeout: 业务层软超时（秒）。
+        error_policy: 人工决策策略，支持 allow_retry / allow_skip / options。
+        default_on_user_timeout: 人工决策等待超时后的默认动作。
         resource_contract: 只含参数名、资源角色和托管转换的声明式动作资源合同；
                            AST 会把它编译成 JSON，运行时不得自行取得或释放锁。
         estimate_duration_fixed: 预计时长兜底值（秒），默认 60 秒；None 表示不提供兜底
@@ -488,6 +495,15 @@ def action(
                 raise ValueError("estimate_duration_fixed 不能小于 0")
         if not isinstance(estimate_duration_express, str):
             raise TypeError("estimate_duration_express 必须是字符串")
+        for field_name, value in (("timeout", timeout), ("execution_timeout", execution_timeout)):
+            if value is not None and (
+                not isinstance(value, (int, float)) or isinstance(value, bool) or value <= 0
+            ):
+                raise ValueError(f"{field_name} 必须是大于 0 的秒数或 None")
+        if not isinstance(exception_handling, bool):
+            raise TypeError("exception_handling 必须是布尔值")
+        if default_on_user_timeout not in {"abort", "retry", "skip"}:
+            raise ValueError("default_on_user_timeout 仅支持 abort/retry/skip")
 
         meta = {
             "action_type": resolved_type,
@@ -506,6 +522,10 @@ def action(
             "parent": parent,
             "estimate_duration_fixed": estimate_duration_fixed,
             "estimate_duration_express": estimate_duration_express,
+            "exception_handling": exception_handling,
+            "timeout": timeout,
+            "execution_timeout": execution_timeout,
+            "default_on_user_timeout": default_on_user_timeout,
         }
         if feedback_interval is not None:
             meta["feedback_interval"] = feedback_interval
@@ -521,7 +541,10 @@ def action(
         if error_policy:
             from unilabos.registry.action_policy import normalize_error_policy
 
-            normalized_error_policy = normalize_error_policy(error_policy)
+            normalized_error_policy = normalize_error_policy(
+                error_policy,
+                default_on_user_timeout=default_on_user_timeout,
+            )
             meta["error_policy"] = normalized_error_policy
         if resource_contract is not None:
             from unilabos.registry.action_resource_contract import (

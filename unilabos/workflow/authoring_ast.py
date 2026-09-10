@@ -7,9 +7,10 @@ import math
 import re
 import tokenize
 from collections.abc import Mapping
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from io import StringIO
 from typing import Any, Never
+from uuid import NAMESPACE_URL, uuid5
 
 from unilabos.registry.annotation_schema import (
     NO_DEFAULT,
@@ -50,6 +51,7 @@ _AUTHORING_MARKERS = {
     "device": "unilabos.workflow.authoring:device",
     "group": "unilabos.workflow.authoring:group",
     "parallel": "unilabos.workflow.authoring:parallel",
+    "resources": "unilabos.workflow.authoring:resources",
     "quantity_requirement": "unilabos.workflow.authoring:quantity_requirement",
     "repeat_until": "unilabos.workflow.authoring:repeat_until",
     "site_group": "unilabos.workflow.authoring:site_group",
@@ -138,6 +140,19 @@ class GroupDeclaration:
 
 
 @dataclass(frozen=True, slots=True)
+class ResourceScopeDeclaration:
+    """不创建执行节点的结构化资源作用域声明。"""
+
+    scope_id: str
+    resources: tuple[str, ...]
+    parent_scope_id: str | None
+    node_uuids: tuple[str, ...]
+    entry_node_uuid: str
+    exit_node_uuid: str
+    source_node: ast.With
+
+
+@dataclass(frozen=True, slots=True)
 class ConditionBranchDeclaration:
     """条件区域中的一个有序分支。"""
 
@@ -205,6 +220,7 @@ class WorkflowProgram:
     tags: list[Any] | None
     meta_data: dict[str, Any] | None
     workflow_type: str | None
+    root_resources: tuple[str, ...]
     imports: tuple[tuple[str, str], ...]
     devices: tuple[DeviceDeclaration, ...]
     input_contract: dict[str, Any]
@@ -218,6 +234,7 @@ class WorkflowProgram:
         ...,
     ]
     groups: tuple[GroupDeclaration, ...]
+    resource_scopes: tuple[ResourceScopeDeclaration, ...]
     conditions: tuple[ConditionDeclaration, ...]
     repeats: tuple[RepeatUntilDeclaration, ...]
     quantity_requirements: tuple[QuantityRequirementDeclaration, ...]
@@ -248,6 +265,7 @@ class _BodyState:
     node_metadata: dict[int, tuple[str, str]]
     actions: list[ActionDeclaration | CompositeDeclaration | MaterialSourceDeclaration]
     groups: list[GroupDeclaration]
+    resource_scopes: list[ResourceScopeDeclaration]
     conditions: list[ConditionDeclaration]
     repeats: list[RepeatUntilDeclaration]
     quantity_requirements: list[QuantityRequirementDeclaration]
@@ -257,6 +275,7 @@ class _BodyState:
     material_results: set[str]
     control_depth: int
     loop_carry_scopes: dict[str, tuple[str, frozenset[str]]]
+    resource_scope_stack: list[str]
 
 
 def parse_authoring_source(
@@ -314,6 +333,7 @@ def parse_authoring_source(
         tags,
         meta_data,
         workflow_type,
+        root_resources,
     ) = _workflow_declaration(function, imports)
     if workflow_uuid != validate_uuid(expected_workflow_uuid):
         _fail(
@@ -350,6 +370,7 @@ def parse_authoring_source(
         conditions,
         repeats,
         quantity_requirements,
+        resource_scopes,
         parent_by_node,
         order_dependencies,
         authoring_source_order,
@@ -377,6 +398,7 @@ def parse_authoring_source(
         tags=tags,
         meta_data=meta_data,
         workflow_type=workflow_type,
+        root_resources=root_resources,
         imports=tuple(sorted(imports.items())),
         devices=tuple(devices),
         input_contract=input_contract,
@@ -387,6 +409,7 @@ def parse_authoring_source(
         output_resource_template_symbols=output_resource_template_symbols,
         actions=tuple(actions),
         groups=tuple(groups),
+        resource_scopes=tuple(resource_scopes),
         conditions=tuple(conditions),
         repeats=tuple(repeats),
         quantity_requirements=tuple(quantity_requirements),
@@ -617,6 +640,7 @@ def _workflow_declaration(
     list[Any] | None,
     dict[str, Any] | None,
     str | None,
+    tuple[str, ...],
 ]:
     """读取工作流定义装饰器的稳定元数据。
 
@@ -651,6 +675,7 @@ def _workflow_declaration(
         "tags",
         "meta_data",
         "workflow_type",
+        "resources",
     }:
         _fail("invalid_workflow_declaration", "工作流声明包含未知字段", declaration)
     try:
@@ -694,6 +719,32 @@ def _workflow_declaration(
             "工作流类型只能是 normal 或 experiment_operation",
             declaration,
         )
+    root_resources: tuple[str, ...] = ()
+    if "resources" in values:
+        raw_resources = values["resources"]
+        if not isinstance(raw_resources, (list, tuple)) or not raw_resources:
+            _fail(
+                "invalid_workflow_declaration",
+                "根 resources 必须是非空字符串 tuple/list 字面量",
+                declaration,
+            )
+        aliases: list[str] = []
+        for value in raw_resources:
+            if not isinstance(value, str) or not value.strip():
+                _fail(
+                    "invalid_workflow_declaration",
+                    "根 resources 只能包含非空字符串别名",
+                    declaration,
+                )
+            normalized = value.strip()
+            if normalized in aliases:
+                _fail(
+                    "duplicate_resource_alias",
+                    f"资源别名重复：{normalized}",
+                    declaration,
+                )
+            aliases.append(normalized)
+        root_resources = tuple(aliases)
     return (
         workflow_uuid,
         display_name.strip(),
@@ -701,6 +752,7 @@ def _workflow_declaration(
         tags,
         meta_data,
         workflow_type,
+        root_resources,
     )
 
 
@@ -957,6 +1009,7 @@ def _workflow_body(
     list[ConditionDeclaration],
     list[RepeatUntilDeclaration],
     list[QuantityRequirementDeclaration],
+    list[ResourceScopeDeclaration],
     dict[str, str],
     list[tuple[str, str]],
     list[str],
@@ -993,6 +1046,7 @@ def _workflow_body(
         node_metadata=node_metadata,
         actions=[],
         groups=[],
+        resource_scopes=[],
         conditions=[],
         repeats=[],
         quantity_requirements=[],
@@ -1002,6 +1056,7 @@ def _workflow_body(
         material_results=set(),
         control_depth=0,
         loop_carry_scopes={},
+        resource_scope_stack=[],
     )
     # ``known_results`` 只在递归边界复制，保证同级并行分支互不可见。
     known_results: set[str] = set()
@@ -1011,6 +1066,7 @@ def _workflow_body(
         available_results=known_results,
         parent_uuid=None,
     )
+    _finalize_resource_scope_ids(state)
     outputs = _workflow_outputs(
         return_statement,
         imports=imports,
@@ -1024,6 +1080,7 @@ def _workflow_body(
         state.conditions,
         state.repeats,
         state.quantity_requirements,
+        state.resource_scopes,
         state.parent_by_node,
         state.order_dependencies,
         state.source_order,
@@ -1109,6 +1166,13 @@ def _parse_statement(
             )
         if marker == "parallel":
             return _parse_parallel(
+                statement,
+                state=state,
+                available_results=available_results,
+                parent_uuid=parent_uuid,
+            )
+        if marker == "resources":
+            return _parse_resource_scope(
                 statement,
                 state=state,
                 available_results=available_results,
@@ -1652,7 +1716,7 @@ def _with_marker(statement: ast.With, imports: dict[str, str]) -> str | None:
     context = statement.items[0].context_expr
     if not isinstance(context, ast.Call):
         return None
-    for marker_name in ("group", "parallel", "repeat_until"):
+    for marker_name in ("group", "parallel", "repeat_until", "resources"):
         if _is_marker(context.func, imports, marker_name):
             if marker_name == "repeat_until":
                 return (
@@ -1664,6 +1728,133 @@ def _with_marker(statement: ast.With, imports: dict[str, str]) -> str | None:
                 return None
             return marker_name
     return None
+
+
+def _parse_resource_scope(
+    statement: ast.With,
+    *,
+    state: _BodyState,
+    available_results: set[str],
+    parent_uuid: str | None,
+) -> _Flow:
+    """解析 ``with resources(...)`` 的词法硬边界而不创建执行节点。"""
+
+    context = statement.items[0].context_expr
+    assert isinstance(context, ast.Call)
+    aliases = _literal_resource_aliases(
+        context,
+        code="invalid_resource_scope",
+        message="resources 只接受非空字符串资源别名",
+    )
+    # 解析嵌套 body 前使用仅限本次解析的临时 ID，避免把源码行号写入持久
+    # 图身份。真正稳定的 scope_id 在 body 解析完成、拿到节点 UUID 集合后生成。
+    scope_id = f"pending-resource-scope-{len(state.resource_scopes)}-{len(state.resource_scope_stack)}"
+    parent_scope_id = (
+        state.resource_scope_stack[-1] if state.resource_scope_stack else None
+    )
+    start_index = len(state.source_order)
+    state.resource_scope_stack.append(scope_id)
+    try:
+        flow = _parse_sequence(
+            list(statement.body),
+            state=state,
+            available_results=available_results,
+            parent_uuid=parent_uuid,
+        )
+    finally:
+        state.resource_scope_stack.pop()
+    members = tuple(state.source_order[start_index:])
+    if not flow.entries or not members:
+        _fail("invalid_resource_scope", "resources 作用域必须包含至少一个可执行节点", statement)
+    state.resource_scopes.append(
+        ResourceScopeDeclaration(
+            scope_id=scope_id,
+            resources=aliases,
+            parent_scope_id=parent_scope_id,
+            node_uuids=members,
+            entry_node_uuid=flow.entries[0],
+            exit_node_uuid=flow.exits[-1] if flow.exits else flow.entries[-1],
+            source_node=statement,
+        )
+    )
+    return flow
+
+
+def _finalize_resource_scope_ids(state: _BodyState) -> None:
+    """将资源作用域临时 ID 规范化为与源码位置无关的稳定身份。
+
+    作用域身份由资源别名、按源码顺序排列的节点 UUID、入口/出口节点组成；
+    因而作者源码被格式化或插入注释后，重复编译仍得到相同图。嵌套作用域在
+    解析时引用父临时 ID，这里统一替换为最终 ID。
+    """
+
+    if not state.resource_scopes:
+        return
+    stable_by_pending: dict[str, str] = {}
+    for scope in state.resource_scopes:
+        identity = "|".join(
+            (
+                "unilabos:resource-scope:v1",
+                ",".join(scope.resources),
+                ",".join(scope.node_uuids),
+                scope.entry_node_uuid,
+                scope.exit_node_uuid,
+            )
+        )
+        stable_id = f"resource-scope-{uuid5(NAMESPACE_URL, identity)}"
+        previous = stable_by_pending.get(scope.scope_id)
+        if previous is not None and previous != stable_id:
+            raise AuthoringSyntaxError(
+                "invalid_resource_scope",
+                "资源作用域身份无法稳定化",
+                scope.source_node,
+            )
+        if stable_id in stable_by_pending.values():
+            raise AuthoringSyntaxError(
+                "invalid_resource_scope",
+                "资源作用域身份重复",
+                scope.source_node,
+            )
+        stable_by_pending[scope.scope_id] = stable_id
+    state.resource_scopes[:] = [
+        replace(
+            scope,
+            scope_id=stable_by_pending[scope.scope_id],
+            parent_scope_id=(
+                stable_by_pending.get(scope.parent_scope_id)
+                if scope.parent_scope_id is not None
+                else None
+            ),
+        )
+        for scope in state.resource_scopes
+    ]
+
+
+def _literal_resource_aliases(
+    call: ast.Call,
+    *,
+    code: str,
+    message: str,
+) -> tuple[str, ...]:
+    """读取 resources 调用中的静态字符串别名。"""
+
+    if call.keywords:
+        _fail(code, message, call)
+    aliases: list[str] = []
+    for argument in call.args:
+        try:
+            value = ast.literal_eval(argument)
+        except (TypeError, ValueError):
+            _fail(code, message, argument)
+        if not isinstance(value, str) or not value.strip():
+            _fail(code, message, argument)
+        normalized = value.strip()
+        if normalized in aliases:
+            _fail("duplicate_resource_alias", f"资源别名重复：{normalized}", argument)
+        aliases.append(normalized)
+    if not aliases:
+        _fail(code, message, call)
+    return tuple(aliases)
 
 
 def _parse_repeat_until(
@@ -2476,6 +2667,7 @@ __all__ = [
     "GroupDeclaration",
     "QuantityRequirementDeclaration",
     "RepeatUntilDeclaration",
+    "ResourceScopeDeclaration",
     "ValueBinding",
     "WorkflowProgram",
     "author_source_map",

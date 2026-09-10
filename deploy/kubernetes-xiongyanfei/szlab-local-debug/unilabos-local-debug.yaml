@@ -47,6 +47,40 @@ data:
         encoding="utf-8",
     )
 ---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unilabos-szlab-authoring-workspace
+  namespace: xiongyanfei
+  labels:
+    app.kubernetes.io/name: unilabos-local-debug
+    app.kubernetes.io/component: authoring-workspace
+    app.kubernetes.io/part-of: uni-lab-szlab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 2Gi
+---
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: unilabos-local-debug-runtime
+  namespace: xiongyanfei
+  labels:
+    app.kubernetes.io/name: unilabos-local-debug
+    app.kubernetes.io/component: workspace-backend
+    app.kubernetes.io/part-of: uni-lab-szlab
+spec:
+  accessModes:
+    - ReadWriteOnce
+  storageClassName: local-path
+  resources:
+    requests:
+      storage: 5Gi
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -80,8 +114,34 @@ spec:
         seccompProfile:
           type: RuntimeDefault
       initContainers:
+        - name: seed-szlab-authoring-workspace
+          image: unilabos-szlab-local-debug:e237fb99-81215bcb-e2e-trace-v7-20260906
+          imagePullPolicy: Never
+          command: [/bin/sh, -ec]
+          args:
+            - |
+              set -eu
+              destination=/authoring-workspace
+              marker="${destination}/.unilabos-szlab-workspace-initialized"
+              if [ ! -f "${marker}" ]; then
+                find /opt/runtime-src/szlab -mindepth 1 -maxdepth 1 \
+                  -exec cp -a '{}' "${destination}/" ';'
+                printf '%s\n' 'e237fb99-81215bcb' >"${marker}"
+              fi
+              test -f "${destination}/package.yaml"
+              test -d "${destination}/szlab_poly_studio"
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          volumeMounts:
+            - name: authoring-workspace
+              mountPath: /authoring-workspace
+            - name: tmp
+              mountPath: /tmp
         - name: prepare-szlab-runtime-graph
-          image: unilabos-szlab-local-debug:1f421617-8543f1a-r2
+          image: unilabos-szlab-local-debug:e237fb99-81215bcb-e2e-trace-v7-20260906
           imagePullPolicy: Never
           command: [/opt/conda/bin/python]
           args: [/config/prepare_runtime_graph.py]
@@ -100,7 +160,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: workspace-backend
-          image: unilabos-szlab-local-debug:1f421617-8543f1a-r2
+          image: unilabos-szlab-local-debug:e237fb99-81215bcb-e2e-trace-v7-20260906
           imagePullPolicy: Never
           args:
             - unilab
@@ -141,6 +201,30 @@ spec:
               value: http://unilabos-local-debug:18003
             - name: UNILABOS_EDGECONTROLCONFIG_EDGE_KEY
               value: xiongyanfei-szlab-local
+            - name: UNILABOS_OTEL_ENABLED
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: http://signoz-otel:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_EXPORTER_OTLP_TRACES_INSECURE
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: unilabos-edge-control
+            - name: OTEL_SERVICE_NAMESPACE
+              value: unilabos
+            - name: OTEL_DEPLOYMENT_ENVIRONMENT
+              value: xiongyanfei
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
+            - name: UNILABOS_SIGNOZ_UI_URL
+              value: http://115.190.137.109:30151
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: edge.key=$(UNILABOS_EDGECONTROLCONFIG_EDGE_KEY),k8s.namespace.name=$(K8S_NAMESPACE)
             - name: ROS_DOMAIN_ID
               value: "78"
             - name: ROS_LOCALHOST_ONLY
@@ -185,6 +269,8 @@ spec:
           volumeMounts:
             - name: runtime
               mountPath: /runtime
+            - name: authoring-workspace
+              mountPath: /opt/runtime-src/szlab
             - name: runtime-graphs
               mountPath: /opt/runtime-src/szlab/deployment/graphs
               readOnly: true
@@ -192,7 +278,11 @@ spec:
               mountPath: /tmp
       volumes:
         - name: runtime
-          emptyDir: {}
+          persistentVolumeClaim:
+            claimName: unilabos-local-debug-runtime
+        - name: authoring-workspace
+          persistentVolumeClaim:
+            claimName: unilabos-szlab-authoring-workspace
         - name: runtime-graph-config
           configMap:
             name: unilabos-szlab-runtime-graph
@@ -237,7 +327,7 @@ spec:
           type: RuntimeDefault
       initContainers:
         - name: prepare-szlab-runtime-graph
-          image: unilabos-szlab-local-debug:1f421617-8543f1a-r2
+          image: unilabos-szlab-local-debug:e237fb99-81215bcb-e2e-trace-v7-20260906
           imagePullPolicy: Never
           command: [/opt/conda/bin/python]
           args: [/config/prepare_runtime_graph.py]
@@ -256,7 +346,7 @@ spec:
               mountPath: /tmp
       containers:
         - name: edge-runtime
-          image: unilabos-szlab-local-debug:1f421617-8543f1a-r2
+          image: unilabos-szlab-local-debug:e237fb99-81215bcb-e2e-trace-v7-20260906
           imagePullPolicy: Never
           args:
             - unilab
@@ -302,6 +392,28 @@ spec:
               value: edge_runtime
             - name: UNILABOS_EDGE_READY_FILE
               value: /runtime/edge/ready.json
+            - name: UNILABOS_OTEL_ENABLED
+              value: "true"
+            - name: OTEL_EXPORTER_OTLP_TRACES_ENDPOINT
+              value: http://signoz-otel:4317
+            - name: OTEL_EXPORTER_OTLP_PROTOCOL
+              value: grpc
+            - name: OTEL_EXPORTER_OTLP_TRACES_INSECURE
+              value: "true"
+            - name: OTEL_SERVICE_NAME
+              value: unilabos-edge-runtime
+            - name: OTEL_SERVICE_NAMESPACE
+              value: unilabos
+            - name: OTEL_DEPLOYMENT_ENVIRONMENT
+              value: xiongyanfei
+            - name: OTEL_TRACES_SAMPLER
+              value: parentbased_always_on
+            - name: K8S_NAMESPACE
+              valueFrom:
+                fieldRef:
+                  fieldPath: metadata.namespace
+            - name: OTEL_RESOURCE_ATTRIBUTES
+              value: edge.key=$(UNILABOS_EDGECONTROLCONFIG_EDGE_KEY),k8s.namespace.name=$(K8S_NAMESPACE)
             - name: ROS_DOMAIN_ID
               value: "78"
             - name: ROS_LOCALHOST_ONLY

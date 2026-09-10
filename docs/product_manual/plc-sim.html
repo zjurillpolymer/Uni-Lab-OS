@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>PLC / OPC UA 仿真器 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="plc-opc-ua">
-<h1>PLC / OPC UA 仿真器<a class="headerlink" href="#plc-opc-ua" title="Link to this heading">¶</a></h1>
+<h1>PLC / OPC UA 仿真器<a class="headerlink" href="#plc-opc-ua" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,7 +366,7 @@
 </div>
 <p>PLC 仿真器只在用户设备包明确声明需要 PLC 或 OPC UA 通信时使用。它用于在没有真实产线的情况下验证连接、点位映射、握手顺序、超时和故障处理，不能代替真机安全验收。</p>
 <section id="id1">
-<h2>设备包必须交付的内容<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>设备包必须交付的内容<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -400,7 +402,7 @@
 <p>缺少其中任何一项时，只能完成系统安装，不能声称 PLC 联调已经完成。</p>
 </section>
 <section id="id2">
-<h2>启动顺序<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>启动顺序<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>选择设备包提供的模拟配置，确认没有生产 PLC 地址。</p></li>
 <li><p>启动 OPC UA Server，检查监听地址和命名空间。</p></li>
@@ -411,15 +413,15 @@
 <p>顺序可以由设备包的启动脚本自动完成，但脚本仍应输出每个组件的状态。不要仅凭网页能打开就判断协议链路正常。</p>
 </section>
 <section id="id3">
-<h2>启动图 配置规则<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>启动图 配置规则<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"plc_gateway_01"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.example_lab.plc_gateway"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"endpoint"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opc.tcp://127.0.0.1:4855/example/"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"namespace_uri"</span><span class="p">:</span><span class="w"> </span><span class="s2">"urn:example:simulation"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"connect_timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"command_timeout_seconds"</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;plc_gateway_01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.example_lab.plc_gateway&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;endpoint&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opc.tcp://127.0.0.1:4855/example/&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;namespace_uri&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;urn:example:simulation&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;connect_timeout_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">10</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;command_timeout_seconds&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">60</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -435,7 +437,7 @@
 </ul>
 </section>
 <section id="id4">
-<h2>三层就绪检查<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>三层就绪检查<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -463,7 +465,7 @@
 <p>若仿真器提供 Web 页面，页面只用于观察和受控测试。共享环境中不要修改点位、切换场景或停止服务。</p>
 </section>
 <section id="id5">
-<h2>最小联调步骤<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>最小联调步骤<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>读取一个只读状态点，核对类型和值。</p></li>
 <li><p>在无硬件副作用的前提下写入测试命令。</p></li>
@@ -474,11 +476,11 @@
 </ol>
 </section>
 <section id="plc">
-<h2>切换到真实 PLC<a class="headerlink" href="#plc" title="Link to this heading">¶</a></h2>
+<h2>切换到真实 PLC<a class="headerlink" href="#plc" title="链接到此标题。">¶</a></h2>
 <p>切换前复制并锁定一份生产 启动图，由现场负责人填写真实 Endpoint、证书和点位配置。先完成只读连接，再进行单动作低风险测试，最后才执行完整工作流。仿真器中通过的结果只证明软件合同基本一致；急停、互锁、限位、人员防护和异常恢复仍必须由现场安全验收确认。</p>
 </section>
 <section id="id6">
-<h2>常见问题<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>常见问题<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -567,10 +569,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

@@ -8,7 +8,7 @@ from fastapi.testclient import TestClient
 from unilabos.app.scheduler.inventory.backend_api import install_backend_resource_api
 from unilabos.app.scheduler.inventory.backend_contract import BackendResourceService
 from unilabos.app.scheduler.inventory.schemas import InventoryLedgerEntryResponse
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import SCHEMA_VERSION, InventoryStore
 
 
 def _client(tmp_path) -> tuple[TestClient, InventoryStore]:
@@ -176,7 +176,7 @@ def test_inventory_database_reuses_edge_ledger_for_reagent_schema(tmp_path) -> N
         )
     }
 
-    assert store.query_one("PRAGMA user_version") == {"user_version": 13}
+    assert store.query_one("PRAGMA user_version") == {"user_version": SCHEMA_VERSION}
     assert {
         "reagent_info",
         "reagent",

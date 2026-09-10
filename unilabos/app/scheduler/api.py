@@ -502,6 +502,7 @@ def create_app(
         allow_headers=[
             "Content-Type",
             "Accept",
+            "Idempotency-Key",
             "X-Workflow-Filename",
             "Last-Event-ID",
             "trace_id",

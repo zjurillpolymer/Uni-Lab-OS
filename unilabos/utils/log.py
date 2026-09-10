@@ -1,10 +1,10 @@
 import logging
-import os
 import platform
 from datetime import datetime
 import ctypes
 import atexit
 import inspect
+from pathlib import Path
 from typing import Tuple, cast
 
 # 添加TRACE级别到logging模块
@@ -173,75 +173,84 @@ class ColoredFormatter(logging.Formatter):
         return formatted_exc
 
 
-def _to_numeric_level(loglevel, default=logging.DEBUG) -> int:
-    """将日志级别(字符串/常量)统一转换为数字级别。
+_detailed_logging_enabled = False
 
-    Args:
-        loglevel: 'TRACE'/'DEBUG'/'INFO'/... 字符串，或 logging 常量，或 None
-        default: 解析失败或为 None 时使用的默认级别
-    """
+
+def is_detailed_logging_enabled() -> bool:
+    """返回是否显式启用逐次属性采集和设备发现诊断。"""
+    return _detailed_logging_enabled
+
+
+def _to_numeric_level(loglevel, default=logging.INFO) -> int:
+    """解析日志级别；非法配置在打开文件前明确报错。"""
     if loglevel is None:
         return default
     if isinstance(loglevel, str):
-        if loglevel.upper() == "TRACE":
-            return TRACE_LEVEL
-        numeric_level = getattr(logging, loglevel.upper(), None)
-        if not isinstance(numeric_level, int):
-            print(f"警告: 无效的日志级别 '{loglevel}'，使用默认级别 DEBUG")
-            return default
-        return numeric_level
-    return loglevel
+        numeric_level = logging.getLevelName(loglevel.upper())
+        if isinstance(numeric_level, int) and numeric_level > 0:
+            return numeric_level
+    elif type(loglevel) is int and loglevel > 0:
+        return loglevel
+    raise ValueError(f"无效的日志级别: {loglevel!r}")
 
 
-# 配置日志处理器
-def configure_logger(loglevel=None, working_dir=None):
-    """配置日志记录器
+def _logging_settings(loglevel, file_log_level, log_detailed, policy):
+    """统一解析主日志和通信日志的级别及容量策略。"""
+    from unilabos.utils.log_storage import LogPolicy
 
-    Args:
-        loglevel: 日志级别，可以是字符串（'TRACE', 'DEBUG', 'INFO', 'WARNING', 'ERROR', 'CRITICAL'）
-                 或logging模块的常量（如logging.DEBUG）或TRACE_LEVEL
-    """
-    # 获取根日志记录器
-    root_logger = logging.getLogger()
-    root_logger.setLevel(TRACE_LEVEL)
-    # 设置日志级别
-    numeric_level = _to_numeric_level(loglevel)
+    if type(log_detailed) is not bool:
+        raise ValueError("log_detailed 必须为布尔值")
+    console_level = _to_numeric_level(loglevel)
+    file_level = _to_numeric_level(file_log_level)
+    if log_detailed:
+        file_level = TRACE_LEVEL
+    return console_level, file_level, policy if policy is not None else LogPolicy.from_env()
 
-    # 移除已存在的处理器
-    for handler in root_logger.handlers[:]:
-        root_logger.removeHandler(handler)
 
-    # 创建控制台处理器
+def _close_handlers(target_logger: logging.Logger) -> None:
+    """先解除全部旧出口，再关闭文件和会话锁；保留 OTel 出口。"""
+    old_handlers = [
+        handler for handler in target_logger.handlers
+        if not getattr(handler, "_unilabos_otel_handler", False)
+    ]
+    for handler in old_handlers:
+        target_logger.removeHandler(handler)
+    for handler in old_handlers:
+        handler.close()
+
+
+def _make_log_handlers(working_dir, console_level, file_level, policy, *, communication=False):
+    """创建控制台及有界会话日志出口。"""
+    from unilabos.utils.log_storage import SessionRotatingFileHandler, unique_log_path
+
     console_handler = logging.StreamHandler()
-    console_handler.setLevel(numeric_level)  # 使用与根记录器相同的级别
-
-    # 使用自定义的颜色格式化器
-    color_formatter = ColoredFormatter()
-    console_handler.setFormatter(color_formatter)
-
-    # 添加处理器到根日志记录器
-    root_logger.addHandler(console_handler)
-
-    # 如果指定了工作目录，添加文件处理器
+    console_handler.setLevel(console_level)
+    console_handler.setFormatter(ColoredFormatter(show_thread=communication))
+    handlers = [console_handler]
     log_filepath = None
     if working_dir is not None:
-        logs_dir = os.path.join(working_dir, "logs")
-        os.makedirs(logs_dir, exist_ok=True)
+        log_filepath = unique_log_path(Path(working_dir) / "logs", prefix="ws_comm_" if communication else "")
+        file_handler = SessionRotatingFileHandler(log_filepath, policy=policy)
+        file_handler.setLevel(file_level)
+        file_handler.setFormatter(ColoredFormatter(
+            use_colors=False, microseconds=communication, show_thread=communication,
+        ))
+        handlers.append(file_handler)
+    return handlers, str(log_filepath) if log_filepath is not None else None
 
-        # 生成日志文件名：日期 时间.log
-        log_filename = datetime.now().strftime("%Y-%m-%d %H-%M-%S") + ".log"
-        log_filepath = os.path.join(logs_dir, log_filename)
 
-        # 创建文件处理器
-        file_handler = logging.FileHandler(log_filepath, encoding="utf-8")
-        file_handler.setLevel(TRACE_LEVEL)
-
-        # 使用不带颜色的格式化器
-        file_formatter = ColoredFormatter(use_colors=False)
-        file_handler.setFormatter(file_formatter)
-
-        root_logger.addHandler(file_handler)
-
+def configure_logger(loglevel=None, working_dir=None, *, policy=None, file_log_level="INFO", log_detailed=False):
+    """配置控制台级别和独立轮转文件，重复配置时释放旧出口。"""
+    global _detailed_logging_enabled
+    console_level, file_level, policy = _logging_settings(loglevel, file_log_level, log_detailed, policy)
+    root_logger = logging.getLogger()
+    # 级别由各出口决定，保留额外 OTel handler 的采集能力。
+    root_logger.setLevel(TRACE_LEVEL)
+    _close_handlers(root_logger)
+    handlers, log_filepath = _make_log_handlers(working_dir, console_level, file_level, policy)
+    for handler in handlers:
+        root_logger.addHandler(handler)
+    _detailed_logging_enabled = log_detailed
     logging.getLogger("asyncio").setLevel(logging.INFO)
     logging.getLogger("urllib3").setLevel(logging.INFO)
     return log_filepath
@@ -249,10 +258,10 @@ def configure_logger(loglevel=None, working_dir=None):
 
 # ============================================================================
 # 服务端通信(WebSocket)独立日志
-# 单独成文件、全量保留到本地、微秒级时间戳 + 线程名，便于排查通信/queue 时序问题
+# 单独轮转成文件、微秒级时间戳 + 线程名；详细模式保留 TRACE
 # ============================================================================
 COMM_LOGGER_NAME = "unilabos.comm"
-_comm_file_handler: "logging.Handler | None" = None  # 便于重启时清理 websockets 库 handler
+_comm_file_handler: "logging.Handler | None" = None
 
 
 def _attach_trace_method(target_logger: logging.Logger) -> logging.Logger:
@@ -278,72 +287,51 @@ def get_comm_logger() -> logging.Logger:
     return _attach_trace_method(logging.getLogger(COMM_LOGGER_NAME))
 
 
-def configure_comm_logger(working_dir=None, loglevel=None):
-    """为服务端通信(WebSocket)配置独立日志，复用 ``ColoredFormatter`` 逻辑。
+class _CommForwardingHandler(logging.Handler):
+    """协议日志只进入通信出口，并复用其稍后安装的 OTel handler。"""
 
-    - 独立文件：``<working_dir>/logs/ws_comm_<日期 时间>.log``，TRACE 全量落本地
-    - 微秒级时间戳 + 线程名，便于排查 queue 机制、收发时序与并发标识
-    - ``propagate=False``，与主日志解耦，避免日志混在一起
-    - 控制台仍保留实时输出（级别与主控制台一致），不丢失现有可见性
-    - 同步把 ``websockets`` 库自身的协议日志(握手/ping/pong/关闭)落到同一文件
+    def emit(self, record):
+        get_comm_logger().handle(record)
 
-    Args:
-        working_dir: 工作目录(``unilabos_data``)，None 时不写文件
-        loglevel: 控制台日志级别，与主日志保持一致
 
-    Returns:
-        日志文件绝对路径(未配置文件时为 None)
-    """
-    global _comm_file_handler
+_comm_ws_handler: "logging.Handler | None" = None
 
+
+def configure_comm_logger(working_dir=None, loglevel=None, *, policy=None, file_log_level="INFO", log_detailed=False):
+    """配置通信轮转日志；协议日志只写一次，None 重配也释放旧文件。"""
+    global _comm_file_handler, _comm_ws_handler
+    console_level, file_level, policy = _logging_settings(loglevel, file_log_level, log_detailed, policy)
     comm_logger = get_comm_logger()
+    ws_logger = logging.getLogger("websockets")
+    # 共享出口必须先从所有 logger 解除，再关闭，避免关闭后被重新打开。
+    for old_handler in (_comm_ws_handler, _comm_file_handler):
+        if old_handler is not None:
+            ws_logger.removeHandler(old_handler)
+    if _comm_ws_handler is not None:
+        _comm_ws_handler.close()
+    _comm_ws_handler = None
+    _comm_file_handler = None
+    _close_handlers(comm_logger)
     comm_logger.setLevel(TRACE_LEVEL)
-    comm_logger.propagate = False  # 与根 logger 解耦，单独成文件
-
-    # 移除旧 handler，支持重启重复调用
-    for handler in comm_logger.handlers[:]:
-        if getattr(handler, "_unilabos_otel_handler", False):
-            continue
-        comm_logger.removeHandler(handler)
-        handler.close()
-
-    # 控制台 handler：保留实时可见性，带线程名便于现场观察
-    console_handler = logging.StreamHandler()
-    console_handler.setLevel(_to_numeric_level(loglevel))
-    console_handler.setFormatter(ColoredFormatter(use_colors=True, show_thread=True))
-    comm_logger.addHandler(console_handler)
-
-    log_filepath = None
-    if working_dir is not None:
-        logs_dir = os.path.join(working_dir, "logs")
-        os.makedirs(logs_dir, exist_ok=True)
-
-        log_filename = "ws_comm_" + datetime.now().strftime("%Y-%m-%d %H-%M-%S") + ".log"
-        log_filepath = os.path.join(logs_dir, log_filename)
-
-        file_handler = logging.FileHandler(log_filepath, encoding="utf-8")
-        file_handler.setLevel(TRACE_LEVEL)  # 全量保留到本地
-        # 文件不带颜色，开启微秒精度 + 线程名
-        file_handler.setFormatter(ColoredFormatter(use_colors=False, microseconds=True, show_thread=True))
-        comm_logger.addHandler(file_handler)
-
-        # websockets 库自身日志(协议层)也归集到同一文件，方便排查链路问题；
-        # 保持其 propagate=True，不影响主日志原有行为。
-        ws_lib_logger = logging.getLogger("websockets")
-        if _comm_file_handler is not None and _comm_file_handler in ws_lib_logger.handlers:
-            ws_lib_logger.removeHandler(_comm_file_handler)
-        ws_lib_logger.addHandler(file_handler)
-        _comm_file_handler = file_handler
-
-    # tracing 可能早于或晚于通信 logger 初始化；两种顺序都要接入同一 OTLP handler。
+    comm_logger.propagate = False
+    handlers, log_filepath = _make_log_handlers(
+        working_dir, console_level, file_level, policy, communication=True,
+    )
+    for handler in handlers:
+        comm_logger.addHandler(handler)
+    if log_filepath is not None:
+        _comm_file_handler = handlers[-1]
+    _comm_ws_handler = _CommForwardingHandler()
+    ws_logger.addHandler(_comm_ws_handler)
+    ws_logger.setLevel(TRACE_LEVEL)
+    ws_logger.propagate = False
     try:
         from unilabos.utils.tracing import attach_active_otel_log_handler
 
         attach_active_otel_log_handler(comm_logger)
     except Exception:
         pass
-
-    comm_logger.info(f"[CommLogger] 通信日志已初始化，文件: {log_filepath}")
+    comm_logger.info("[CommLogger] 通信日志已初始化，文件: %s", log_filepath)
     return log_filepath
 
 

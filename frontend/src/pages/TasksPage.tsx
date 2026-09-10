@@ -13,19 +13,44 @@ import {
   ExternalLink,
   FlaskConical,
   LoaderCircle,
+  Lock,
   Plus,
   Pause,
   Play,
   RefreshCw,
   Send,
+  ShieldCheck,
   ShieldAlert,
   Square,
   StepForward,
   X,
 } from 'lucide-react'
-import { commandWorkflowTask, createWorkflowTask, decideManualConfirmation, loadWorkflowGraph, loadWorkflowTaskDetail, loadWorkflowTaskStepState } from '../lib/edgeClient'
+import {
+  commandWorkflowTask,
+  createWorkflowTask,
+  decideManualConfirmation,
+  decideWorkflowIntervention,
+  forceReleaseWorkflowTaskExecutionLock,
+  loadFailedMaterialTransferSettlementContext,
+  loadWorkflowGraph,
+  loadWorkflowInterventions,
+  loadWorkflowTaskDetail,
+  loadWorkflowTaskExecutionLocks,
+  loadWorkflowTaskStepState,
+  settleFailedMaterialTransfer,
+} from '../lib/edgeClient'
+import type {
+  ContractField,
+  FailedMaterialTransferSettlementContext,
+  MaterialRecord,
+  TaskNode,
+  WorkflowDefinition,
+  WorkflowIntervention,
+  WorkflowTarget,
+  WorkflowTask,
+  WorkflowTaskExecutionLock,
+} from '../types'
 import { sourceSiteOptions } from '../lib/sourceSiteOptions'
-import type { ContractField, MaterialRecord, TaskNode, WorkflowDefinition, WorkflowTarget, WorkflowTask } from '../types'
 import { Button, EmptyState, PageHeader, Panel, PanelHeader, StatusBadge } from '../components/ui'
 
 type TaskFilter = 'all' | 'running' | 'waiting' | 'failed' | 'succeeded'
@@ -344,6 +369,62 @@ function jsonEvidence(value: unknown, emptyLabel: string) {
   }
 }
 
+function ErrorPolicyDialog({ intervention, connected, onNotify }: {
+  intervention: WorkflowIntervention
+  connected: boolean
+  onNotify: (message: string) => void
+}) {
+  const queryClient = useQueryClient()
+  const [now, setNow] = useState(() => Date.now())
+  const timeout = Number(intervention.metaData.decision_timeout_seconds || 300)
+  const defaultAction = String(intervention.metaData.default_on_decision_timeout || 'abort')
+  const defaultActionLabel = { retry: '重试', skip: '跳过', abort: '终止' }[defaultAction] || '终止'
+  const actionName = String(intervention.metaData.action_name || '')
+  const exceptionType = String(intervention.metaData.exception_type || '')
+  const errorMessage = String(intervention.metaData.error_message || '')
+  const deadline = new Date(intervention.openedAt).getTime() + timeout * 1000
+  const remaining = Math.max(0, Math.ceil((deadline - now) / 1000))
+  useEffect(() => {
+    const timer = window.setInterval(() => setNow(Date.now()), 1000)
+    return () => window.clearInterval(timer)
+  }, [])
+  const mutation = useMutation({
+    mutationFn: (optionId: string) => decideWorkflowIntervention(intervention, optionId),
+    onSuccess: () => {
+      onNotify('错误处理决定已发送到设备。')
+      void queryClient.invalidateQueries({ queryKey: ['workflow-interventions'] })
+      void queryClient.invalidateQueries({ queryKey: ['edge-tasks'] })
+    },
+    onError: (error) => onNotify(`提交错误处理决定失败：${error instanceof Error ? error.message : '未知错误'}`),
+  })
+  return (
+    <div className="dialog-backdrop" role="presentation">
+      <section className="task-dialog error-policy-dialog" role="dialog" aria-modal="true" aria-labelledby="error-policy-title">
+        <form onSubmit={(event) => event.preventDefault()}>
+          <header>
+            <div>
+              <span>ACTION ERROR</span>
+              <h2 id="error-policy-title">设备动作需要处理</h2>
+              <p>该节点已暂停。请选择下一步操作；剩余 {remaining}s 后将按默认策略{defaultActionLabel}。</p>
+            </div>
+            <span className="error-policy-icon"><ShieldAlert size={20} /></span>
+          </header>
+          <div className="dialog-content error-policy-content">
+            {(actionName || exceptionType || errorMessage) ? <div className="error-policy-summary">
+              <strong>{actionName || '设备动作'}{exceptionType ? ` · ${exceptionType}` : ''}</strong>
+              {errorMessage ? <span>{errorMessage}</span> : null}
+            </div> : null}
+            <p>任务 <code>{intervention.workflowTaskUuid.slice(0, 8)}</code> · 节点作业 <code>{intervention.workflowNodeJobUuid.slice(0, 8)}</code></p>
+            <div className="error-policy-options">
+              {intervention.options.map((option) => <Button key={option.id} tone={option.action === 'abort' ? 'danger' : option.action === 'retry' ? 'primary' : undefined} disabled={!connected || mutation.isPending} onClick={() => mutation.mutate(option.id)}>{option.label}{option.description ? `：${option.description}` : ''}</Button>)}
+            </div>
+          </div>
+        </form>
+      </section>
+    </div>
+  )
+}
+
 function TaskNodeInspector({ task, node, onClose }: { task: WorkflowTask; node: TaskNode; onClose: () => void }) {
   return (
     <section className="panel task-node-inspector" role="region" aria-label="节点运行详情">
@@ -377,6 +458,349 @@ function TaskNodeInspector({ task, node, onClose }: { task: WorkflowTask; node: 
           <pre>{jsonEvidence(node.job?.errorInfo, '暂无错误')}</pre>
         </article>
       </div>
+    </section>
+  )
+}
+
+const executionLockStateLabels: Record<string, string> = {
+  reserved: '已预留',
+  running: '执行中',
+  uncertain: '结果不确定',
+  released: '已释放',
+}
+
+const executionLockScopeLabels: Record<string, string> = {
+  device: '设备',
+  material: '物料',
+  material_site: '物料库位',
+}
+
+function executionLockStateLabel(value: string) {
+  return executionLockStateLabels[value] || value || '未知状态'
+}
+
+function executionLockScopeLabel(value: string) {
+  return executionLockScopeLabels[value] || value || '未知范围'
+}
+
+function lockGroups(locks: WorkflowTaskExecutionLock[]) {
+  const groups = new Map<string, WorkflowTaskExecutionLock[]>()
+  locks.forEach((lock) => {
+    const current = groups.get(lock.workflowNodeJobUuid) || []
+    current.push(lock)
+    groups.set(lock.workflowNodeJobUuid, current)
+  })
+  return [...groups.entries()]
+}
+
+type MaterialTransferSettlementOption = {
+  siteUuid: string
+  siteName: string
+  ownerMaterialUuid: string
+  label: string
+  phase: 'source' | 'target'
+}
+
+/**
+ * 将作业冻结的来源/目标库位（Site）解析成可核验选项。
+ * @param context 后端返回的失败转运结算上下文。
+ * @param materials 当前库存权威投影中的物料和库位。
+ * @returns 按来源、目标顺序排列的已发现库位选项；未知库位不会被猜测。
+ */
+function materialTransferSettlementOptions(
+  context: FailedMaterialTransferSettlementContext,
+  materials: MaterialRecord[],
+): MaterialTransferSettlementOption[] {
+  return ([
+    ['source', context.sourceSiteUuid],
+    ['target', context.targetSiteUuid],
+  ] as const).flatMap(([phase, siteUuid]) => {
+    const owner = materials.find((material) => material.sites.some((site) => site.uuid === siteUuid))
+    const site = owner?.sites.find((candidate) => candidate.uuid === siteUuid)
+    if (!owner || !site) return []
+    return [{
+      siteUuid,
+      siteName: site.name,
+      ownerMaterialUuid: owner.uuid,
+      label: `${owner.name} / ${site.name}`,
+      phase,
+    }]
+  })
+}
+
+/**
+ * 展示工作流任务（WorkflowTask）的活动执行锁并提供安全人工处置。
+ * @param taskUuid 工作流任务稳定身份。
+ * @param taskStatus 当前任务业务状态。
+ * @param materials 库存权威投影，用于解析实际库位和父物料身份。
+ * @param connected Edge 是否可写。
+ * @param onNotify 向控制台发布操作结果。
+ * @returns 执行锁列表、物理结算对话框和强制释放对话框。
+ */
+function TaskExecutionLocks({
+  taskUuid,
+  taskStatus,
+  materials,
+  connected,
+  onNotify,
+}: {
+  taskUuid: string
+  taskStatus: WorkflowTask['status']
+  materials: MaterialRecord[]
+  connected: boolean
+  onNotify: (message: string) => void
+}) {
+  const queryClient = useQueryClient()
+  const [releaseTarget, setReleaseTarget] = useState<WorkflowTaskExecutionLock>()
+  const [releaseReason, setReleaseReason] = useState('')
+  const [physicalConfirmed, setPhysicalConfirmed] = useState(false)
+  const [settlementContext, setSettlementContext] = useState<FailedMaterialTransferSettlementContext>()
+  const [settlementOptions, setSettlementOptions] = useState<MaterialTransferSettlementOption[]>([])
+  const [settlementSiteUuid, setSettlementSiteUuid] = useState('')
+  const [settlementReason, setSettlementReason] = useState('')
+  const [settlementConfirmed, setSettlementConfirmed] = useState(false)
+  const locksQuery = useQuery({
+    queryKey: ['workflow-task-execution-locks', taskUuid],
+    queryFn: ({ signal }) => loadWorkflowTaskExecutionLocks(taskUuid, signal),
+    enabled: connected && Boolean(taskUuid),
+    staleTime: 5_000,
+    refetchInterval: 10_000,
+  })
+  const releaseMutation = useMutation({
+    mutationFn: () => {
+      if (!connected) throw new Error('Edge 未连接，写操作已暂停')
+      if (!releaseTarget) throw new Error('请选择要释放的执行锁')
+      if (!releaseTarget.canRelease) throw new Error(releaseTarget.releaseBlockReason || '该执行锁当前不可释放')
+      if (!releaseReason.trim()) throw new Error('请填写人工释放原因')
+      if (!physicalConfirmed) throw new Error('请确认设备已停止且物理现场已安全')
+      return forceReleaseWorkflowTaskExecutionLock(taskUuid, releaseTarget.uuid, {
+        expectedClaimUuid: releaseTarget.claimUuid,
+        expectedFencingToken: releaseTarget.fencingToken,
+        reason: releaseReason.trim(),
+        physicalSettlementConfirmed: true,
+      })
+    },
+    onSuccess: (result) => {
+      const message = result.status === 'already_released'
+        ? '执行锁已经被其他操作释放，列表已刷新。'
+        : `已释放该作业的 ${result.releasedLockUuids.length || 1} 把执行锁。`
+      onNotify(message)
+      setReleaseTarget(undefined)
+      setReleaseReason('')
+      setPhysicalConfirmed(false)
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-execution-locks', taskUuid] })
+      void queryClient.invalidateQueries({ queryKey: ['edge-tasks'] }, { cancelRefetch: false })
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-detail', taskUuid] })
+    },
+    onError: (error) => {
+      onNotify(`执行锁释放失败：${error instanceof Error ? error.message : '未知错误'}`)
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-execution-locks', taskUuid] })
+    },
+  })
+  const prepareSettlementMutation = useMutation({
+    mutationFn: (jobUuid: string) => {
+      if (!connected) throw new Error('Edge 未连接，写操作已暂停')
+      return loadFailedMaterialTransferSettlementContext(jobUuid)
+    },
+    onSuccess: (context) => {
+      const options = materialTransferSettlementOptions(context, materials)
+      if (options.length !== 2) {
+        onNotify('无法从当前库存投影解析原来源和目标库位，请刷新物料后重试。')
+        return
+      }
+      setSettlementContext(context)
+      setSettlementOptions(options)
+      setSettlementSiteUuid('')
+      setSettlementReason('')
+      setSettlementConfirmed(false)
+    },
+    onError: (error) => onNotify(`读取物理结算信息失败：${error instanceof Error ? error.message : '未知错误'}`),
+  })
+  const settlementMutation = useMutation({
+    mutationFn: () => {
+      if (!connected) throw new Error('Edge 未连接，写操作已暂停')
+      if (!settlementContext) throw new Error('缺少待结算作业')
+      const selectedOption = settlementOptions.find((option) => option.siteUuid === settlementSiteUuid)
+      if (!selectedOption) throw new Error('请选择现场核验后的实际库位')
+      if (!settlementReason.trim()) throw new Error('请填写物理结算原因')
+      if (!settlementConfirmed) throw new Error('请确认已经核验物料实际位置')
+      return settleFailedMaterialTransfer(settlementContext.jobUuid, {
+        actualChangeSet: {
+          kind: 'material_transfer',
+          material_uuid: settlementContext.materialUuid,
+          target_owner_material_uuid: selectedOption.ownerMaterialUuid,
+          target_site_uuid: selectedOption.siteUuid,
+        },
+        reason: settlementReason.trim(),
+      })
+    },
+    onSuccess: () => {
+      onNotify('物理结算已完成，相关执行锁已释放。')
+      setSettlementContext(undefined)
+      setSettlementOptions([])
+      setSettlementSiteUuid('')
+      setSettlementReason('')
+      setSettlementConfirmed(false)
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-execution-locks', taskUuid] })
+      void queryClient.invalidateQueries({ queryKey: ['edge-tasks'] }, { cancelRefetch: false })
+      void queryClient.invalidateQueries({ queryKey: ['edge-snapshot'] })
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-detail', taskUuid] })
+    },
+    onError: (error) => {
+      onNotify(`物理结算失败：${error instanceof Error ? error.message : '未知错误'}`)
+      void queryClient.invalidateQueries({ queryKey: ['workflow-task-execution-locks', taskUuid] })
+    },
+  })
+
+  const openReleaseDialog = (lock: WorkflowTaskExecutionLock) => {
+    releaseMutation.reset()
+    setReleaseTarget(lock)
+    setReleaseReason('')
+    setPhysicalConfirmed(false)
+  }
+
+  return (
+    <section className="task-execution-locks" aria-label="任务执行锁">
+      <header className="task-execution-locks-header">
+        <div>
+          <span className="task-lock-eyebrow"><Lock size={13} /> EXECUTION LOCKS</span>
+          <h3>执行锁</h3>
+          <p>任务异常结束后的持久设备、物料和库位占用。</p>
+        </div>
+        <Button
+          icon={<RefreshCw size={13} />}
+          onClick={() => void locksQuery.refetch()}
+          disabled={!connected || locksQuery.isFetching}
+        >
+          刷新锁状态
+        </Button>
+      </header>
+      {!connected ? (
+        <div className="task-lock-empty"><AlertCircle size={15} />Edge 未连接，执行锁面板保持只读。</div>
+      ) : null}
+      {locksQuery.isPending ? <div className="task-lock-empty"><LoaderCircle className="spin" size={15} />正在读取任务执行锁…</div> : null}
+      {locksQuery.isError ? (
+        <div className="task-lock-error" role="alert">
+          <AlertCircle size={15} />读取执行锁失败：{locksQuery.error instanceof Error ? locksQuery.error.message : '未知错误'}
+        </div>
+      ) : null}
+      {locksQuery.data ? (
+        <>
+          <div className="task-lock-warning" role="alert">
+            <ShieldAlert size={16} />
+            <span><strong>人工释放是现场处置动作。</strong>只在设备已停止、物理现场安全且确认没有在途动作时操作；一次释放会回收该 Job 的整组执行锁。</span>
+          </div>
+          {locksQuery.data.activeDeviceTenancyCount > 0 ? (
+            <div className="task-lock-tenancy-warning"><AlertCircle size={15} />当前任务仍有 {locksQuery.data.activeDeviceTenancyCount} 个活动设备托管，后端会禁止释放。</div>
+          ) : null}
+          {locksQuery.data.locks.length ? (
+            <div className="task-lock-groups">
+              {lockGroups(locksQuery.data.locks).map(([jobUuid, locks]) => {
+                const releaseCandidate = locks.find((lock) => lock.canRelease)
+                const settlementCandidate = locks.find((lock) => (
+                  lock.state === 'uncertain' || lock.claimState === 'uncertain'
+                ))
+                return (
+                  <article className="task-lock-group" key={jobUuid}>
+                    <header>
+                      <div><strong>Job {jobUuid}</strong><small>Claim {locks[0].claimUuid || '未知'} · {locks[0].jobStatus}</small></div>
+                      <span className={`task-lock-group-state ${releaseCandidate ? 'can-release' : 'blocked'}`}>
+                        {releaseCandidate ? '可人工释放' : '暂不可释放'}
+                      </span>
+                    </header>
+                    <div className="task-lock-list">
+                      {locks.map((lock) => (
+                        <div className="task-lock-row" key={lock.uuid}>
+                          <div className="task-lock-row-main">
+                            <span className="task-lock-scope">{executionLockScopeLabel(lock.scope)}</span>
+                            <code title={lock.lockKey}>{lock.lockKey}</code>
+                            <span className={`task-lock-state task-lock-state-${lock.state}`}>{executionLockStateLabel(lock.state)}</span>
+                          </div>
+                          <div className="task-lock-row-meta">
+                            <span>Fence {lock.fencingToken}</span>
+                            <span>{lock.canRelease ? '可释放' : lock.releaseBlockReason || '后端安全门禁阻止释放'}</span>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                    <footer>
+                      <small>{taskStatus === 'failed' || taskStatus === 'canceled' || taskStatus === 'timeout' ? '任务已终止，可按后端资格处置' : '仅终态任务允许人工处置'}</small>
+                      <div className="task-lock-group-actions">
+                        {settlementCandidate ? (
+                          <Button
+                            icon={prepareSettlementMutation.isPending ? <LoaderCircle className="spin" size={13} /> : <ShieldAlert size={13} />}
+                            disabled={!connected || prepareSettlementMutation.isPending || settlementMutation.isPending}
+                            onClick={() => prepareSettlementMutation.mutate(jobUuid)}
+                          >
+                            {prepareSettlementMutation.isPending ? '读取结算信息' : '完成物理结算'}
+                          </Button>
+                        ) : null}
+                        <Button
+                          tone="danger"
+                          icon={<ShieldCheck size={13} />}
+                          disabled={!connected || !releaseCandidate || releaseMutation.isPending}
+                          onClick={() => releaseCandidate && openReleaseDialog(releaseCandidate)}
+                        >
+                          解除这组锁
+                        </Button>
+                      </div>
+                    </footer>
+                  </article>
+                )
+              })}
+            </div>
+          ) : (
+            <div className="task-lock-empty"><ShieldCheck size={15} />当前任务没有活动执行锁。</div>
+          )}
+        </>
+      ) : null}
+      {releaseTarget ? (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setReleaseTarget(undefined) }}>
+          <section className="task-lock-dialog" role="dialog" aria-modal="true" aria-labelledby="task-lock-release-title">
+            <header>
+              <div><span>OPERATOR ACTION</span><h2 id="task-lock-release-title">人工解除执行锁</h2><p>目标锁：{releaseTarget.lockKey}</p></div>
+              <button type="button" aria-label="关闭执行锁释放对话框" onClick={() => setReleaseTarget(undefined)}><X size={18} /></button>
+            </header>
+            <form onSubmit={(event) => { event.preventDefault(); releaseMutation.mutate() }}>
+              <div className="task-lock-dialog-content">
+                <div className="task-lock-dialog-warning"><AlertCircle size={16} /><span>这会释放 Job {releaseTarget.workflowNodeJobUuid} 的全部活动执行锁，并写入操作审计。后端会再次校验 Claim 和 Fence。</span></div>
+                {releaseMutation.isError ? <div className="task-lock-dialog-error" role="alert"><AlertCircle size={15} />{releaseMutation.error instanceof Error ? releaseMutation.error.message : '释放失败，请刷新锁列表后重试。'}<small>页面快照可能已过期；请关闭窗口并重新读取当前锁状态。</small></div> : null}
+                <label className="form-field"><span>人工释放原因<em>必填</em></span><textarea maxLength={500} required value={releaseReason} onChange={(event) => setReleaseReason(event.target.value)} placeholder="例如：设备已断电，现场人员确认无在途动作。" rows={4} /></label>
+                <label className="task-lock-confirmation"><input type="checkbox" checked={physicalConfirmed} onChange={(event) => setPhysicalConfirmed(event.target.checked)} /><span>我已确认设备已停止，物理现场安全，且不存在未上报的在途动作。</span></label>
+              </div>
+              <footer><Button type="button" onClick={() => setReleaseTarget(undefined)}>取消</Button><Button type="submit" tone="danger" icon={releaseMutation.isPending ? <LoaderCircle className="spin" size={14} /> : <ShieldCheck size={14} />} disabled={!connected || releaseMutation.isPending || !releaseReason.trim() || !physicalConfirmed}>确认解除整组锁</Button></footer>
+            </form>
+          </section>
+        </div>
+      ) : null}
+      {settlementContext ? (
+        <div className="dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) setSettlementContext(undefined) }}>
+          <section className="task-lock-dialog" role="dialog" aria-modal="true" aria-labelledby="task-lock-settlement-title">
+            <header>
+              <div><span>PHYSICAL SETTLEMENT</span><h2 id="task-lock-settlement-title">转运物理结算</h2><p>Job {settlementContext.jobUuid}</p></div>
+              <button type="button" aria-label="关闭物理结算对话框" onClick={() => setSettlementContext(undefined)}><X size={18} /></button>
+            </header>
+            <form onSubmit={(event) => { event.preventDefault(); settlementMutation.mutate() }}>
+              <div className="task-lock-dialog-content">
+                <div className="task-lock-dialog-warning"><AlertCircle size={16} /><span>请选择现场核验后的真实库位。系统将以该事实更新库存权威、完成物理结算，并释放该 Job 的全部执行锁；不会重新执行机器人动作。</span></div>
+                {settlementMutation.isError ? <div className="task-lock-dialog-error" role="alert"><AlertCircle size={15} />{settlementMutation.error instanceof Error ? settlementMutation.error.message : '物理结算失败，请刷新后重试。'}</div> : null}
+                <fieldset className="task-lock-settlement-options">
+                  <legend>物料实际位置</legend>
+                  {settlementOptions.map((option) => (
+                    <label key={option.siteUuid}>
+                      <input type="radio" name="settlement-site" value={option.siteUuid} checked={settlementSiteUuid === option.siteUuid} onChange={() => setSettlementSiteUuid(option.siteUuid)} />
+                      <span>{option.phase === 'source' ? '实际仍在来源库位' : '实际已到目标库位'} <strong>{option.label}</strong></span>
+                    </label>
+                  ))}
+                </fieldset>
+                <label className="form-field"><span>物理结算原因<em>必填</em></span><textarea maxLength={500} required value={settlementReason} onChange={(event) => setSettlementReason(event.target.value)} placeholder="例如：现场核验烧杯仍位于来源仓 L1B2。" rows={4} /></label>
+                <label className="task-lock-confirmation"><input type="checkbox" checked={settlementConfirmed} onChange={(event) => setSettlementConfirmed(event.target.checked)} /><span>我已确认设备停止，并现场核验了该物料的实际库位。</span></label>
+              </div>
+              <footer><Button type="button" onClick={() => setSettlementContext(undefined)}>取消</Button><Button type="submit" tone="danger" icon={settlementMutation.isPending ? <LoaderCircle className="spin" size={14} /> : <ShieldCheck size={14} />} disabled={!connected || settlementMutation.isPending || !settlementSiteUuid || !settlementReason.trim() || !settlementConfirmed}>确认结算并释放锁</Button></footer>
+            </form>
+          </section>
+        </div>
+      ) : null}
     </section>
   )
 }
@@ -660,6 +1084,13 @@ export function TasksPage({
   const [selectedId, setSelectedId] = useState(tasks[0]?.uuid || '')
   const [selectedNodeRef, setSelectedNodeRef] = useState<{ taskUuid: string; nodeUuid: string }>()
   const [selectedStepNodeUuid, setSelectedStepNodeUuid] = useState('')
+  const interventionsQuery = useQuery({
+    queryKey: ['workflow-interventions'],
+    queryFn: ({ signal }) => loadWorkflowInterventions(signal),
+    enabled: connected,
+    refetchInterval: 1_000,
+  })
+  const openIntervention = interventionsQuery.data?.[0]
 
   const selectTask = useCallback((taskUuid: string) => {
     setSelectedId(taskUuid)
@@ -879,6 +1310,13 @@ export function TasksPage({
                   <code>{selected.trace.traceId || selected.uuid}</code>
                 </a>
               ) : null}
+              <TaskExecutionLocks
+                taskUuid={selected.uuid}
+                taskStatus={selected.status}
+                materials={materials}
+                connected={connected}
+                onNotify={onNotify}
+              />
             </>
           ) : <EmptyState title="没有选中任务" description="从矩阵中选择任务查看详情。" />}
         </Panel>
@@ -904,6 +1342,8 @@ export function TasksPage({
           </div>
         </Panel>
       </section>
+
+      {openIntervention ? <ErrorPolicyDialog intervention={openIntervention} connected={connected} onNotify={onNotify} /> : null}
 
     </div>
   )

@@ -276,9 +276,8 @@ def classify_pinned_published_workflow_invocation(
         ):
             return "breaking"
         if _is_legacy_projection(current_projection):
-            # ``_invocation_node`` deliberately preserves a server-generated
-            # legacy projection for an unchanged pin.  It is safe to accept
-            # only an exact byte-for-byte pin/contract match here.
+            # ``_invocation_node`` 会为未变化的固定版本保留服务端生成的旧投影；
+            # 此处只有固定版本与合同逐字节完全一致时才可安全接受。
             if not _is_legacy_projection(previous_projection):
                 return "breaking"
             if previous_node.get("workflow_node_template_uuid") != current_node.get(
@@ -297,17 +296,11 @@ def classify_pinned_published_workflow_invocation(
                 )
             ):
                 return "breaking"
-            return (
-                "exact"
-                if previous_projection == current_projection
-                else "breaking"
-            )
-        # The API composition endpoint historically emitted a compact
-        # ``{parameters, outputs}`` projection.  A server-generated candidate
-        # is compiled once more through the source authoring path, which emits
-        # the authenticated v1 projection.  Treat the compact form as a
-        # compatibility bridge when it describes the same child pin and
-        # boundary; otherwise keep the fail-closed behaviour.
+            return "exact" if previous_projection == current_projection else "breaking"
+        # API 组合入口历史上会生成紧凑的 ``{parameters, outputs}`` 投影；服务端
+        # 候选图随后经过源码创作路径再次编译，得到已认证的 v1 投影。紧凑投影
+        # 只有在描述同一子工作流固定版本和边界时才作为兼容桥，其余情况继续
+        # 关闭式拒绝。
         if _is_legacy_projection(previous_projection):
             return _classify_legacy_projection(
                 previous_node=previous_node,
@@ -400,7 +393,7 @@ def classify_pinned_published_workflow_invocation(
             previous_projection,
             current_projection,
         )
-    except (KeyError, TypeError, ValueError) as exc:
+    except (KeyError, TypeError, ValueError):
         return "breaking"
 
 
@@ -437,7 +430,9 @@ def _classify_legacy_projection(
     if current_node.get("workflow_node_template_uuid") != template_uuid:
         return "breaking"
     if current_templates is not None and current_handles is not None:
-        matches = [item for item in current_templates if item.get("uuid") == template_uuid]
+        matches = [
+            item for item in current_templates if item.get("uuid") == template_uuid
+        ]
         owned_handles = [
             item
             for item in current_handles
@@ -512,7 +507,11 @@ def _legacy_boundary_descriptors(
         if current_item is None:
             return None
         semantic_keys = ("name", "schema", "unit")
-        if any(item.get(key) != current_item.get(key) for key in semantic_keys if key in item):
+        if any(
+            item.get(key) != current_item.get(key)
+            for key in semantic_keys
+            if key in item
+        ):
             return None
         if output:
             if item.get("implicit", False) != current_item.get("implicit", False):
@@ -525,7 +524,9 @@ def _legacy_boundary_descriptors(
     return result
 
 
-def _pin_fields_are_valid(previous: Mapping[str, Any], current: Mapping[str, Any]) -> bool:
+def _pin_fields_are_valid(
+    previous: Mapping[str, Any], current: Mapping[str, Any]
+) -> bool:
     """校验旧/新 pin 的基本身份字段，避免宽松兼容篡改数据。"""
 
     for value in (previous, current):
@@ -701,13 +702,8 @@ def _validate_value_handle(
         if slot is not None
         else None
     )
-    unit_matches = (
-        isinstance(unilab, Mapping)
-        and (
-            unilab.get("unit") == unit
-            if unit is not None
-            else "unit" not in unilab
-        )
+    unit_matches = isinstance(unilab, Mapping) and (
+        unilab.get("unit") == unit if unit is not None else "unit" not in unilab
     )
     if (
         not isinstance(unilab, Mapping)

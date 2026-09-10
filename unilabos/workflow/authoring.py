@@ -68,6 +68,29 @@ class _AuthoringBlock(AbstractContextManager[None]):
 
 
 @dataclass(frozen=True, slots=True)
+class _ResourceBlock(AbstractContextManager[None]):
+    """仅供类型检查使用的结构化资源作用域标记。"""
+
+    resource_ids: tuple[str, ...]
+
+    def __enter__(self) -> None:
+        """进入静态资源范围；资源取得由编译计划负责。"""
+
+        return None
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_value: BaseException | None,
+        traceback: Any,
+    ) -> bool:
+        """退出资源范围且不吞掉作者源码运行时异常。"""
+
+        del exc_type, exc_value, traceback
+        return False
+
+
+@dataclass(frozen=True, slots=True)
 class RepeatUntilBinding(AbstractContextManager["RepeatUntilBinding"]):
     """仅为编辑器描述 ``repeat_until`` 的 carry/next 创作接口。"""
 
@@ -150,6 +173,25 @@ def parallel() -> AbstractContextManager[None]:
     """声明源码并行结构（Parallel）；返回静态上下文标记。"""
 
     return _AuthoringBlock()
+
+
+def resources(*resource_ids: str) -> AbstractContextManager[None]:
+    """声明一个结构化资源作用域。
+
+    参数说明：``resource_ids`` 是静态资源别名；运行时不会取得或释放资源，
+    真实占用范围由可信 AST 编译器转换为资源区间。返回仅供类型检查使用的
+    上下文标记；空别名、重复别名和动态调用直接失败。
+    """
+
+    if not resource_ids or any(
+        not isinstance(resource_id, str) or not resource_id.strip()
+        for resource_id in resource_ids
+    ):
+        raise ValueError("资源声明必须包含非空字符串别名")
+    normalized = tuple(resource_id.strip() for resource_id in resource_ids)
+    if len(set(normalized)) != len(normalized):
+        raise ValueError("资源声明不能包含重复别名")
+    return _ResourceBlock(normalized)
 
 
 def repeat_until(

@@ -425,6 +425,8 @@ def test_repeat_plan_freezes_body_but_creates_no_body_jobs_eagerly() -> None:
         "condition_expression_v1",
         "control_regions_v1",
         "dynamic_iteration_jobs_v1",
+        "resource_intervals_v1",
+        "static_resource_dag_v1",
     ]
     assert {node["uuid"] for node in plan["nodes"]} == {
         LOOP_NODE_UUID,
@@ -525,6 +527,7 @@ def test_task_input_freezes_repeat_template_site_selection() -> None:
     measure = next(node for node in plan["nodes"] if node["uuid"] == MEASURE_NODE_UUID)
     measure["site_selectors"] = [
         {
+            "handle_uuid": "73000000-0000-4000-8000-000000000032",
             "parameter": "target_site",
             "owner_parameter": "sample",
             "group_key": "measurement_sites",
@@ -550,9 +553,7 @@ def test_task_input_freezes_repeat_template_site_selection() -> None:
     )
 
     prepared_measure = next(
-        node
-        for node in prepared.execution_plan["nodes"]
-        if node["uuid"] == MEASURE_NODE_UUID
+        node for node in prepared.execution_plan["nodes"] if node["uuid"] == MEASURE_NODE_UUID
     )
     assert prepared_measure["execution_policy"]["target_site_group"] == [site_uuid]
     spec = WorkflowSpecCompiler().compile(
@@ -565,9 +566,7 @@ def test_task_input_freezes_repeat_template_site_selection() -> None:
         prepared.jobs,
     )
     repeat_nodes = {node.id: node for node in spec.repeat_regions[LOOP_NODE_UUID].nodes}
-    assert repeat_nodes[MEASURE_NODE_UUID].execution_policy["target_site_group"] == [
-        site_uuid
-    ]
+    assert repeat_nodes[MEASURE_NODE_UUID].execution_policy["target_site_group"] == [site_uuid]
 
 
 def test_scheduler_materializes_distinct_jobs_until_strict_condition_is_true() -> None:

@@ -372,6 +372,38 @@ def test_blocked_admission_retry_reuses_task_and_job_identities(
     assert tuple(admission) == ("admitted", 2, 2)
 
 
+def test_blocked_material_admission_can_be_canceled_before_scheduler_submit(
+    store: WorkflowStore,
+) -> None:
+    """证明等料任务未注册 Scheduler 时仍可通过公开取消语义安全收尾。"""
+
+    task = _seed_task(store, with_action=True)
+    inventory = _ToggleInventory(available=False)
+    dispatcher = RecordingDispatcher()
+    scheduler = EdgeScheduler(dispatcher=dispatcher, inventory=inventory)
+    bridge = TaskSchedulerBridge(store, scheduler=scheduler)
+    try:
+        blocked = bridge.submit(task)
+        canceled = bridge.cancel(
+            TASK_UUID,
+            command_uuid="82000000-0000-4000-8000-000000000001",
+            reason="operator_canceled_waiting_material",
+        )
+    finally:
+        bridge.close()
+
+    assert blocked["task"]["status"] == "pending"
+    assert scheduler.workflow_snapshot(TASK_UUID) is None
+    assert canceled["task"]["status"] == "canceled"
+    assert canceled["task"]["cleanup_status"] == "settled"
+    assert [job["status"] for job in canceled["jobs"]] == [
+        "canceled",
+        "canceled",
+    ]
+    assert dispatcher.dispatched == []
+    assert inventory.release_calls == [(TASK_UUID, "workflow_canceled")]
+
+
 def test_source_admission_commits_before_ordinary_action_dispatch(
     store: WorkflowStore,
 ) -> None:

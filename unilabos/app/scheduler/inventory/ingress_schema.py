@@ -41,6 +41,64 @@ CREATE TABLE IF NOT EXISTS station_ingress_reservation_site (
 );
 CREATE UNIQUE INDEX IF NOT EXISTS ux_station_ingress_active_site
     ON station_ingress_reservation_site (site_uuid) WHERE active = 1;
+
+CREATE TABLE IF NOT EXISTS station_ingress_reservation_resource (
+    reservation_uuid TEXT NOT NULL,
+    lock_key TEXT NOT NULL,
+    active INTEGER NOT NULL DEFAULT 1 CHECK (active IN (0, 1)),
+    PRIMARY KEY (reservation_uuid, lock_key),
+    FOREIGN KEY (reservation_uuid) REFERENCES station_ingress_reservation (uuid)
+        ON DELETE RESTRICT
+);
+CREATE INDEX IF NOT EXISTS idx_station_ingress_active_resource
+    ON station_ingress_reservation_resource (lock_key, reservation_uuid)
+    WHERE active = 1;
+"""
+
+_BACKFILL_ACTIVE_RESOURCES = r"""
+UPDATE station_ingress_reservation_resource
+SET active = 0
+WHERE active = 1 AND reservation_uuid IN (
+    SELECT reservation.uuid
+    FROM station_ingress_reservation AS reservation
+    LEFT JOIN station_ingress_reservation_site AS selected
+      ON selected.reservation_uuid = reservation.uuid AND selected.active = 1
+    WHERE reservation.state NOT IN ('reserved', 'in_transit')
+       OR selected.reservation_uuid IS NULL
+);
+
+INSERT OR IGNORE INTO station_ingress_reservation_resource(
+    reservation_uuid, lock_key, active
+)
+SELECT reservation.uuid,
+       'material/' || site.material_uuid || '/site/' || site.uuid || '/exclusive',
+       1
+FROM station_ingress_reservation AS reservation
+JOIN station_ingress_reservation_site AS selected
+  ON selected.reservation_uuid = reservation.uuid AND selected.active = 1
+JOIN site ON site.uuid = selected.site_uuid AND site.deleted_at IS NULL
+WHERE reservation.state IN ('reserved', 'in_transit')
+UNION
+SELECT reservation.uuid, '/devices/' || site.material_uuid, 1
+FROM station_ingress_reservation AS reservation
+JOIN station_ingress_reservation_site AS selected
+  ON selected.reservation_uuid = reservation.uuid AND selected.active = 1
+JOIN site ON site.uuid = selected.site_uuid AND site.deleted_at IS NULL
+WHERE reservation.state IN ('reserved', 'in_transit')
+UNION
+SELECT reservation.uuid,
+       'material/' || reservation.carrier_material_uuid || '/exclusive',
+       1
+FROM station_ingress_reservation AS reservation
+JOIN station_ingress_reservation_site AS selected
+  ON selected.reservation_uuid = reservation.uuid AND selected.active = 1
+WHERE reservation.state IN ('reserved', 'in_transit')
+UNION
+SELECT reservation.uuid, '/devices/' || reservation.carrier_material_uuid, 1
+FROM station_ingress_reservation AS reservation
+JOIN station_ingress_reservation_site AS selected
+  ON selected.reservation_uuid = reservation.uuid AND selected.active = 1
+WHERE reservation.state IN ('reserved', 'in_transit');
 """
 
 
@@ -52,6 +110,14 @@ def migrate_ingress_schema(connection: sqlite3.Connection) -> None:
     """
 
     connection.executescript(_SCHEMA)
+    # 某些只验证单一旧表迁移的 v6 夹具并不包含完整 ``site`` 表；新建的入口
+    # 表此时必为空，无需准备引用 ``site`` 的回填语句。真实旧入口事实一旦存在，
+    # 仍执行完整 JOIN 并在缺表/损坏时关闭式失败。
+    has_legacy_reservation = connection.execute(
+        "SELECT 1 FROM station_ingress_reservation LIMIT 1"
+    ).fetchone()
+    if has_legacy_reservation is not None:
+        connection.executescript(_BACKFILL_ACTIVE_RESOURCES)
 
 
 __all__ = ["migrate_ingress_schema"]

@@ -5,6 +5,7 @@ import {
   adaptWorkflow,
   createExperimentOperation,
   createWorkflowTask,
+  decideWorkflowIntervention,
   createReagent,
   createReagentInfo,
   deleteReagentInfo,
@@ -40,6 +41,20 @@ describe('unwrapEnvelope', () => {
 
   it('rejects an Edge business error even if HTTP succeeded', () => {
     expect(() => unwrapEnvelope({ code: 1000, error: { msg: 'invalid cursor' } })).toThrow('invalid cursor')
+  })
+})
+
+describe('decideWorkflowIntervention', () => {
+  it('rejects a business error returned with HTTP 200', async () => {
+    vi.stubGlobal('fetch', vi.fn(async () => response({
+      code: 1000,
+      error: { msg: '设备暂不可达' },
+    })))
+
+    await expect(decideWorkflowIntervention({
+      uuid: 'intervention-1', workflowTaskUuid: 'task-1', workflowNodeJobUuid: 'job-1',
+      revision: 1, status: 'open', options: [], metaData: {}, openedAt: '',
+    }, 'retry')).rejects.toThrow('设备暂不可达')
   })
 })
 

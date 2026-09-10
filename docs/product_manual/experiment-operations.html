@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="完整工作流" href="complete-workflow.html"><link rel="prev" title="工作流编排特性" href="workflow-features.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>实验操作（子工作流） - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">实验操作（子工作流）</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>实验操作（子工作流）<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>实验操作（子工作流）<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -365,12 +367,12 @@
 <p>实验操作是可以重复使用的业务步骤。例如“把物料从一个库位转移到另一个库位”。它应像一份稳定合同：调用方只需要知道输入、输出和失败含义，不需要了解机器人通信细节。</p>
 <p>它在 Uni-Lab OS 的“实验室操作”页面中维护，类型标识为 <code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code>。完整工作流可以引用已经发布的实验操作，但不能把实验操作当作一次完整实验直接运行。</p>
 <section id="id2">
-<h2>1. 什么时候使用<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>1. 什么时候使用<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>当多个工作流会重复使用同一组动作、参数和资源规则时，应先把这组步骤定义为实验操作。例如“标准物料转运”“开盖后移液”或“一次搅拌”。这样可以统一设备绑定、输入输出和异常处理，避免在多个完整工作流中复制同一段逻辑。</p>
 <p>如果一组步骤只属于某一个实验，而且没有独立的业务输入和输出，就直接写在完整工作流中，不必为了拆分而拆分。</p>
 </section>
 <section id="id3">
-<h2>2. 先定义业务边界<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>2. 先定义业务边界<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>以“标准物料转运”为例：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -401,10 +403,10 @@
 <p>若底层设备只提供分散的 <code class="docutils literal notranslate"><span class="pre">pick</span></code>、<code class="docutils literal notranslate"><span class="pre">place</span></code> 动作，必须先明确断线、重试和位置提交策略。优先由设备包提供能够处理幂等与未知结果的原子搬运动作。</p>
 </section>
 <section id="id4">
-<h2>3. 实验操作撰写规范<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>3. 实验操作撰写规范<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>实验操作应写成可以被不同完整工作流重复调用的稳定合同。撰写时必须满足以下要求。</p>
 <section id="id5">
-<h3>职责只保留一个<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<h3>职责只保留一个<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
 <p>名称应采用“业务对象 + 业务动作”，例如“标准物料转运”“样品容器开盖”“恒温混合”。一个实验操作只完成一个能够独立说明、独立验收的业务目的。</p>
 <p>以下情况应拆分：</p>
 <ul class="simple">
@@ -415,7 +417,7 @@
 <p>不要把“准备全部物料、完成多站加工、生成结果并归位”写成一个实验操作。这属于完整工作流。</p>
 </section>
 <section id="id6">
-<h3>合同先于实现<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>合同先于实现<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <p>编写代码前，先填写以下内容；缺少任何一项都不进入实现：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>名称：标准物料转运
 目的：把一件物料从来源位安全送到目标位
@@ -429,7 +431,7 @@
 </div>
 </section>
 <section id="id7">
-<h3>装饰器和函数<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>装饰器和函数<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <ul class="simple">
 <li><p>使用 <code class="docutils literal notranslate"><span class="pre">&#64;workflow(...)</span></code>；</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">workflow_uuid</span></code> 全局唯一，同一实验操作升级时保持不变；</p></li>
@@ -440,7 +442,7 @@
 </ul>
 </section>
 <section id="id8">
-<h3>输入和输出<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<h3>输入和输出<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -473,7 +475,7 @@
 <p>输出字段一经被完整工作流使用，就属于发布合同。改变字段名、类型或含义前，要检查所有调用方并发布新的修订。</p>
 </section>
 <section id="id9">
-<h3>设备动作和物料副作用<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>设备动作和物料副作用<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <ul class="simple">
 <li><p>设备通信、协议重试和原子操作由设备动作实现，实验操作只进行业务组合；</p></li>
 <li><p>设备动作必须从当前设备包的动作目录选择，参数名和返回字段不能凭经验猜测；</p></li>
@@ -483,20 +485,20 @@
 </ul>
 </section>
 <section id="id10">
-<h3>节点身份和可读性<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
+<h3>节点身份和可读性<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h3>
 <p>每个动作或子操作调用前写一个稳定、唯一的 <code class="docutils literal notranslate"><span class="pre">node_uuid</span></code>。新建节点时生成新 UUID；只调整缩进、注释或展示顺序时保留原 UUID。变量名使用动作后的状态，例如 <code class="docutils literal notranslate"><span class="pre">opened_bottle</span></code>、<code class="docutils literal notranslate"><span class="pre">transferred_sample</span></code>，不要使用 <code class="docutils literal notranslate"><span class="pre">result1</span></code>、<code class="docutils literal notranslate"><span class="pre">tmp</span></code> 等无法审查的名称。</p>
 </section>
 <section id="id11">
-<h3>复用边界<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
+<h3>复用边界<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h3>
 <p>实验操作只暴露业务调用方真正需要选择的参数。设备地址、账号、串口和协议细节留在设备配置中；固定库位关系留在 启动图 或部署配置中。只有需要由不同完整工作流选择的来源、目标或工艺参数才成为公开输入。</p>
 <p>完成后的实验操作必须能够在不阅读内部代码的情况下，仅凭名称、说明、输入、输出和失败语义被正确调用。</p>
 </section>
 </section>
 <section id="id12">
-<h2>4. 选择创建方式<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<h2>4. 选择创建方式<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
 <p>实验操作可以通过两种方式创建：流程设计人员可以在“实验室操作”页面编排；开发人员也可以编写静态定义文件后导入。两种方式生成的是同一种实验操作合同，最终都要经过检查和发布。</p>
 <section id="id13">
-<h3>方式一：编写或导入定义文件<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h3>
+<h3>方式一：编写或导入定义文件<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h3>
 <p>创建文件：</p>
 <p>创建：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>example_lab/experiment_operations/standard_material_transfer.py
@@ -504,7 +506,7 @@
 </div>
 </section>
 <section id="id14">
-<h3>编写结构模板<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h3>
+<h3>编写结构模板<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.placeholder_type</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResourceSlot</span>
@@ -520,14 +522,14 @@
     <span class="n">result</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<span class="n">transport_robot</span><span class="p">:</span> <span class="n">TransportRobot</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">"transport_robot_01"</span><span class="p">)</span>
+<span class="n">transport_robot</span><span class="p">:</span> <span class="n">TransportRobot</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">&quot;transport_robot_01&quot;</span><span class="p">)</span>
 
 
 <span class="nd">@workflow</span><span class="p">(</span>
-    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">"41d51b13-8269-47cc-ad16-a553ed926f11"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"标准物料转运"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"搬运一件物料，并在成功后提交新的库位归属。"</span><span class="p">,</span>
-    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">"experiment_operation"</span><span class="p">,</span>
+    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">&quot;41d51b13-8269-47cc-ad16-a553ed926f11&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;标准物料转运&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;搬运一件物料，并在成功后提交新的库位归属。&quot;</span><span class="p">,</span>
+    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">&quot;experiment_operation&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">standard_material_transfer</span><span class="p">(</span>
     <span class="o">*</span><span class="p">,</span>
@@ -554,17 +556,17 @@
         <span class="n">check_gripper_payload</span><span class="o">=</span><span class="n">check_gripper_payload</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">"resource"</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
-        <span class="s2">"mount_resource"</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">mount_resource</span><span class="p">,</span>
-        <span class="s2">"site"</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">site</span><span class="p">,</span>
-        <span class="s2">"result"</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
+        <span class="s2">&quot;resource&quot;</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
+        <span class="s2">&quot;mount_resource&quot;</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">mount_resource</span><span class="p">,</span>
+        <span class="s2">&quot;site&quot;</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">site</span><span class="p">,</span>
+        <span class="s2">&quot;result&quot;</span><span class="p">:</span> <span class="n">moved</span><span class="o">.</span><span class="n">result</span><span class="p">,</span>
     <span class="p">}</span>
 </pre></div>
 </div>
 <p>这段代码是结构模板。<code class="docutils literal notranslate"><span class="pre">TransportRobot</span></code>、实例 ID、动作名、参数和返回字段必须替换为用户设备包实际定义。</p>
 </section>
 <section id="id15">
-<h3>理解关键写法<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
+<h3>理解关键写法<a class="headerlink" href="#id15" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -607,7 +609,7 @@
 </div>
 </section>
 <section id="id16">
-<h3>方式二：在“实验室操作”页面编排<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h3>
+<h3>方式二：在“实验室操作”页面编排<a class="headerlink" href="#id16" title="链接到此标题。">¶</a></h3>
 <ol class="arabic simple">
 <li><p>新建实验操作，填写稳定的名称、用途和说明。</p></li>
 <li><p>从设备与动作目录选择动作，并绑定当前 启动图 中的设备实例。</p></li>
@@ -620,7 +622,7 @@
 </section>
 </section>
 <section id="id17">
-<h2>5. 安全约束<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
+<h2>5. 安全约束<a class="headerlink" href="#id17" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>presence、夹爪负载和目标空位检查默认开启；</p></li>
 <li><p>只有设备能力与现场规程明确允许时才关闭某项检查；</p></li>
@@ -631,7 +633,7 @@
 </ul>
 </section>
 <section id="id18">
-<h2>6. 登记、导入和检查<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
+<h2>6. 登记、导入和检查<a class="headerlink" href="#id18" title="链接到此标题。">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 中登记：</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="p p-Indicator">-</span><span class="w"> </span><span class="nt">workflow_uuid</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">41d51b13-8269-47cc-ad16-a553ed926f11</span>
 <span class="w">  </span><span class="nt">source</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_lab/experiment_operations/standard_material_transfer.py</span>
@@ -645,7 +647,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 <p>如果使用页面创建或导入，还要核对节点、连线、设备绑定、公开合同和资源来源。导入成功只代表系统已经读取定义，不代表该操作可以直接运行。</p>
 </section>
 <section id="id19">
-<h2>7. 发布和复用<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
+<h2>7. 发布和复用<a class="headerlink" href="#id19" title="链接到此标题。">¶</a></h2>
 <p>检查通过后发布当前修订。发布会形成稳定的可引用合同；之后再次编辑会产生新修订，完整工作流不会自动改用新版本。</p>
 <p>在完整工作流中引用时，需要为本次调用分别配置：</p>
 <ul class="simple">
@@ -658,7 +660,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 <p>删除实验操作前，必须确认没有已发布工作流仍在引用它。历史任务会保留冻结快照，但上层工作流之后可能因合同缺失而无法检查或发布。</p>
 </section>
 <section id="id20">
-<h2>8. 单独验收<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h2>
+<h2>8. 单独验收<a class="headerlink" href="#id20" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>使用模拟 启动图 启动 Uni-Lab OS。</p></li>
 <li><p>确认实验操作显示为“标准物料转运”。</p></li>
@@ -669,7 +671,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ol>
 </section>
 <section id="id21">
-<h2>9. 常见错误<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h2>
+<h2>9. 常见错误<a class="headerlink" href="#id21" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -704,7 +706,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </div>
 </section>
 <section id="id22">
-<h2>10. 完成清单<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h2>
+<h2>10. 完成清单<a class="headerlink" href="#id22" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>[ ] 只承担一个可复用业务目的；</p></li>
 <li><p>[ ] 输入、输出和副作用写清楚；</p></li>
@@ -811,10 +813,10 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

@@ -337,6 +337,106 @@ def test_composite_invocation_expands_one_frozen_contract_into_parent(tmp_path) 
     store.close()
 
 
+def test_composite_invocation_persists_isolated_resource_scopes_with_graph(
+    tmp_path,
+) -> None:
+    """组合插入必须按调用隔离并原子持久化实验操作连续资源作用域。"""
+
+    client, store = _client(tmp_path)
+    child_uuid, child_revision = _create_workflow_with_one_node(
+        client,
+        workflow_type="experiment_operation",
+    )
+    child = store.get_workflow(child_uuid)
+    store.update_workflow(
+        child_uuid,
+        name=child["name"],
+        tags=child["tags"],
+        description=child.get("description"),
+        workflow_type=child["workflow_type"],
+        meta_data={
+            "unilab": {
+                "resource_scopes": [
+                    {
+                        "scope_id": "operation-reservation",
+                        "kind": "with",
+                        "resources": [
+                            "source-turntable",
+                            "target-turntable",
+                            "robot",
+                        ],
+                        "parent_scope_id": None,
+                        "entry_node_uuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                        "exit_node_uuid": "aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+                        "node_uuids": ["aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"],
+                        "hard_boundary": True,
+                        "source": "authoring.with.resources",
+                    }
+                ]
+            }
+        },
+    )
+    contract = client.post(
+        f"/api/v1/workflows/{child_uuid}/publications",
+        json={"revision": child_revision},
+    ).json()["data"]
+    parent = client.post(
+        "/api/v1/workflows",
+        json={"name": "父工作流", "tags": [], "meta_data": {}},
+    ).json()["data"]
+    invocation_uuid = "bbbbbbbb-bbbb-4bbb-8bbb-bbbbbbbbbbbb"
+
+    inserted = client.post(
+        f"/api/v1/workflows/{parent['uuid']}/composite-invocations",
+        json={
+            "revision": parent["revision"],
+            "contract_uuid": contract["uuid"],
+            "invocation_uuid": invocation_uuid,
+            "device_bindings": {},
+            "pose": {"x": 320, "y": 100},
+            "param": {},
+        },
+    )
+
+    assert inserted.status_code == 200
+    graph = inserted.json()["data"]
+    persisted = store.get_graph(parent["uuid"])
+    for candidate in (graph, persisted):
+        scopes = candidate["workflow"]["meta_data"]["unilab"][
+            "resource_scopes"
+        ]
+        assert len(scopes) == 1
+        assert scopes[0]["resources"] == [
+            "source-turntable",
+            "target-turntable",
+            "robot",
+        ]
+        assert scopes[0]["composite_invocation_uuid"] == invocation_uuid
+
+    second_invocation_uuid = "cccccccc-cccc-4ccc-8ccc-cccccccccccc"
+    inserted_again = client.post(
+        f"/api/v1/workflows/{parent['uuid']}/composite-invocations",
+        json={
+            "revision": graph["workflow"]["revision"],
+            "contract_uuid": contract["uuid"],
+            "invocation_uuid": second_invocation_uuid,
+            "device_bindings": {},
+            "pose": {"x": 520, "y": 100},
+            "param": {},
+        },
+    )
+    assert inserted_again.status_code == 200
+    persisted_again = store.get_graph(parent["uuid"])
+    scopes = persisted_again["workflow"]["meta_data"]["unilab"]["resource_scopes"]
+    assert len(scopes) == 2
+    assert len({scope["scope_id"] for scope in scopes}) == 2
+    assert {scope["composite_invocation_uuid"] for scope in scopes} == {
+        invocation_uuid,
+        second_invocation_uuid,
+    }
+    store.close()
+
+
 def test_same_published_operation_can_be_invoked_twice_in_one_parent(tmp_path) -> None:
     """同一已发布实验操作的两次调用须拥有独立调用根与展开节点。
 

@@ -4,32 +4,16 @@ from __future__ import annotations
 
 from collections.abc import Collection, Iterable
 
-_EXCLUSIVE = "exclusive"
-_MATERIAL = "material"
-_SITE = "site"
-
-
-def material_lock_key(material_uuid: str) -> str:
-    """生成整物料独占键。
-
-    参数：``material_uuid`` 是物料（Material）的稳定身份。返回：
-    ``material/{uuid}/exclusive`` 规范键。异常：无；调用方负责先校验身份。
-    """
-
-    return f"{_MATERIAL}/{material_uuid}/{_EXCLUSIVE}"
-
-
-def site_lock_key(owner_material_uuid: str, site_uuid: str) -> str:
-    """生成父物料下具体库位的独占键。
-
-    参数：``owner_material_uuid`` 是拥有库位的父物料身份，``site_uuid`` 是库位
-    （Site）稳定身份。返回：可与整物料键进行父子冲突判断的规范键。异常：无；
-    调用方负责先校验两个身份以及归属关系。
-
-    该键只服务当前 OS 进程的准入互斥，不具备跨重启恢复或栅栏令牌语义。
-    """
-
-    return f"{_MATERIAL}/{owner_material_uuid}/{_SITE}/{site_uuid}/{_EXCLUSIVE}"
+from unilabos.workflow.resource_lock_key import (
+    GENERIC_RESOURCE_SCOPE,
+    canonical_resource_lock_scope,
+    device_lock_key,
+    is_canonical_generic_resource_lock_key,
+    material_lock_key,
+    named_resource_lock_key,
+    parse_canonical_resource_lock_key,
+    site_lock_key,
+)
 
 
 def normalize_resource_lock_keys(keys: Iterable[str]) -> set[str]:
@@ -45,14 +29,18 @@ def normalize_resource_lock_keys(keys: Iterable[str]) -> set[str]:
     normalized = set(keys)
     whole_materials: set[str] = set()
     for key in normalized:
-        parsed = _parse_material_lock_key(key)
-        if parsed is not None and parsed[1] is None:
-            whole_materials.add(parsed[0])
+        parsed = parse_canonical_resource_lock_key(key)
+        if parsed is not None and parsed.scope == "material":
+            whole_materials.add(str(parsed.material_uuid))
 
     result: set[str] = set()
     for key in normalized:
-        parsed = _parse_material_lock_key(key)
-        if parsed is None or parsed[1] is None or parsed[0] not in whole_materials:
+        parsed = parse_canonical_resource_lock_key(key)
+        if (
+            parsed is None
+            or parsed.scope != "material_site"
+            or parsed.material_uuid not in whole_materials
+        ):
             result.add(key)
     return result
 
@@ -71,49 +59,39 @@ def conflicting_resource_lock_keys(
     # 先处理完全相等键，再补充整物料与子 Site 的层级冲突。
     conflicts = set(requested) & set(held)
     parsed_held = [
-        parsed for key in held if (parsed := _parse_material_lock_key(key)) is not None
+        parsed
+        for key in held
+        if (parsed := parse_canonical_resource_lock_key(key)) is not None
+        and parsed.scope in {"material", "material_site"}
     ]
     for requested_key in requested:
-        requested_lock = _parse_material_lock_key(requested_key)
-        if requested_lock is None:
+        requested_lock = parse_canonical_resource_lock_key(requested_key)
+        if requested_lock is None or requested_lock.scope not in {
+            "material",
+            "material_site",
+        }:
             continue
-        requested_material, requested_site = requested_lock
-        for held_material, held_site in parsed_held:
-            if requested_material != held_material:
+        for held_lock in parsed_held:
+            if requested_lock.material_uuid != held_lock.material_uuid:
                 continue
             if (
-                requested_site is None
-                or held_site is None
-                or requested_site == held_site
+                requested_lock.scope == "material"
+                or held_lock.scope == "material"
+                or requested_lock.site_uuid == held_lock.site_uuid
             ):
                 conflicts.add(requested_key)
                 break
     return conflicts
 
 
-def _parse_material_lock_key(key: str) -> tuple[str, str | None] | None:
-    """解析规范物料/库位互斥键。
-
-    参数：``key`` 是调度器保存的任意执行资源键。返回：物料 UUID 与可选库位
-    UUID；不是规范物料/库位键时返回 ``None``。异常：无。
-    """
-
-    parts = key.split("/")
-    if len(parts) == 3 and parts[0] == _MATERIAL and parts[2] == _EXCLUSIVE:
-        return parts[1], None
-    if (
-        len(parts) == 5
-        and parts[0] == _MATERIAL
-        and parts[2] == _SITE
-        and parts[4] == _EXCLUSIVE
-    ):
-        return parts[1], parts[3]
-    return None
-
-
 __all__ = [
+    "GENERIC_RESOURCE_SCOPE",
+    "canonical_resource_lock_scope",
     "conflicting_resource_lock_keys",
+    "device_lock_key",
+    "is_canonical_generic_resource_lock_key",
     "material_lock_key",
+    "named_resource_lock_key",
     "normalize_resource_lock_keys",
     "site_lock_key",
 ]

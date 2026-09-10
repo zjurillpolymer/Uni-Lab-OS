@@ -11,13 +11,15 @@ from typing import Any
 from uuid import UUID, uuid4
 
 from unilabos.app.scheduler.resource_lock import (
+    canonical_resource_lock_scope,
     conflicting_resource_lock_keys,
+    device_lock_key,
     material_lock_key,
     site_lock_key,
 )
+from unilabos.workflow.resource_lock_key import parse_canonical_resource_lock_key
 
-
-_SCOPES = frozenset({"device", "material", "material_site"})
+_SCOPES = frozenset({"device", "material", "material_site", "resource"})
 
 
 @dataclass(frozen=True, slots=True)
@@ -41,6 +43,7 @@ class TransferDispatchCondition:
     target_site_uuid: str
     executor_material_uuid: str
     gripper_site_uuid: str
+    allow_held_material: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -72,9 +75,13 @@ class DispatchAdmissionRequest:
     parameter_hash: str
     expected_change_set: Mapping[str, Any]
     resources: tuple[DispatchResource, ...]
+    preheld_lock_keys: tuple[str, ...] = ()
+    preheld_job_uuids: tuple[str, ...] = ()
     transfer: TransferDispatchCondition | None = None
     operate_in_place: OperateInPlaceCondition | None = None
     aliquot: AliquotDispatchCondition | None = None
+    shared_scope_lock_keys: tuple[str, ...] = ()
+    reserved_target_site_uuids: tuple[str, ...] = ()
 
 
 @dataclass(frozen=True, slots=True)
@@ -209,7 +216,9 @@ CREATE TABLE IF NOT EXISTS station_execution_fence_counter (
 CREATE TABLE IF NOT EXISTS station_execution_lock_lease (
     claim_uuid TEXT NOT NULL,
     lock_key TEXT NOT NULL,
-    scope TEXT NOT NULL CHECK (scope IN ('device', 'material', 'material_site')),
+    scope TEXT NOT NULL CHECK (
+        scope IN ('device', 'material', 'material_site', 'resource')
+    ),
     material_uuid TEXT,
     site_uuid TEXT,
     fencing_token INTEGER NOT NULL CHECK (fencing_token > 0),
@@ -235,6 +244,123 @@ def migrate_dispatch_admission_schema(connection: sqlite3.Connection) -> None:
     """
 
     connection.executescript(_SCHEMA)
+    _ensure_dispatch_resource_scope(connection)
+
+
+def _ensure_dispatch_resource_scope(connection: sqlite3.Connection) -> None:
+    """原地放宽旧库存 Lease 的 scope CHECK，不复制 Claim 或 Fence 事实。"""
+
+    table = "station_execution_lock_lease"
+    old = "scope IN ('device', 'material', 'material_site')"
+    new = "scope IN ('device', 'material', 'material_site', 'resource')"
+    row = connection.execute(
+        "SELECT sql FROM sqlite_schema WHERE type='table' AND name=?",
+        (table,),
+    ).fetchone()
+    sql = str(row[0] or "") if row is not None else ""
+    if new not in sql or old in sql:
+        if sql.count(old) != 1 or new in sql:
+            raise sqlite3.OperationalError(
+                "station_execution_lock_lease 定义无法安全增加通用资源 scope"
+            )
+        schema_version = int(connection.execute("PRAGMA schema_version").fetchone()[0])
+        connection.execute("PRAGMA writable_schema = ON")
+        try:
+            cursor = connection.execute(
+                "UPDATE sqlite_schema SET sql=replace(sql, ?, ?) "
+                "WHERE type='table' AND name=? AND instr(sql, ?) > 0",
+                (old, new, table, old),
+            )
+            if cursor.rowcount != 1:
+                raise sqlite3.OperationalError("库存通用资源 scope 迁移未命中")
+            connection.execute(f"PRAGMA schema_version = {schema_version + 1}")
+        finally:
+            connection.execute("PRAGMA writable_schema = OFF")
+    refreshed = connection.execute(
+        "SELECT sql FROM sqlite_schema WHERE type='table' AND name=?",
+        (table,),
+    ).fetchone()
+    if refreshed is None or new not in str(refreshed[0] or ""):
+        raise sqlite3.OperationalError("库存通用资源 scope 迁移未生效")
+    integrity = connection.execute("PRAGMA integrity_check").fetchone()
+    if integrity is None or str(integrity[0]).lower() != "ok":
+        raise sqlite3.IntegrityError("库存执行锁 scope 迁移后完整性检查失败")
+    if connection.execute("PRAGMA foreign_key_check").fetchall():
+        raise sqlite3.IntegrityError("库存执行锁 scope 迁移后外键检查失败")
+
+
+def assert_resource_keys_unclaimed(
+    connection: sqlite3.Connection,
+    *,
+    lock_keys: Sequence[str],
+    ignore_ingress_reservation_uuid: str = "",
+    allow_ingress_device_sharing: bool = False,
+) -> None:
+    """拒绝与活动库存 Claim 冲突的一组精确规范资源键。
+
+    参数：``connection`` 是调用方即将写入的同一库存事务；``lock_keys`` 已按
+    实际读写集合构造，可同时包含设备、物料、库位和通用资源键。返回：无。
+    ``ignore_ingress_reservation_uuid`` 仅供入口自身结算时排除自己的持续占用；
+    ``allow_ingress_device_sharing`` 允许同一入口架的多个逻辑库位预留共享架体
+    设备键，但普通 Job 和库存写仍与该键互斥。异常：键语法损坏时抛
+    ``DispatchAdmissionConflict``；命中活动 Lease 或入口预留时抛
+    ``InventoryMutationConflict``，调用方必须整体回滚或跳过当前候选。
+    """
+
+    requested_keys: set[str] = set()
+    for lock_key in lock_keys:
+        if (
+            not isinstance(lock_key, str)
+            or canonical_resource_lock_scope(lock_key) is None
+        ):
+            raise DispatchAdmissionConflict("库存写操作包含非规范资源键")
+        requested_keys.add(lock_key)
+    if not requested_keys:
+        return
+
+    active = connection.execute(
+        """
+        SELECT lease.lock_key,lease.claim_uuid,claim.job_uuid
+        FROM station_execution_lock_lease AS lease
+        JOIN station_execution_claim AS claim USING(claim_uuid)
+        WHERE lease.state IN ('prepared','reserved','running','uncertain')
+        ORDER BY lease.acquired_at,lease.claim_uuid,lease.lock_key
+        """
+    ).fetchall()
+    for row in active:
+        if conflicting_resource_lock_keys(
+            requested_keys,
+            {str(row["lock_key"])},
+        ):
+            raise InventoryMutationConflict(
+                claim_uuid=str(row["claim_uuid"]),
+                job_uuid=str(row["job_uuid"]),
+                requested_lock_keys=tuple(requested_keys),
+            )
+    ingress_rows = connection.execute(
+        "SELECT reservation_uuid,lock_key "
+        "FROM station_ingress_reservation_resource "
+        "WHERE active=1 AND reservation_uuid<>? "
+        "ORDER BY reservation_uuid,lock_key",
+        (str(ignore_ingress_reservation_uuid or ""),),
+    ).fetchall()
+    for row in ingress_rows:
+        held_key = str(row["lock_key"])
+        if (
+            allow_ingress_device_sharing
+            and canonical_resource_lock_scope(held_key) == "device"
+            and held_key in requested_keys
+        ):
+            continue
+        if conflicting_resource_lock_keys(
+            requested_keys,
+            {held_key},
+        ):
+            raise InventoryMutationConflict(
+                claim_uuid=str(row["reservation_uuid"]),
+                job_uuid="",
+                requested_lock_keys=tuple(requested_keys),
+            )
 
 
 def assert_inventory_mutation_unclaimed(
@@ -283,34 +409,13 @@ def assert_inventory_mutation_unclaimed(
     requested_keys = {
         key
         for material_uuid in materials
-        for key in (material_lock_key(material_uuid), f"/devices/{material_uuid}")
+        for key in (material_lock_key(material_uuid), device_lock_key(material_uuid))
     }
     requested_keys.update(
         site_lock_key(owner_uuid, site_uuid)
         for site_uuid, owner_uuid in site_owner.items()
     )
-    if not requested_keys:
-        return
-
-    active = connection.execute(
-        """
-        SELECT lease.lock_key,lease.claim_uuid,claim.job_uuid
-        FROM station_execution_lock_lease AS lease
-        JOIN station_execution_claim AS claim USING(claim_uuid)
-        WHERE lease.state IN ('prepared','reserved','running','uncertain')
-        ORDER BY lease.acquired_at,lease.claim_uuid,lease.lock_key
-        """
-    ).fetchall()
-    for row in active:
-        if conflicting_resource_lock_keys(
-            requested_keys,
-            {str(row["lock_key"])},
-        ):
-            raise InventoryMutationConflict(
-                claim_uuid=str(row["claim_uuid"]),
-                job_uuid=str(row["job_uuid"]),
-                requested_lock_keys=tuple(requested_keys),
-            )
+    assert_resource_keys_unclaimed(connection, lock_keys=tuple(requested_keys))
 
 
 def validate_physical_settlement_credentials(
@@ -385,6 +490,121 @@ def validate_physical_settlement_credentials(
     return claim_state
 
 
+def validate_active_dispatch_permit(
+    connection: sqlite3.Connection,
+    *,
+    effect_uuid: str,
+    claim_uuid: str,
+    task_uuid: str,
+    job_uuid: str,
+    attempt: int,
+    parameter_hash: str,
+    expected_change_set: Mapping[str, Any],
+    resource_keys: Sequence[str],
+    fences: Mapping[str, int],
+) -> None:
+    """在物理派发前严格复验库存 Claim 仍是同一活动预留。
+
+    参数：库存读写事务和工作流已冻结的 Permit 身份。返回：无。异常：Claim
+    缺失、已释放、尚未提交或任一稳定身份发生漂移时抛
+    ``DispatchAdmissionConflict``，调用方不得越过物理派发边界。
+    """
+
+    claim = connection.execute(
+        "SELECT * FROM station_execution_claim WHERE claim_uuid=?",
+        (str(claim_uuid or "").strip(),),
+    ).fetchone()
+    if claim is None:
+        raise DispatchAdmissionConflict("物理派发前库存 Claim 不存在")
+    if (
+        str(claim["state"]) != "reserved"
+        or claim["committed_at"] is None
+        or claim["released_at"] is not None
+    ):
+        raise DispatchAdmissionConflict("物理派发前库存 Claim 不是活动预留")
+    if not isinstance(expected_change_set, Mapping):
+        raise DispatchAdmissionConflict("物理派发前 expected_change_set 已损坏")
+    expected_identity = (
+        str(effect_uuid or "").strip(),
+        str(task_uuid or "").strip(),
+        str(job_uuid or "").strip(),
+        int(attempt),
+        str(parameter_hash or "").strip(),
+        _canonical_json(expected_change_set),
+    )
+    persisted_identity = (
+        str(claim["effect_uuid"]),
+        str(claim["task_uuid"]),
+        str(claim["job_uuid"]),
+        int(claim["attempt"]),
+        str(claim["parameter_hash"]),
+        str(claim["expected_change_set"]),
+    )
+    if expected_identity != persisted_identity:
+        raise DispatchAdmissionConflict("物理派发前库存 Permit 身份或内容不一致")
+    normalized_resource_keys: list[str] = []
+    for raw_key in resource_keys:
+        if not isinstance(raw_key, str):
+            raise DispatchAdmissionConflict("物理派发前资源集合已损坏")
+        lock_key = raw_key.strip()
+        if not lock_key or lock_key != raw_key or lock_key in normalized_resource_keys:
+            raise DispatchAdmissionConflict("物理派发前资源集合已损坏")
+        normalized_resource_keys.append(lock_key)
+    expected_resource_keys = tuple(sorted(normalized_resource_keys))
+    try:
+        raw_persisted_keys = json.loads(str(claim["resource_keys"]))
+    except (TypeError, ValueError) as error:
+        raise DispatchAdmissionConflict("物理派发前库存 Claim 资源集合已损坏") from error
+    if not isinstance(raw_persisted_keys, list):
+        raise DispatchAdmissionConflict("物理派发前库存 Claim 资源集合已损坏")
+    persisted_resource_keys: list[str] = []
+    for raw_key in raw_persisted_keys:
+        if not isinstance(raw_key, str):
+            raise DispatchAdmissionConflict("物理派发前库存 Claim 资源集合已损坏")
+        lock_key = raw_key.strip()
+        if (
+            not lock_key
+            or lock_key != raw_key
+            or lock_key in persisted_resource_keys
+        ):
+            raise DispatchAdmissionConflict("物理派发前库存 Claim 资源集合已损坏")
+        persisted_resource_keys.append(lock_key)
+    persisted_resource_keys_tuple = tuple(sorted(persisted_resource_keys))
+    if persisted_resource_keys_tuple != expected_resource_keys:
+        raise DispatchAdmissionConflict("物理派发前库存 Claim 资源集合不一致")
+    normalized_fences: dict[str, int] = {}
+    for raw_key, raw_token in fences.items():
+        lock_key = str(raw_key or "").strip()
+        if (
+            not lock_key
+            or lock_key in normalized_fences
+            or isinstance(raw_token, bool)
+            or not isinstance(raw_token, int)
+            or raw_token <= 0
+        ):
+            raise DispatchAdmissionConflict("物理派发前 Fence 快照已损坏")
+        normalized_fences[lock_key] = raw_token
+    if set(normalized_fences) != set(expected_resource_keys):
+        raise DispatchAdmissionConflict("物理派发前 Fence 快照资源集合不完整")
+    leases = connection.execute(
+        "SELECT lock_key,fencing_token,state,released_at "
+        "FROM station_execution_lock_lease "
+        "WHERE claim_uuid=? ORDER BY lock_key",
+        (claim_uuid,),
+    ).fetchall()
+    lease_resource_keys = tuple(str(lease["lock_key"]) for lease in leases)
+    if lease_resource_keys != expected_resource_keys or any(
+        str(lease["state"]) != "reserved" or lease["released_at"] is not None
+        for lease in leases
+    ):
+        raise DispatchAdmissionConflict("物理派发前库存 Lease 缺失或不是活动预留")
+    persisted_fences = {
+        str(lease["lock_key"]): int(lease["fencing_token"]) for lease in leases
+    }
+    if persisted_fences != normalized_fences:
+        raise DispatchAdmissionConflict("物理派发前库存 Fence 与工作流快照不一致")
+
+
 def acquire_dispatch_permit(
     connection: sqlite3.Connection,
     request: DispatchAdmissionRequest,
@@ -399,6 +619,12 @@ def acquire_dispatch_permit(
     """
 
     normalized = _normalize_request(request)
+    task_material_conflict = _active_task_material_claim_conflict(
+        connection,
+        normalized,
+    )
+    if task_material_conflict is not None:
+        return task_material_conflict
     existing = connection.execute(
         "SELECT * FROM station_execution_claim WHERE job_uuid=? AND attempt=?",
         (normalized.job_uuid, normalized.attempt),
@@ -410,39 +636,23 @@ def acquire_dispatch_permit(
                 existing=existing,
                 request=normalized,
             )
-        return DispatchAdmissionDecision(
-            permit=_replay_permit(connection, existing, normalized)
-        )
+        return DispatchAdmissionDecision(permit=_replay_permit(connection, existing, normalized))
 
-    active = connection.execute(
-        """
+    active = connection.execute("""
         SELECT lease.*, claim.task_uuid, claim.job_uuid
         FROM station_execution_lock_lease lease
         JOIN station_execution_claim claim USING(claim_uuid)
         WHERE lease.state IN ('prepared', 'reserved', 'running', 'uncertain')
         ORDER BY lease.acquired_at, lease.claim_uuid, lease.lock_key
-        """
-    ).fetchall()
+        """).fetchall()
     requested_keys = {resource.lock_key for resource in normalized.resources}
-    for lease in active:
-        if conflicting_resource_lock_keys(
-            requested_keys,
-            {str(lease["lock_key"])},
-        ):
-            return DispatchAdmissionDecision(
-                wait_code="resource_claimed",
-                wait_message=f"资源 {lease['lock_key']} 已由其他作业申领",
-                blocking_task_uuid=str(lease["task_uuid"]),
-                blocking_job_uuid=str(lease["job_uuid"]),
-            )
-
-    _validate_resource_facts(connection, normalized.resources)
-    if normalized.transfer is not None:
-        _validate_transfer_conditions(connection, normalized)
-    if normalized.operate_in_place is not None:
-        _validate_operate_in_place_conditions(connection, normalized)
-    if normalized.aliquot is not None:
-        _validate_aliquot_conditions(connection, normalized)
+    conflict = _active_resource_conflict(active, normalized)
+    if conflict is not None:
+        return conflict
+    ingress_conflict = _active_ingress_resource_conflict(connection, normalized)
+    if ingress_conflict is not None:
+        return ingress_conflict
+    _validate_dispatch_conditions(connection, normalized)
 
     now = _utc_now()
     claim_uuid = str(uuid4())
@@ -471,7 +681,7 @@ def acquire_dispatch_permit(
     )
     fences: list[DispatchFence] = []
     for resource in normalized.resources:
-        token = _next_fencing_token(connection, resource.lock_key, now=now)
+        token = _admission_fencing_token(connection, resource.lock_key, active, normalized, now=now)
         connection.execute(
             """
             INSERT INTO station_execution_lock_lease(
@@ -503,6 +713,82 @@ def acquire_dispatch_permit(
             fences=tuple(fences),
         )
     )
+
+
+def release_preheld_dispatch_claims(
+    connection: sqlite3.Connection,
+    *,
+    task_uuid: str,
+    job_uuids: Sequence[str],
+    lock_keys: Sequence[str],
+) -> tuple[str, ...]:
+    """在后继派发意图已投影后收敛前一 Job 的物理 Claim。"""
+
+    jobs = {str(value or "").strip() for value in job_uuids if str(value or "").strip()}
+    keys = {str(value or "").strip() for value in lock_keys if str(value or "").strip()}
+    if not jobs or not keys:
+        return ()
+    rows = connection.execute(
+        "SELECT claim_uuid, job_uuid FROM station_execution_claim "
+        "WHERE task_uuid=? AND job_uuid IN (%s) "
+        "AND state IN ('prepared','reserved','running')" % ",".join("?" for _ in jobs),
+        (task_uuid, *sorted(jobs)),
+    ).fetchall()
+    released: list[str] = []
+    for row in rows:
+        claim_uuid = str(row["claim_uuid"])
+        active = {
+            str(item["lock_key"])
+            for item in connection.execute(
+                "SELECT lock_key FROM station_execution_lock_lease "
+                "WHERE claim_uuid=? AND state IN ('prepared','reserved','running')",
+                (claim_uuid,),
+            ).fetchall()
+        }
+        remaining = active - keys
+        if remaining:
+            retain_dispatch_permit_resources(
+                connection, claim_uuid=claim_uuid, keep_lock_keys=tuple(remaining)
+            )
+        else:
+            transition_dispatch_permit(connection, claim_uuid=claim_uuid, target_state="released")
+            released.append(claim_uuid)
+    return tuple(sorted(released))
+
+
+def release_task_dispatch_permits(
+    connection: sqlite3.Connection,
+    *,
+    task_uuid: str,
+) -> tuple[str, ...]:
+    """在操作员完成物理确认后整组释放一个终态 Task 的库存 Permit。
+
+    参数：``connection`` 是库存权威写事务；``task_uuid`` 已由工作流权威证明为
+    异常终态。返回本次仍处于活动生命周期的 Claim UUID，按身份稳定排序。
+    异常：空 Task 身份或非法 Claim 状态抛 ``DispatchAdmissionConflict``，整个
+    库存事务回滚。释放是单向且幂等的，便于跨库清理失败后安全重放。
+    """
+
+    normalized_task_uuid = str(task_uuid or "").strip()
+    if not normalized_task_uuid:
+        raise DispatchAdmissionConflict("人工释放缺少工作流任务身份")
+    rows = connection.execute(
+        """
+        SELECT claim_uuid FROM station_execution_claim
+        WHERE task_uuid=?
+          AND state IN ('prepared','reserved','running','uncertain')
+        ORDER BY claim_uuid
+        """,
+        (normalized_task_uuid,),
+    ).fetchall()
+    claim_uuids = tuple(str(row["claim_uuid"]) for row in rows)
+    for claim_uuid in claim_uuids:
+        transition_dispatch_permit(
+            connection,
+            claim_uuid=claim_uuid,
+            target_state="released",
+        )
+    return claim_uuids
 
 
 def acquire_dispatch_permit_candidates(
@@ -634,6 +920,61 @@ def transition_dispatch_permit(
     )
 
 
+def retain_dispatch_permit_resources(
+    connection: sqlite3.Connection,
+    *,
+    claim_uuid: str,
+    keep_lock_keys: Sequence[str],
+) -> None:
+    """在连续区间交接或异常冻结时只释放当前 Claim 的临时资源。"""
+
+    keep = {
+        str(value or "").strip() for value in keep_lock_keys if str(value or "").strip()
+    }
+    row = connection.execute(
+        "SELECT state FROM station_execution_claim WHERE claim_uuid=?",
+        (claim_uuid,),
+    ).fetchone()
+    if row is None:
+        raise DispatchAdmissionConflict(f"库存 Claim 不存在：{claim_uuid}")
+    state = str(row["state"])
+    if state not in {"prepared", "reserved", "running", "uncertain"}:
+        raise DispatchAdmissionConflict(
+            f"库存 Claim 不能进行连续资源保留：{claim_uuid}"
+        )
+    active_rows = connection.execute(
+        "SELECT lock_key FROM station_execution_lock_lease "
+        "WHERE claim_uuid=? AND state IN ('prepared','reserved','running','uncertain')",
+        (claim_uuid,),
+    ).fetchall()
+    active_keys = {str(item["lock_key"]) for item in active_rows}
+    if not keep <= active_keys:
+        raise DispatchAdmissionConflict("连续区间保留资源不属于当前库存 Claim")
+    if not keep:
+        transition_dispatch_permit(
+            connection,
+            claim_uuid=claim_uuid,
+            target_state="released",
+        )
+        return
+    now = _utc_now()
+    release_keys = tuple(sorted(active_keys - keep))
+    placeholders = ",".join("?" for _ in release_keys)
+    if release_keys:
+        connection.execute(
+            "UPDATE station_execution_lock_lease "
+            "SET state='released', released_at=?, update_time=? "
+            f"WHERE claim_uuid=? AND lock_key IN ({placeholders}) "
+            "AND state IN ('prepared','reserved','running','uncertain')",
+            (now, now, claim_uuid, *release_keys),
+        )
+    connection.execute(
+        "UPDATE station_execution_claim SET resource_keys=?, update_time=? "
+        "WHERE claim_uuid=?",
+        (_canonical_json(sorted(keep)), now, claim_uuid),
+    )
+
+
 def release_unprojected_dispatch_permits(
     connection: sqlite3.Connection,
     *,
@@ -703,10 +1044,51 @@ def _normalize_request(request: DispatchAdmissionRequest) -> DispatchAdmissionRe
             material_uuid=str(item.material_uuid or "").strip(),
             site_uuid=str(item.site_uuid or "").strip(),
         )
+        key_identity = parse_canonical_resource_lock_key(lock_key)
+        if key_identity is None or key_identity.scope != scope:
+            raise DispatchAdmissionConflict(
+                "派发资源 scope 与规范 lock_key 不匹配"
+            )
+        if (
+            normalized.material_uuid != (key_identity.material_uuid or "")
+            or normalized.site_uuid != (key_identity.site_uuid or "")
+        ):
+            raise DispatchAdmissionConflict(
+                "派发资源身份与 canonical lock_key 不一致"
+            )
         previous = resources.get(lock_key)
         if previous is not None and previous != normalized:
             raise DispatchAdmissionConflict(f"同一派发资源定义冲突：{lock_key}")
         resources[lock_key] = normalized
+    preheld_lock_keys = tuple(
+        sorted(
+            {
+                str(value or "").strip()
+                for value in request.preheld_lock_keys
+                if str(value or "").strip()
+            }
+        )
+    )
+    if not set(preheld_lock_keys) <= set(resources):
+        raise DispatchAdmissionConflict("连续区间预持有资源不在完整派发资源集合中")
+    if not set(request.shared_scope_lock_keys) <= set(preheld_lock_keys):
+        raise DispatchAdmissionConflict("共同作用域只能复用已声明的预持有资源")
+    preheld_job_uuids = tuple(
+        sorted(
+            {
+                str(value or "").strip()
+                for value in request.preheld_job_uuids
+                if str(value or "").strip()
+            }
+        )
+    )
+    for preheld_job_uuid in preheld_job_uuids:
+        try:
+            UUID(preheld_job_uuid)
+        except (AttributeError, TypeError, ValueError) as error:
+            raise DispatchAdmissionConflict("连续区间前一 Job 身份非法") from error
+    if str(request.job_uuid) in preheld_job_uuids:
+        raise DispatchAdmissionConflict("连续区间前一 Job 不能是当前 Job")
     return DispatchAdmissionRequest(
         effect_uuid=str(request.effect_uuid),
         task_uuid=str(request.task_uuid),
@@ -715,6 +1097,10 @@ def _normalize_request(request: DispatchAdmissionRequest) -> DispatchAdmissionRe
         parameter_hash=str(request.parameter_hash).strip(),
         expected_change_set=dict(request.expected_change_set),
         resources=tuple(resources[key] for key in sorted(resources)),
+        preheld_lock_keys=preheld_lock_keys,
+        preheld_job_uuids=preheld_job_uuids,
+        reserved_target_site_uuids=tuple(sorted(set(request.reserved_target_site_uuids))),
+        shared_scope_lock_keys=tuple(sorted(set(request.shared_scope_lock_keys))),
         transfer=request.transfer,
         operate_in_place=request.operate_in_place,
         aliquot=request.aliquot,
@@ -750,7 +1136,7 @@ def _validate_resource_facts(
                 raise DispatchAdmissionConflict(
                     f"物料资源不存在：{resource.material_uuid}"
                 )
-        else:
+        elif resource.scope == "material_site":
             row = connection.execute(
                 "SELECT material_uuid FROM site WHERE uuid=? AND deleted_at IS NULL",
                 (resource.site_uuid,),
@@ -759,6 +1145,12 @@ def _validate_resource_facts(
                 raise DispatchAdmissionConflict(
                     f"库位不存在或归属不一致：{resource.site_uuid}"
                 )
+        elif resource.scope == "resource":
+            # 通用命名互斥的身份由严格 canonical key 自证，不冒充 Inventory
+            # Material/Site；Claim、Lease 与 Fence 仍在同一库存事务中签发。
+            continue
+        else:  # pragma: no cover - _normalize_request 已关闭式拒绝未知 scope。
+            raise DispatchAdmissionConflict(f"派发资源 scope 不合法：{resource.scope}")
 
 
 def _validate_transfer_conditions(
@@ -787,19 +1179,14 @@ def _validate_transfer_conditions(
         raise TemporaryDispatchCondition(
             "transfer_source_site_missing",
             "待搬物料已经不在准入时确认的来源库位",
-            resources=(
-                {"scope": "material", "material_uuid": condition.material_uuid},
-            ),
+            resources=({"scope": "material", "material_uuid": condition.material_uuid},),
         )
     target = connection.execute(
         "SELECT material_uuid,occupied_material_uuid FROM site "
         "WHERE uuid=? AND deleted_at IS NULL",
         (condition.target_site_uuid,),
     ).fetchone()
-    if (
-        target is None
-        or str(target["material_uuid"]) != condition.target_owner_material_uuid
-    ):
+    if target is None or str(target["material_uuid"]) != condition.target_owner_material_uuid:
         raise DispatchAdmissionConflict("目标库位不存在或归属已经改变")
     if str(target["occupied_material_uuid"] or ""):
         raise TemporaryDispatchCondition(
@@ -814,8 +1201,7 @@ def _validate_transfer_conditions(
             ),
         )
     ingress = connection.execute(
-        "SELECT 1 FROM station_ingress_reservation_site "
-        "WHERE site_uuid=? AND active=1 LIMIT 1",
+        "SELECT 1 FROM station_ingress_reservation_site " "WHERE site_uuid=? AND active=1 LIMIT 1",
         (condition.target_site_uuid,),
     ).fetchone()
     if ingress is not None:
@@ -835,12 +1221,14 @@ def _validate_transfer_conditions(
         "WHERE uuid=? AND deleted_at IS NULL",
         (condition.gripper_site_uuid,),
     ).fetchone()
-    if (
-        gripper is None
-        or str(gripper["material_uuid"]) != condition.executor_material_uuid
-    ):
+    if gripper is None or str(gripper["material_uuid"]) != condition.executor_material_uuid:
         raise DispatchAdmissionConflict("机械臂夹爪库位不存在或归属已经改变")
-    if str(gripper["occupied_material_uuid"] or ""):
+    occupied = str(gripper["occupied_material_uuid"] or "")
+    if occupied and not (
+        condition.allow_held_material
+        and occupied == condition.material_uuid
+        and condition.source_site_uuid == condition.gripper_site_uuid
+    ):
         raise TemporaryDispatchCondition(
             "gripper_site_occupied",
             "机械臂夹爪库位当前已有物料",
@@ -854,19 +1242,19 @@ def _validate_transfer_conditions(
         )
 
     required_keys = {
-        f"/devices/{condition.executor_material_uuid}",
-        f"material/{condition.material_uuid}/exclusive",
-        (
-            f"material/{condition.source_owner_material_uuid}/site/"
-            f"{condition.source_site_uuid}/exclusive"
+        device_lock_key(condition.executor_material_uuid),
+        material_lock_key(condition.material_uuid),
+        site_lock_key(
+            condition.source_owner_material_uuid,
+            condition.source_site_uuid,
         ),
-        (
-            f"material/{condition.target_owner_material_uuid}/site/"
-            f"{condition.target_site_uuid}/exclusive"
+        site_lock_key(
+            condition.target_owner_material_uuid,
+            condition.target_site_uuid,
         ),
-        (
-            f"material/{condition.executor_material_uuid}/site/"
-            f"{condition.gripper_site_uuid}/exclusive"
+        site_lock_key(
+            condition.executor_material_uuid,
+            condition.gripper_site_uuid,
         ),
     }
     for endpoint_owner_uuid in (
@@ -878,13 +1266,11 @@ def _validate_transfer_conditions(
             endpoint_owner_uuid,
         )
         if device_owner_uuid:
-            required_keys.add(f"/devices/{device_owner_uuid}")
+            required_keys.add(device_lock_key(device_owner_uuid))
     actual_keys = {resource.lock_key for resource in request.resources}
     missing = sorted(required_keys - actual_keys)
     if missing:
-        raise DispatchAdmissionConflict(
-            "机械臂转运 Claim 缺少完整资源：" + ",".join(missing)
-        )
+        raise DispatchAdmissionConflict("机械臂转运 Claim 缺少完整资源：" + ",".join(missing))
     expected = request.expected_change_set
     required_change = {
         "kind": "material_transfer",
@@ -928,7 +1314,7 @@ def _validate_operate_in_place_conditions(
     if actual_device != condition.device_material_uuid:
         raise DispatchAdmissionConflict("原位操作库位不属于实际执行设备")
     required_keys = {
-        f"/devices/{condition.device_material_uuid}",
+        device_lock_key(condition.device_material_uuid),
         material_lock_key(condition.material_uuid),
         site_lock_key(condition.site_owner_material_uuid, condition.site_uuid),
     }
@@ -1026,6 +1412,159 @@ class TemporaryDispatchCondition(ValueError):
         self.resources = tuple(dict(resource) for resource in resources)
 
 
+def _inherits_lease(lease: sqlite3.Row, request: DispatchAdmissionRequest) -> bool:
+    """仅明确声明的同任务前驱可交接，结果不明的租约绝不被继承绕过。"""
+    return (
+        str(lease["state"]) in {"prepared", "reserved", "running"}
+        and str(lease["task_uuid"]) == request.task_uuid
+        and str(lease["lock_key"]) in request.preheld_lock_keys
+        and str(lease["job_uuid"]) in request.preheld_job_uuids
+    )
+
+
+def _active_resource_conflict(
+    active: Sequence[sqlite3.Row],
+    request: DispatchAdmissionRequest,
+) -> DispatchAdmissionDecision | None:
+    """首次准入和重准备使用相同的资源冲突与继承判断。
+
+    ``preheld`` 是连续区间已经保持物理占用的证明，不是忽略普通冲突的提示。
+    因此前驱 Lease 缺失、已释放或状态不明都属于持久事实断裂，必须在签发任何
+    新 Claim/Fence 前关闭失败；共同作用域仍可由多条匹配 Lease 共同证明。
+    """
+    if request.preheld_lock_keys and not request.preheld_job_uuids:
+        raise DispatchAdmissionConflict("连续区间预持有资源缺少前一 Job 身份")
+    inherited_keys = {
+        str(lease["lock_key"])
+        for lease in active
+        if _inherits_lease(lease, request)
+    }
+    missing_preheld_keys = sorted(
+        set(request.preheld_lock_keys) - inherited_keys
+    )
+    if missing_preheld_keys:
+        raise DispatchAdmissionConflict(
+            "连续区间预持有资源缺少活动前驱租约："
+            + "、".join(missing_preheld_keys)
+        )
+    requested = {resource.lock_key for resource in request.resources}
+    for lease in active:
+        if conflicting_resource_lock_keys(
+            requested, {str(lease["lock_key"])}
+        ) and not _inherits_lease(lease, request):
+            return DispatchAdmissionDecision(
+                wait_code="resource_claimed",
+                wait_message=f"资源 {lease['lock_key']} 已由其他作业申领",
+                blocking_task_uuid=str(lease["task_uuid"]),
+                blocking_job_uuid=str(lease["job_uuid"]),
+            )
+    return None
+
+
+def _active_ingress_resource_conflict(
+    connection: sqlite3.Connection,
+    request: DispatchAdmissionRequest,
+) -> DispatchAdmissionDecision | None:
+    """阻止普通 Job 抢占入口运输从预留到终态持续持有的资源。"""
+
+    requested = {resource.lock_key for resource in request.resources}
+    rows = connection.execute(
+        "SELECT reservation_uuid,lock_key "
+        "FROM station_ingress_reservation_resource WHERE active=1 "
+        "ORDER BY reservation_uuid,lock_key"
+    ).fetchall()
+    for row in rows:
+        lock_key = str(row["lock_key"])
+        if conflicting_resource_lock_keys(requested, {lock_key}):
+            return DispatchAdmissionDecision(
+                wait_code="station_ingress_reserved",
+                wait_message=f"资源 {lock_key} 已由入口运输预留",
+            )
+    return None
+
+
+def _active_task_material_claim_conflict(
+    connection: sqlite3.Connection,
+    request: DispatchAdmissionRequest,
+) -> DispatchAdmissionDecision | None:
+    """阻止动作越过其他 Task 的活动任务级物料独占。
+
+    Inventory 的 ``inventory_material_source_binding`` 是来源准入已经提交的
+    TaskMaterialClaim 镜像。动作是否自行声明 MaterialSource 与这里无关：只要
+    完整派发资源描述引用了该物料，其他 Task 就必须等待；同 Task 的多个动作
+    仍交给 JobActiveUse 的普通 Lease 逐节点互斥。
+    """
+
+    material_uuids = tuple(
+        sorted(
+            {
+                resource.material_uuid
+                for resource in request.resources
+                if resource.material_uuid
+            }
+        )
+    )
+    if not material_uuids:
+        return None
+    placeholders = ",".join("?" for _ in material_uuids)
+    blocker = connection.execute(
+        "SELECT workflow_id,material_uuid "
+        "FROM inventory_material_source_binding "
+        "WHERE custody_policy='task_exclusive' AND status='active' "
+        "AND workflow_id<>? "
+        f"AND material_uuid IN ({placeholders}) "
+        "ORDER BY created_at,binding_id LIMIT 1",
+        (request.task_uuid, *material_uuids),
+    ).fetchone()
+    if blocker is None:
+        return None
+    return DispatchAdmissionDecision(
+        wait_code="task_material_claimed",
+        wait_message=(
+            f"物料 {blocker['material_uuid']} 已由任务 "
+            f"{blocker['workflow_id']} 全程独占"
+        ),
+        blocking_task_uuid=str(blocker["workflow_id"]),
+    )
+
+
+def _admission_fencing_token(
+    connection: sqlite3.Connection,
+    lock_key: str,
+    active: Sequence[sqlite3.Row],
+    request: DispatchAdmissionRequest,
+    *,
+    now: str,
+) -> int:
+    """共同外层所有权复用 fence，不能使仍在运行的并行命令失效。"""
+    if lock_key in request.shared_scope_lock_keys:
+        inherited = {
+            int(row["fencing_token"])
+            for row in active
+            if str(row["lock_key"]) == lock_key and _inherits_lease(row, request)
+        }
+        if len(inherited) > 1:
+            raise DispatchAdmissionConflict("共同范围的活动资源 fence 不一致")
+        if inherited:
+            return inherited.pop()
+    return _next_fencing_token(connection, lock_key, now=now)
+
+
+def _validate_dispatch_conditions(
+    connection: sqlite3.Connection,
+    request: DispatchAdmissionRequest,
+) -> None:
+    """每次签发凭据都重查资源及全部物理前置条件。"""
+    _validate_resource_facts(connection, request.resources)
+    _validate_reserved_targets(connection, request)
+    if request.transfer is not None:
+        _validate_transfer_conditions(connection, request)
+    if request.operate_in_place is not None:
+        _validate_operate_in_place_conditions(connection, request)
+    if request.aliquot is not None:
+        _validate_aliquot_conditions(connection, request)
+
+
 def _replay_permit(
     connection: sqlite3.Connection,
     existing: sqlite3.Row,
@@ -1069,12 +1608,11 @@ def _reprepare_released_permit(
     """重新准备从未提交到物理边界、但被后续门禁释放的同一 Permit。
 
     参数：库存事务、released 且 committed_at 为空的原 Claim、同一 Job 尝试请求。
-    返回：条件仍满足时复用 Claim/effect 并签发全新 Fence；资源冲突时返回等待。
+    返回：条件仍满足时复用 Claim/effect，共同范围继承 Fence，其余签发新 Fence；冲突时等待。
     异常：请求漂移、库存条件损坏或 SQLite 错误原样传播。
     """
 
     _assert_replay_matches(existing, request)
-    requested_keys = {resource.lock_key for resource in request.resources}
     active = connection.execute(
         """
         SELECT lease.*, claim.task_uuid, claim.job_uuid
@@ -1086,20 +1624,19 @@ def _reprepare_released_permit(
         """,
         (existing["claim_uuid"],),
     ).fetchall()
-    for lease in active:
-        if conflicting_resource_lock_keys(
-            requested_keys,
-            {str(lease["lock_key"])},
-        ):
-            return DispatchAdmissionDecision(
-                wait_code="resource_claimed",
-                wait_message=f"资源 {lease['lock_key']} 已由其他作业申领",
-                blocking_task_uuid=str(lease["task_uuid"]),
-                blocking_job_uuid=str(lease["job_uuid"]),
-            )
-    _validate_resource_facts(connection, request.resources)
-    if request.transfer is not None:
-        _validate_transfer_conditions(connection, request)
+    conflict = _active_resource_conflict(active, request)
+    if conflict is not None:
+        return conflict
+    ingress_conflict = _active_ingress_resource_conflict(connection, request)
+    if ingress_conflict is not None:
+        return ingress_conflict
+    task_material_conflict = _active_task_material_claim_conflict(
+        connection,
+        request,
+    )
+    if task_material_conflict is not None:
+        return task_material_conflict
+    _validate_dispatch_conditions(connection, request)
     now = _utc_now()
     claim_uuid = str(existing["claim_uuid"])
     connection.execute(
@@ -1112,7 +1649,7 @@ def _reprepare_released_permit(
     )
     fences: list[DispatchFence] = []
     for resource in request.resources:
-        token = _next_fencing_token(connection, resource.lock_key, now=now)
+        token = _admission_fencing_token(connection, resource.lock_key, active, request, now=now)
         changed = connection.execute(
             """
             UPDATE station_execution_lock_lease
@@ -1230,8 +1767,53 @@ __all__ = [
     "acquire_dispatch_permit",
     "acquire_dispatch_permit_candidates",
     "assert_inventory_mutation_unclaimed",
+    "assert_resource_keys_unclaimed",
     "migrate_dispatch_admission_schema",
+    "release_preheld_dispatch_claims",
+    "release_task_dispatch_permits",
     "release_unprojected_dispatch_permits",
+    "retain_dispatch_permit_resources",
     "transition_dispatch_permit",
+    "validate_active_dispatch_permit",
     "validate_physical_settlement_credentials",
 ]
+
+
+def _validate_reserved_targets(
+    connection: sqlite3.Connection, request: DispatchAdmissionRequest
+) -> None:
+    """在取得整组 Claim 的同一事务预留拆分搬运最终 Site，杜绝取料后才等待目标。"""
+    for site_uuid in request.reserved_target_site_uuids:
+        resource = next(
+            (
+                r
+                for r in request.resources
+                if r.scope == "material_site" and r.site_uuid == site_uuid
+            ),
+            None,
+        )
+        if resource is None:
+            raise DispatchAdmissionConflict("pick 缺少最终目标 Site 的独立预留")
+        row = connection.execute(
+            "SELECT occupied_material_uuid FROM site WHERE uuid=? AND deleted_at IS NULL",
+            (site_uuid,),
+        ).fetchone()
+        if row is None:
+            raise DispatchAdmissionConflict("最终目标 Site 不存在")
+        if row["occupied_material_uuid"]:
+            raise TemporaryDispatchCondition(
+                "site_occupied",
+                "取料前最终目标 Site 必须空闲",
+                resources=(
+                    {
+                        "scope": "material_site",
+                        "material_uuid": resource.material_uuid,
+                        "site_uuid": site_uuid,
+                    },
+                ),
+            )
+        if connection.execute(
+            "SELECT 1 FROM station_ingress_reservation_site WHERE site_uuid=? AND active=1",
+            (site_uuid,),
+        ).fetchone():
+            raise TemporaryDispatchCondition("site_ingress_reserved", "最终目标 Site 已被入口预留")

@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="2. 物料定义模板" href="material-template.html"><link rel="prev" title="上位机 API 接入" href="host-api.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>鼠标模拟点击（可选） - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>鼠标模拟点击（可选）<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>鼠标模拟点击（可选）<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -374,7 +376,7 @@
 <p>不存在可直接复用于任意厂商软件的鼠标自动化驱动。示例选择器必须依据目标上位机的实际可访问性树验证。</p>
 </div>
 <section id="id2">
-<h2>先确认没有更稳定的控制方式<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>先确认没有更稳定的控制方式<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>官方 API / SDK
 → 串口或网络协议
 → PLC / OPC UA
@@ -409,7 +411,7 @@
 </div>
 </section>
 <section id="id3">
-<h2>必须提前约定的运行条件<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>必须提前约定的运行条件<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>自动化进程与 Uni-Lab 设备驱动分层，窗口操作封装在私有适配器中。</p></li>
 <li><p>公开类继续使用选定大类的 <code class="docutils literal notranslate"><span class="pre">&#64;action</span></code>、参数和 <code class="docutils literal notranslate"><span class="pre">&#64;topic_config</span></code> 属性。</p></li>
@@ -458,7 +460,7 @@
 </div>
 </section>
 <section id="id4">
-<h2>开发人员可复制的代码模板<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>开发人员可复制的代码模板<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>示例实现蠕动泵的动作和状态。<code class="docutils literal notranslate"><span class="pre">DesktopAdapter</span></code> 代表项目选定并经过验证的 UI 自动化库，不是 Uni-Lab OS 内置类，接入者必须自行实现或替换。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
 
@@ -466,10 +468,10 @@
 
 
 <span class="nd">@device</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"vendor_model_peristaltic_pump_gui"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"合成制备仪器与设备"</span><span class="p">,</span> <span class="s2">"实验泵"</span><span class="p">,</span> <span class="s2">"蠕动泵"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"某型号蠕动泵厂商上位机 GUI 兼容驱动"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"蠕动泵（GUI 自动化）"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;vendor_model_peristaltic_pump_gui&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;合成制备仪器与设备&quot;</span><span class="p">,</span> <span class="s2">&quot;实验泵&quot;</span><span class="p">,</span> <span class="s2">&quot;蠕动泵&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;某型号蠕动泵厂商上位机 GUI 兼容驱动&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;蠕动泵（GUI 自动化）&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">VendorModelPeristalticPumpGUI</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">app_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">window_identity</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -480,64 +482,64 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">attach_or_start</span><span class="p">()</span>
         <span class="n">window</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_window</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_window_identity</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">window</span><span class="o">.</span><span class="n">is_ready</span><span class="p">():</span>
-            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s2">"厂商上位机窗口未就绪"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ConnectionError</span><span class="p">(</span><span class="s2">&quot;厂商上位机窗口未就绪&quot;</span><span class="p">)</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"设置转动速度"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;设置转动速度&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"speed 必须大于或等于 0"</span><span class="p">)</span>
-        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">"textbox"</span><span class="p">,</span> <span class="n">automation_id</span><span class="o">=</span><span class="s2">"speed"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;speed 必须大于或等于 0&quot;</span><span class="p">)</span>
+        <span class="n">field</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;textbox&quot;</span><span class="p">,</span> <span class="n">automation_id</span><span class="o">=</span><span class="s2">&quot;speed&quot;</span><span class="p">)</span>
         <span class="n">field</span><span class="o">.</span><span class="n">replace_text</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">speed</span><span class="p">))</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">"button"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"应用"</span><span class="p">)</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
-        <span class="n">shown</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">"current-speed"</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;应用&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
+        <span class="n">shown</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">&quot;current-speed&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">value</span><span class="p">())</span>
         <span class="k">if</span> <span class="n">shown</span> <span class="o">!=</span> <span class="n">speed</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">"上位机未确认新的转速"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"转速设置成功"</span><span class="p">,</span> <span class="s2">"speed"</span><span class="p">:</span> <span class="n">shown</span><span class="p">}</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;上位机未确认新的转速&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;转速设置成功&quot;</span><span class="p">,</span> <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="n">shown</span><span class="p">}</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"正转"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;正转&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotate_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">"button"</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">"正转"</span><span class="p">)</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">wait_until_text</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">"run-state"</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">"运行中"</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"正转已启动"</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">role</span><span class="o">=</span><span class="s2">&quot;button&quot;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s2">&quot;正转&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">invoke</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">wait_until_text</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">&quot;run-state&quot;</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="s2">&quot;运行中&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mf">10.0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;正转已启动&quot;</span><span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">"run-state"</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">&quot;run-state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">"alarm-state"</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">"正常"</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ui</span><span class="o">.</span><span class="n">require_control</span><span class="p">(</span><span class="n">automation_id</span><span class="o">=</span><span class="s2">&quot;alarm-state&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">text</span><span class="p">()</span> <span class="o">!=</span> <span class="s2">&quot;正常&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="id5">
-<h2>把桌面软件加入启动清单<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>把桌面软件加入启动清单<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pump_gui_01"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"GUI 蠕动泵 01"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">  </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.my_device_package.my_lab_pump_gui"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"app_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"/Applications/VendorApp.app"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"window_identity"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vendor-main-window"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"action_timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">30.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"baseline_version"</span><span class="p">:</span><span class="w"> </span><span class="s2">"approved-baseline-1"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"screenshot_on_error"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"auto_start"</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pump_gui_01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;GUI 蠕动泵 01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">  </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;device&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.my_device_package.my_lab_pump_gui&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
+<span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;app_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;/Applications/VendorApp.app&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;window_identity&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vendor-main-window&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;action_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">30.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;baseline_version&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;approved-baseline-1&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;screenshot_on_error&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;auto_start&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">false</span>
 <span class="w">  </span><span class="p">},</span>
-<span class="w">  </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"status"</span><span class="p">:</span><span class="w"> </span><span class="s2">"offline"</span><span class="p">}</span>
+<span class="w">  </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;status&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;offline&quot;</span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p>路径和窗口身份是部署配置，不是公共动作参数。软件升级或控件树变化时应让基线校验失败，并重新验收后再更新 <code class="docutils literal notranslate"><span class="pre">baseline_version</span></code>。</p>
 </section>
 <section id="id6">
-<h2>必须固定并记录的电脑环境<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>必须固定并记录的电脑环境<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -572,7 +574,7 @@
 </div>
 </section>
 <section id="id7">
-<h2>怎样确认自动操作可以交付<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>怎样确认自动操作可以交付<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>标准动作和状态与同大类串口、API、PLC 实现一致；</p></li>
 <li><p>正常、重复提交、弹窗、失焦、遮挡和窗口关闭均有测试；</p></li>
@@ -583,7 +585,7 @@
 </ul>
 </section>
 <section id="id8">
-<h2>常见问题<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>常见问题<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -695,10 +697,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

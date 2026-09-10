@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="串口／网络连接" href="serial-network.html"><link rel="prev" title="通用设备规范" href="generic-device.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>PLC 控制的工站 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="plc">
-<h1>PLC 控制的工站<a class="headerlink" href="#plc" title="Link to this heading">¶</a></h1>
+<h1>PLC 控制的工站<a class="headerlink" href="#plc" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -370,7 +372,7 @@
 <p>交付标准设备类、PLC 驱动、节点映射表、启动图 节点和模拟测试；动作握手、范围、超时、复位、报警与联锁均有验证结果。</p>
 </div>
 <section id="id1">
-<h2>各方需要负责什么<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>各方需要负责什么<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>工作流调用“启动、停止、设置温度”等业务动作，不直接读写 PLC 点位地址（NodeId）。</p></li>
 <li><p>PLC 驱动与标准类的动作名、参数名、类型、默认值和属性集合必须一致。</p></li>
@@ -380,7 +382,7 @@
 </ul>
 </section>
 <section id="id2">
-<h2>开始前要准备哪些资料<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>开始前要准备哪些资料<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>工站名称、用途、设备大类和包含的执行部件；</p></li>
 <li><p>PLC/OPC UA 地址、控制器程序版本和正式点位表；</p></li>
@@ -393,7 +395,7 @@
 开门还是报警。</p>
 </section>
 <section id="id3">
-<h2>按这个顺序完成接入<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>按这个顺序完成接入<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>在 <code class="docutils literal notranslate"><span class="pre">devices/plc_station.py</span></code> 中先定义与协议无关的动作和状态；</p></li>
 <li><p>建立 <code class="docutils literal notranslate"><span class="pre">config/plc_station_nodes.csv</span></code>，把每个业务名称对应到现场 PLC 地址；</p></li>
@@ -454,7 +456,7 @@
 </div>
 </section>
 <section id="id4">
-<h2>PLC 点位常见的三种用法<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>PLC 点位常见的三种用法<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -490,7 +492,7 @@
 <p>轮询完成节点时必须强制服务端读取，不能只相信可能过期的订阅缓存。</p>
 </section>
 <section id="id5">
-<h2>把业务名称和 PLC 地址对应起来<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>把业务名称和 PLC 地址对应起来<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Name,EnglishName,NodeType,DataType,NodeId
 正转触发,Rotate_Forward_Trigger,Variable,Boolean,ns=4;s=Pump.RotateForward.Trigger
 正转完成,Rotate_Forward_Complete,Variable,Boolean,ns=4;s=Pump.RotateForward.Complete
@@ -502,7 +504,7 @@
 <p>PLC 地址必须来自正式点位表或经过验证的模拟器，不能根据名称猜测。</p>
 </section>
 <section id="id6">
-<h2>开发人员可复制的代码模板<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>开发人员可复制的代码模板<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>下面用蠕动泵展示接口和握手方式。<code class="docutils literal notranslate"><span class="pre">OpcUaClientWithSubscription</span></code> 表示设备包中经测试的 OPC UA 客户端封装：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span>
 
@@ -511,10 +513,10 @@
 
 
 <span class="nd">@device</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"vendor_model_peristaltic_pump_plc"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"合成制备仪器与设备"</span><span class="p">,</span> <span class="s2">"实验泵"</span><span class="p">,</span> <span class="s2">"蠕动泵"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"某型号蠕动泵 PLC/OPC UA 驱动"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"蠕动泵（PLC）"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;vendor_model_peristaltic_pump_plc&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;合成制备仪器与设备&quot;</span><span class="p">,</span> <span class="s2">&quot;实验泵&quot;</span><span class="p">,</span> <span class="s2">&quot;蠕动泵&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;某型号蠕动泵 PLC/OPC UA 驱动&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;蠕动泵（PLC）&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">VendorModelPeristalticPumpPLC</span><span class="p">(</span><span class="n">OpcUaClientWithSubscription</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">csv_path</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">action_timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">120.0</span><span class="p">,</span>
@@ -522,47 +524,47 @@
                  <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span><span class="n">url</span><span class="o">=</span><span class="n">url</span><span class="p">,</span> <span class="n">username</span><span class="o">=</span><span class="n">username</span><span class="p">,</span> <span class="n">password</span><span class="o">=</span><span class="n">password</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">action_timeout</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"action_timeout 必须大于 0"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;action_timeout 必须大于 0&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">action_timeout</span> <span class="o">=</span> <span class="n">action_timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">load_nodes_from_csv</span><span class="p">(</span><span class="n">csv_path</span><span class="p">)</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"设置转动速度"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;设置转动速度&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">set_speed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">speed</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">0.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="k">if</span> <span class="n">speed</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"speed 必须大于或等于 0"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">"Speed_Setpoint"</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"设置转动速度已下发"</span><span class="p">,</span> <span class="s2">"speed"</span><span class="p">:</span> <span class="n">speed</span><span class="p">}</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;speed 必须大于或等于 0&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">&quot;Speed_Setpoint&quot;</span><span class="p">,</span> <span class="n">speed</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;设置转动速度已下发&quot;</span><span class="p">,</span> <span class="s2">&quot;speed&quot;</span><span class="p">:</span> <span class="n">speed</span><span class="p">}</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"正转"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;正转&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotate_forward</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">"Rotate_Forward_Trigger"</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until_true</span><span class="p">(</span><span class="s2">"Rotate_Forward_Complete"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"正转完成"</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"正转失败：动作未完成"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">"Rotate_Forward_Trigger"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
-        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until_false</span><span class="p">(</span><span class="s2">"Rotate_Forward_Complete"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"正转完成复位"</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">"正转失败：完成状态复位超时"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"正转完成"</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">&quot;Rotate_Forward_Trigger&quot;</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until_true</span><span class="p">(</span><span class="s2">&quot;Rotate_Forward_Complete&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;正转完成&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;正转失败：动作未完成&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_node_value</span><span class="p">(</span><span class="s2">&quot;Rotate_Forward_Trigger&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_wait_until_false</span><span class="p">(</span><span class="s2">&quot;Rotate_Forward_Complete&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;正转完成复位&quot;</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TimeoutError</span><span class="p">(</span><span class="s2">&quot;正转失败：完成状态复位超时&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;正转完成&quot;</span><span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node_value</span><span class="p">(</span><span class="s2">"Fault"</span><span class="p">,</span> <span class="n">force_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_node_value</span><span class="p">(</span><span class="s2">&quot;Fault&quot;</span><span class="p">,</span> <span class="n">force_read</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
         <span class="k">return</span> <span class="nb">bool</span><span class="p">(</span><span class="n">value</span><span class="p">)</span> <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
 </pre></div>
 </div>
 </section>
 <section id="id7">
-<h2>把现场工站加入启动清单<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>把现场工站加入启动清单<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"pump_01"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vendor_model_peristaltic_pump_plc"</span><span class="p">,</span>
-<span class="w">  </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">    </span><span class="nt">"url"</span><span class="p">:</span><span class="w"> </span><span class="s2">"opc.tcp://127.0.0.1:4840"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"csv_path"</span><span class="p">:</span><span class="w"> </span><span class="s2">"config/pump_01_nodes.csv"</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"action_timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">120.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"use_subscription"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"cache_timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span>
-<span class="w">    </span><span class="nt">"subscription_interval"</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span>
+<span class="w">  </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;pump_01&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vendor_model_peristaltic_pump_plc&quot;</span><span class="p">,</span>
+<span class="w">  </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">    </span><span class="nt">&quot;url&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;opc.tcp://127.0.0.1:4840&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;csv_path&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;config/pump_01_nodes.csv&quot;</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;action_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">120.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;use_subscription&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;cache_timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">5.0</span><span class="p">,</span>
+<span class="w">    </span><span class="nt">&quot;subscription_interval&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">500</span>
 <span class="w">  </span><span class="p">}</span>
 <span class="p">}</span>
 </pre></div>
@@ -570,7 +572,7 @@
 <p>真实地址和凭证应从部署配置或密钥系统注入；示例地址不能直接用于生产。</p>
 </section>
 <section id="id8">
-<h2>怎样确认工站可以交付<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>怎样确认工站可以交付<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>标准类与 PLC 类的公开接口完全一致；</p></li>
 <li><p>现场点表的数据类型、读写权限和 Namespace 已核对；</p></li>
@@ -582,7 +584,7 @@
 </ul>
 </section>
 <section id="id9">
-<h2>常见问题<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>常见问题<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -696,10 +698,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

@@ -4,20 +4,29 @@ from __future__ import annotations
 
 import hashlib
 import json
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from typing import Any
 from uuid import uuid4
 
+from unilabos.registry.action_resource_contract import (
+    ActionResourceContractError,
+    normalize_action_resource_contract,
+)
 from unilabos.registry.material_lock_schema import (
     MaterialLockSchemaError,
     compile_material_lock_schema,
 )
 from unilabos.workflow.device_action_run_store import DeviceActionRunStore
 from unilabos.workflow.execution_plan import PLAN_VERSION
+from unilabos.workflow.execution_resource_policy import (
+    ExecutionResourcePolicyError,
+    merge_action_resource_policy,
+)
 from unilabos.workflow.json_codec import encode_json
 from unilabos.workflow.models import validate_uuid
 from unilabos.workflow.store import StoreConflict, StoreNotFound, WorkflowStore
+from unilabos.workflow.task_input import SiteSelectionResolver
 
 MaterialResolver = Callable[[str], Mapping[str, Any] | None]
 _MAX_EXECUTION_TIMEOUT_SECONDS = (1 << 63) // 1_000_000_000 - 1
@@ -43,6 +52,7 @@ class DeviceActionRunService:
         workflow_store: WorkflowStore,
         *,
         material_resolver: MaterialResolver | None,
+        site_selection_resolver: SiteSelectionResolver | None = None,
     ) -> None:
         """绑定工作流写模型与物料身份解析器。
 
@@ -54,6 +64,7 @@ class DeviceActionRunService:
         self._workflow_store = workflow_store
         self._store = DeviceActionRunStore(workflow_store)
         self._material_resolver = material_resolver
+        self._site_selection_resolver = site_selection_resolver
 
     def create(
         self,
@@ -116,6 +127,23 @@ class DeviceActionRunService:
         for locked_material_uuid in locked_material_uuids:
             self._resolve_material(locked_material_uuid)
 
+        executor_kind, action_resource_contract = self._action_execution_contract(
+            template
+        )
+        try:
+            frozen_policy = merge_action_resource_policy(
+                action_resource_contract,
+                normalized_policy,
+            )
+        except ExecutionResourcePolicyError as error:
+            raise DeviceActionRunUnavailable(str(error)) from None
+        frozen_param, frozen_policy = self._freeze_transfer_target_site(
+            executor_kind=executor_kind,
+            action_resource_contract=action_resource_contract,
+            param=effective_param,
+            execution_policy=frozen_policy,
+        )
+
         request_fingerprint = self._request_fingerprint(
             material_uuid=device_material_uuid,
             template_uuid=template_uuid,
@@ -128,8 +156,10 @@ class DeviceActionRunService:
             material_uuid=device_material_uuid,
             edge_local_id=edge_local_id,
             template=template,
-            param=effective_param,
-            execution_policy=normalized_policy,
+            executor_kind=executor_kind,
+            action_resource_contract=action_resource_contract,
+            param=frozen_param,
+            execution_policy=frozen_policy,
             idempotency_key=normalized_key,
             request_fingerprint=request_fingerprint,
             description=normalized_description,
@@ -166,6 +196,148 @@ class DeviceActionRunService:
         if resolved_uuid != material_uuid:
             raise DeviceActionRunUnavailable("本地物料解析器返回了不一致身份")
         return material
+
+    @staticmethod
+    def _action_execution_contract(
+        template: Mapping[str, Any],
+    ) -> tuple[str, dict[str, Any]]:
+        """读取模板冻结的执行责任与动作资源合同。"""
+
+        metadata = template.get("meta_data")
+        unilab = metadata.get("unilab") if isinstance(metadata, Mapping) else None
+        explicit_kind = str(
+            (unilab.get("executor_kind") if isinstance(unilab, Mapping) else "")
+            or ""
+        ).strip()
+        executor_kind = explicit_kind or "device_action"
+        if executor_kind not in {"device_action", "material_transfer"}:
+            raise DeviceActionRunUnavailable("设备动作模板声明了不支持的执行责任")
+        schema = (
+            unilab.get("action_contract_schema")
+            if isinstance(unilab, Mapping)
+            else None
+        )
+        extension = (
+            schema.get("x-unilabos-action-contract")
+            if isinstance(schema, Mapping)
+            else None
+        )
+        raw_contract = (
+            extension.get("resource_contract")
+            if isinstance(extension, Mapping)
+            else None
+        )
+        try:
+            contract = normalize_action_resource_contract(raw_contract)
+        except ActionResourceContractError as error:
+            raise DeviceActionRunUnavailable(error.message) from None
+        if executor_kind == "material_transfer" and not isinstance(
+            contract.get("transfer"), Mapping
+        ):
+            raise DeviceActionRunUnavailable("物料转移动作缺少冻结转运资源合同")
+        return executor_kind, contract
+
+    def _freeze_transfer_target_site(
+        self,
+        *,
+        executor_kind: str,
+        action_resource_contract: Mapping[str, Any],
+        param: Mapping[str, Any],
+        execution_policy: Mapping[str, Any],
+    ) -> tuple[dict[str, Any], dict[str, Any]]:
+        """把临时转运动作的人类库位引用冻结为稳定 Site 候选。"""
+
+        frozen_param = dict(param)
+        frozen_policy = dict(execution_policy)
+        transfer = action_resource_contract.get("transfer")
+        if executor_kind != "material_transfer" or not isinstance(
+            transfer, Mapping
+        ):
+            return frozen_param, frozen_policy
+        site_parameters = tuple(
+            name
+            for field in ("target_site_uuid_param", "target_site_name_param")
+            if (name := str(transfer.get(field) or "").strip())
+        )
+        references = [
+            str(frozen_param.get(name) or "").strip()
+            for name in site_parameters
+            if str(frozen_param.get(name) or "").strip()
+        ]
+        if not references:
+            return frozen_param, frozen_policy
+        if len(set(references)) != 1:
+            raise DeviceActionRunInputError("目标库位 UUID 与名称参数冲突")
+        owner_uuid = self._resource_parameter_uuid(
+            frozen_param,
+            str(transfer.get("target_owner_param") or ""),
+            label="目标库位所属资源",
+        )
+        occupant_uuid = self._resource_parameter_uuid(
+            frozen_param,
+            str(transfer.get("material_param") or ""),
+            label="待搬运物料",
+        )
+        if self._site_selection_resolver is None:
+            raise DeviceActionRunUnavailable("设备单动作缺少库位选择权威")
+        request = {
+            "version": 1,
+            "owner_material_uuid": owner_uuid,
+            "occupant_material_uuid": occupant_uuid,
+            "group_key": "",
+            "exact_site_reference": references[0],
+            "strategy": "sort_order",
+        }
+        try:
+            resolution = self._site_selection_resolver(request)
+        except Exception as error:
+            raise DeviceActionRunInputError("目标库位无法由库存权威唯一解析") from error
+        raw_site_uuids = resolution.get("site_uuids")
+        if (
+            not isinstance(raw_site_uuids, Sequence)
+            or isinstance(raw_site_uuids, (str, bytes))
+            or not raw_site_uuids
+        ):
+            raise DeviceActionRunUnavailable("库位选择权威没有返回候选 Site UUID")
+        try:
+            site_uuids = [validate_uuid(str(value)) for value in raw_site_uuids]
+        except (TypeError, ValueError):
+            raise DeviceActionRunUnavailable("库位选择权威返回了非法 Site UUID") from None
+        if len(set(site_uuids)) != len(site_uuids):
+            raise DeviceActionRunUnavailable("库位选择权威返回了重复 Site UUID")
+        fingerprint = str(resolution.get("fingerprint") or "").strip()
+        if not fingerprint:
+            raise DeviceActionRunUnavailable("库位选择权威缺少部署指纹")
+        frozen_policy["target_site_group"] = site_uuids
+        frozen_policy["target_site_selection"] = {
+            "version": 1,
+            "owner_material_uuid": owner_uuid,
+            "group_key": "",
+            "requested_reference": references[0],
+            "strategy": "sort_order",
+            "site_uuids": site_uuids,
+            "fingerprint": fingerprint,
+        }
+        for parameter in site_parameters:
+            frozen_param.pop(parameter, None)
+        return frozen_param, frozen_policy
+
+    @staticmethod
+    def _resource_parameter_uuid(
+        param: Mapping[str, Any],
+        parameter: str,
+        *,
+        label: str,
+    ) -> str:
+        """从已校验动作参数读取一个 ResourceSlot 稳定身份。"""
+
+        value = param.get(parameter)
+        if not parameter or not isinstance(value, Mapping):
+            raise DeviceActionRunInputError(f"{label}没有冻结资源身份")
+        try:
+            return validate_uuid(str(value.get("uuid") or ""))
+        except (TypeError, ValueError):
+            raise DeviceActionRunInputError(f"{label} UUID 非法") from None
 
     @staticmethod
     def _edge_local_id(material: Mapping[str, Any]) -> str:
@@ -327,6 +499,8 @@ class DeviceActionRunService:
         material_uuid: str,
         edge_local_id: str,
         template: Mapping[str, Any],
+        executor_kind: str,
+        action_resource_contract: Mapping[str, Any],
         param: Mapping[str, Any],
         execution_policy: Mapping[str, Any],
         idempotency_key: str,
@@ -401,13 +575,16 @@ class DeviceActionRunService:
                 {
                     "uuid": node_uuid,
                     "topological_index": 0,
-                    "kind": "device_action",
+                    "kind": executor_kind,
                     "device_id": edge_local_id,
                     "action_name": template["name"],
                     "action_type": template["type"],
                     "always_free": always_free,
                     "material_uuid": material_uuid,
                     "param_schema": deepcopy(dict(action_contract_schema)),
+                    "action_resource_contract": deepcopy(
+                        dict(action_resource_contract)
+                    ),
                     "param": dict(param),
                     "execution_policy": dict(execution_policy),
                     "inputs": [],
@@ -432,6 +609,7 @@ class DeviceActionRunService:
             "uuid": job_uuid,
             "workflow_node_uuid": node_uuid,
             "material_uuid": material_uuid,
+            "executor_kind": executor_kind,
             "execution_policy": dict(execution_policy),
             "param": dict(param),
         }

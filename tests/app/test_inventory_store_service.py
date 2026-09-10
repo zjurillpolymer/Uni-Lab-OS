@@ -259,6 +259,27 @@ class TestInstance:
 
 
 class TestMoveAndPersistence:
+    def test_unknown_parent_placeholder_stays_hidden_from_public_snapshot(self, svc):
+        """旧 API 引用未登记父物料时，只公开真实登记的子物料。"""
+
+        from unilabos.app.scheduler.inventory.sync import build_snapshot
+
+        svc.register_instance(
+            edge_uuid="mi-child",
+            parent_uuid="rack-legacy",
+            slot_id="A1",
+        )
+
+        placeholder = svc.store.query_one(
+            "SELECT meta_data FROM material WHERE uuid=?",
+            ("rack-legacy",),
+        )
+        assert placeholder is not None
+        assert json.loads(placeholder["meta_data"])["unilab_edge_placeholder"] is True
+        assert [
+            item["edge_uuid"] for item in build_snapshot(svc.store)["instances"]
+        ] == ["mi-child"]
+
     def test_move_changes_relation_not_quantity(self, svc):
         svc.inbound_lot("tpl-w", 50.0, lot_id="lot-1")
         svc.register_instance(edge_uuid="mi-1", lot_id="lot-1", parent_uuid="rack-A",

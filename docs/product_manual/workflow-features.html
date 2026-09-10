@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="workflow-features.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="实验操作（子工作流）" href="experiment-operations.html"><link rel="prev" title="4. 工作流" href="workflow.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="实验操作（子工作流）" href="experiment-operations.html"><link rel="prev" title="先理解工作流" href="workflow-concepts.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>工作流编排特性 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>工作流编排特性<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>工作流编排特性<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,7 +366,7 @@
 </div>
 <p>本页是工作流作者和 AI 代码审查者的特性地图。每一节都说明“解决什么问题、怎样写、运行时怎样解释、有哪些边界”。示例采用通用名称，使用时必须替换为用户设备包中实际存在的设备、资源和动作；完整闭环见<a class="reference internal" href="ai-workflow-authoring.html"><span class="std std-doc">用 AI 编写工作流（推荐）</span></a>。</p>
 <section id="id2">
-<h2>特性总览<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>特性总览<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -440,7 +442,7 @@
 </div>
 </section>
 <section id="id3">
-<h2>类型化输入<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>类型化输入<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>参数必须位于 <code class="docutils literal notranslate"><span class="pre">*</span></code> 之后且有类型。<code class="docutils literal notranslate"><span class="pre">Annotated</span></code> 和 <code class="docutils literal notranslate"><span class="pre">Field</span></code> 可以把产品约束写进合同：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Annotated</span><span class="p">,</span> <span class="n">Literal</span>
 
@@ -452,13 +454,13 @@
     <span class="n">stop_after</span><span class="p">:</span> <span class="n">Annotated</span><span class="p">[</span>
         <span class="nb">int</span><span class="p">,</span>
         <span class="n">Field</span><span class="p">(</span>
-            <span class="n">title</span><span class="o">=</span><span class="s2">"退出轮次"</span><span class="p">,</span>
-            <span class="n">description</span><span class="o">=</span><span class="s2">"到达该轮次后结束"</span><span class="p">,</span>
+            <span class="n">title</span><span class="o">=</span><span class="s2">&quot;退出轮次&quot;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s2">&quot;到达该轮次后结束&quot;</span><span class="p">,</span>
             <span class="n">ge</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
             <span class="n">le</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span>
         <span class="p">),</span>
     <span class="p">]</span> <span class="o">=</span> <span class="mi">3</span><span class="p">,</span>
-    <span class="n">route</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">"sample"</span><span class="p">,</span> <span class="s2">"blank"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"sample"</span><span class="p">,</span>
+    <span class="n">route</span><span class="p">:</span> <span class="n">Literal</span><span class="p">[</span><span class="s2">&quot;sample&quot;</span><span class="p">,</span> <span class="s2">&quot;blank&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;sample&quot;</span><span class="p">,</span>
 <span class="p">):</span>
     <span class="o">...</span>
 </pre></div>
@@ -485,7 +487,7 @@
 <p>允许模板应引用当前 Catalog 中的真实资源模板对象；不要用随手编写的字符串代替。</p>
 </section>
 <section id="id4">
-<h2>设备动作与结果引用<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>设备动作与结果引用<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>规范动作形状固定为：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># unilab:node_uuid=&lt;唯一 UUID&gt;</span>
 <span class="n">result</span> <span class="o">=</span> <span class="n">selector</span><span class="o">.</span><span class="n">action_name</span><span class="p">(</span>
@@ -506,13 +508,13 @@
 <p>普通标量或结构化结果可以供多个后继读取；后继只有在所有数据和控制前提满足后才进入可调度集合。<code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code> 另有物理线性约束：可沿严格有序的动作链连续使用，但不能同时流向多个彼此无先后的物理消费者。</p>
 </section>
 <section id="group">
-<h2>展示分组 <code class="docutils literal notranslate"><span class="pre">group</span></code><a class="headerlink" href="#group" title="Link to this heading">¶</a></h2>
+<h2>展示分组 <code class="docutils literal notranslate"><span class="pre">group</span></code><a class="headerlink" href="#group" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">group</span>
 
 
 <span class="c1"># [样品预处理]: 把两步工艺显示为一个区域</span>
 <span class="c1"># unilab:node_uuid=&lt;分组 UUID&gt;</span>
-<span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"Preparation"</span><span class="p">):</span>
+<span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;Preparation&quot;</span><span class="p">):</span>
     <span class="c1"># unilab:node_uuid=&lt;动作 UUID&gt;</span>
     <span class="n">prepared</span> <span class="o">=</span> <span class="n">reactor</span><span class="o">.</span><span class="n">prepare</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">sample</span><span class="p">)</span>
 </pre></div>
@@ -520,19 +522,19 @@
 <p><code class="docutils literal notranslate"><span class="pre">group</span></code> 只保存展示和源码组织信息，不创建执行节点，也不是串并行屏障。名称必须是非空字符串；分组至少包含一个可执行节点；当前不支持展示 group 直接嵌套另一个展示 group。</p>
 </section>
 <section id="if-elif-else">
-<h2>条件 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">/</span> <span class="pre">elif</span> <span class="pre">/</span> <span class="pre">else</span></code><a class="headerlink" href="#if-elif-else" title="Link to this heading">¶</a></h2>
+<h2>条件 <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">/</span> <span class="pre">elif</span> <span class="pre">/</span> <span class="pre">else</span></code><a class="headerlink" href="#if-elif-else" title="链接到此标题。">¶</a></h2>
 <p>下面是 用户设备包 已登记的无硬件副作用条件示例：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># unilab:node_uuid=07880b05-d9a4-4290-8614-00554cac071a</span>
 <span class="k">if</span> <span class="n">observed</span><span class="o">.</span><span class="n">value</span><span class="p">:</span>
     <span class="c1"># unilab:node_uuid=5b867034-42c0-4442-a9ac-fa22989934c6</span>
     <span class="n">true_branch</span> <span class="o">=</span> <span class="n">control_flow_probe</span><span class="o">.</span><span class="n">record_branch</span><span class="p">(</span>
-        <span class="n">branch</span><span class="o">=</span><span class="s2">"true"</span><span class="p">,</span>
+        <span class="n">branch</span><span class="o">=</span><span class="s2">&quot;true&quot;</span><span class="p">,</span>
         <span class="n">iteration</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span>
 <span class="k">else</span><span class="p">:</span>
     <span class="c1"># unilab:node_uuid=9f2d1466-db25-421c-a0a0-d3c2f63718f3</span>
     <span class="n">false_branch</span> <span class="o">=</span> <span class="n">control_flow_probe</span><span class="o">.</span><span class="n">record_branch</span><span class="p">(</span>
-        <span class="n">branch</span><span class="o">=</span><span class="s2">"false"</span><span class="p">,</span>
+        <span class="n">branch</span><span class="o">=</span><span class="s2">&quot;false&quot;</span><span class="p">,</span>
         <span class="n">iteration</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
@@ -548,16 +550,16 @@
 <p>每个实际分支至少包含一个工作流节点。分支内部变量不能在条件外引用；需要汇总结果时，让各分支写入后续动作可统一读取的显式资源，或重构合同，不能依赖普通 Python 的局部变量逃逸。</p>
 </section>
 <section id="repeat-until">
-<h2>有界循环 <code class="docutils literal notranslate"><span class="pre">repeat_until</span></code><a class="headerlink" href="#repeat-until" title="Link to this heading">¶</a></h2>
+<h2>有界循环 <code class="docutils literal notranslate"><span class="pre">repeat_until</span></code><a class="headerlink" href="#repeat-until" title="链接到此标题。">¶</a></h2>
 <p>当前循环是 do-while 语义：先执行一轮，再在循环尾判断。用户设备包 示例：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">repeat_until</span><span class="p">,</span> <span class="n">until</span>
 
 
 <span class="c1"># unilab:node_uuid=d75de496-24b9-54be-b719-2f3f5a185875</span>
-<span class="k">with</span> <span class="n">repeat_until</span><span class="p">(</span><span class="n">max_iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">carry</span><span class="o">=</span><span class="p">{</span><span class="s2">"iteration"</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span> <span class="k">as</span> <span class="n">loop</span><span class="p">:</span>
+<span class="k">with</span> <span class="n">repeat_until</span><span class="p">(</span><span class="n">max_iterations</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">carry</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;iteration&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">})</span> <span class="k">as</span> <span class="n">loop</span><span class="p">:</span>
     <span class="c1"># unilab:node_uuid=c00fee26-22b7-549e-934f-97d22b76e10e</span>
     <span class="n">prepared</span> <span class="o">=</span> <span class="n">control_flow_probe</span><span class="o">.</span><span class="n">prepare_iteration</span><span class="p">(</span>
-        <span class="n">iteration</span><span class="o">=</span><span class="n">loop</span><span class="o">.</span><span class="n">carry</span><span class="p">[</span><span class="s2">"iteration"</span><span class="p">],</span>
+        <span class="n">iteration</span><span class="o">=</span><span class="n">loop</span><span class="o">.</span><span class="n">carry</span><span class="p">[</span><span class="s2">&quot;iteration&quot;</span><span class="p">],</span>
     <span class="p">)</span>
     <span class="c1"># unilab:node_uuid=0ef93d91-e6bc-5be1-9b2f-2b4d3f7f7d0c</span>
     <span class="n">executed</span> <span class="o">=</span> <span class="n">control_flow_probe</span><span class="o">.</span><span class="n">execute_iteration</span><span class="p">(</span>
@@ -585,19 +587,19 @@
 <p>达到 <code class="docutils literal notranslate"><span class="pre">max_iterations</span></code> 仍未满足退出条件时，系统按有界循环语义停止继续物化，而不是无限运行。作者应把上限设为工艺允许的安全值，而不是一个“几乎无限”的数字。</p>
 </section>
 <section id="parallel">
-<h2>并行 <code class="docutils literal notranslate"><span class="pre">parallel</span></code><a class="headerlink" href="#parallel" title="Link to this heading">¶</a></h2>
+<h2>并行 <code class="docutils literal notranslate"><span class="pre">parallel</span></code><a class="headerlink" href="#parallel" title="链接到此标题。">¶</a></h2>
 <p>下面的 <code class="docutils literal notranslate"><span class="pre">beaker</span></code> 和 <code class="docutils literal notranslate"><span class="pre">sample_bottle</span></code> 是两件不同的 <code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code>；不要把同一物料同时送给两个无序物理分支。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">group</span><span class="p">,</span> <span class="n">parallel</span>
 
 
 <span class="k">with</span> <span class="n">parallel</span><span class="p">():</span>
     <span class="c1"># unilab:node_uuid=&lt;分支 A group UUID&gt;</span>
-    <span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"拍照"</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;拍照&quot;</span><span class="p">):</span>
         <span class="c1"># unilab:node_uuid=&lt;拍照动作 UUID&gt;</span>
         <span class="n">image</span> <span class="o">=</span> <span class="n">camera</span><span class="o">.</span><span class="n">capture</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">beaker</span><span class="p">)</span>
 
     <span class="c1"># unilab:node_uuid=&lt;分支 B group UUID&gt;</span>
-    <span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">"开盖"</span><span class="p">):</span>
+    <span class="k">with</span> <span class="n">group</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="s2">&quot;开盖&quot;</span><span class="p">):</span>
         <span class="c1"># unilab:node_uuid=&lt;开盖动作 UUID&gt;</span>
         <span class="n">opened</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">open_cap</span><span class="p">(</span><span class="n">sample</span><span class="o">=</span><span class="n">sample_bottle</span><span class="p">)</span>
 
@@ -612,11 +614,11 @@
 <p>编译器不会制造虚假的 fork/join 设备节点。并行只说明 DAG 允许同时就绪，不保证物理同时执行：如果两个分支绑定同一台设备、同一工位或同一结构化资源，Uni-Lab OS 的锁仍会把它们串行化。例如，可以用并行表达“一只容器拍照”和“另一只容器开盖”的同时执行机会。</p>
 </section>
 <section id="resources">
-<h2>结构化资源区间 <code class="docutils literal notranslate"><span class="pre">resources</span></code><a class="headerlink" href="#resources" title="Link to this heading">¶</a></h2>
+<h2>结构化资源区间 <code class="docutils literal notranslate"><span class="pre">resources</span></code><a class="headerlink" href="#resources" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">resources</span>
 
 
-<span class="k">with</span> <span class="n">resources</span><span class="p">(</span><span class="s2">"sample_preparation_region"</span><span class="p">):</span>
+<span class="k">with</span> <span class="n">resources</span><span class="p">(</span><span class="s2">&quot;sample_preparation_region&quot;</span><span class="p">):</span>
     <span class="c1"># unilab:node_uuid=&lt;动作 1 UUID&gt;</span>
     <span class="n">first</span> <span class="o">=</span> <span class="n">device_a</span><span class="o">.</span><span class="n">action</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
     <span class="c1"># unilab:node_uuid=&lt;动作 2 UUID&gt;</span>
@@ -647,7 +649,7 @@
 <p>它和 group 的区别：group 管展示，resources 管锁；需要二者时应分别表达。</p>
 </section>
 <section id="material-source">
-<h2>物料来源 <code class="docutils literal notranslate"><span class="pre">material_source</span></code><a class="headerlink" href="#material-source" title="Link to this heading">¶</a></h2>
+<h2>物料来源 <code class="docutils literal notranslate"><span class="pre">material_source</span></code><a class="headerlink" href="#material-source" title="链接到此标题。">¶</a></h2>
 <p>物料来源把“这件实验输入从哪里来”写进工作流。下面假设 <code class="docutils literal notranslate"><span class="pre">source_site</span></code> 是该工作流的字符串输入；固定库位也可以直接使用当前 启动图与 Catalog 中的真实 放置位 UUID：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
     <span class="n">MaterialCustodyPolicy</span><span class="p">,</span>
@@ -660,8 +662,8 @@
 <span class="c1"># unilab:node_uuid=&lt;物料来源 UUID&gt;</span>
 <span class="n">source_solvent</span> <span class="o">=</span> <span class="n">material_source</span><span class="p">(</span>
     <span class="n">resource_template</span><span class="o">=</span><span class="n">liquid_reagent_bottle_100ml</span><span class="p">,</span>
-    <span class="n">mode</span><span class="o">=</span><span class="s2">"existing"</span><span class="p">,</span>
-    <span class="n">mount</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">"s10_liquid_reagent"</span><span class="p">),</span>
+    <span class="n">mode</span><span class="o">=</span><span class="s2">&quot;existing&quot;</span><span class="p">,</span>
+    <span class="n">mount</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">&quot;s10_liquid_reagent&quot;</span><span class="p">),</span>
     <span class="n">material_uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">site</span><span class="o">=</span><span class="n">source_site</span><span class="p">,</span>
     <span class="n">slot_range</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -682,15 +684,15 @@
 <p>同一 <code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code> 可以被多个严格有序的动作连续处理，因为每个后继都位于前一个后继之后。若两个物理消费者彼此无依赖，编译器会以 <code class="docutils literal notranslate"><span class="pre">material_flow_fan_out</span></code> 拒绝；真正分样应先调用受支持的 split/aliquot Action，产生不同子物料身份。</p>
 </section>
 <section id="site-group">
-<h2>动态库位 <code class="docutils literal notranslate"><span class="pre">site_group</span></code><a class="headerlink" href="#site-group" title="Link to this heading">¶</a></h2>
+<h2>动态库位 <code class="docutils literal notranslate"><span class="pre">site_group</span></code><a class="headerlink" href="#site-group" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">site_group</span>
 
 
 <span class="n">placed</span> <span class="o">=</span> <span class="n">robot</span><span class="o">.</span><span class="n">transfer_material_atomic</span><span class="p">(</span>
     <span class="n">resource</span><span class="o">=</span><span class="n">sample</span><span class="p">,</span>
-    <span class="n">target_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">"dosing_process_warehouse"</span><span class="p">),</span>
+    <span class="n">target_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">&quot;dosing_process_warehouse&quot;</span><span class="p">),</span>
     <span class="n">target_site</span><span class="o">=</span><span class="n">site_group</span><span class="p">(</span>
-        <span class="s2">"dosing_container_sites"</span><span class="p">,</span>
+        <span class="s2">&quot;dosing_container_sites&quot;</span><span class="p">,</span>
         <span class="n">exact</span><span class="o">=</span><span class="n">preferred_site</span><span class="p">,</span>
     <span class="p">),</span>
 <span class="p">)</span>
@@ -699,7 +701,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">site_group</span></code> 引用部署中的命名站点组。创建 Task 时，系统按当前部署代际解析并冻结候选 UUID；这避免运行中因为布局变化悄悄换位。<code class="docutils literal notranslate"><span class="pre">exact</span></code> 只能直接引用字符串工作流输入或留空，不能引用任意运行表达式。</p>
 </section>
 <section id="quantity-requirement">
-<h2>数量预留 <code class="docutils literal notranslate"><span class="pre">quantity_requirement</span></code><a class="headerlink" href="#quantity-requirement" title="Link to this heading">¶</a></h2>
+<h2>数量预留 <code class="docutils literal notranslate"><span class="pre">quantity_requirement</span></code><a class="headerlink" href="#quantity-requirement" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">quantity_requirement</span>
 
 
@@ -710,13 +712,13 @@
 <span class="p">)</span>
 
 <span class="n">quantity_requirement</span><span class="p">(</span>
-    <span class="n">requirement_key</span><span class="o">=</span><span class="s2">"solvent"</span><span class="p">,</span>
+    <span class="n">requirement_key</span><span class="o">=</span><span class="s2">&quot;solvent&quot;</span><span class="p">,</span>
     <span class="n">source</span><span class="o">=</span><span class="n">source_solvent</span><span class="p">,</span>
     <span class="n">consume</span><span class="o">=</span><span class="n">added</span><span class="p">,</span>
     <span class="n">quantity</span><span class="o">=</span><span class="n">volume_ml</span><span class="p">,</span>
-    <span class="n">quantity_unit</span><span class="o">=</span><span class="s2">"mL"</span><span class="p">,</span>
+    <span class="n">quantity_unit</span><span class="o">=</span><span class="s2">&quot;mL&quot;</span><span class="p">,</span>
     <span class="n">scale</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"本次加液量"</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;本次加液量&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -732,11 +734,11 @@
 <p>数量合同只负责调度与账本，不替代设备测量。指令加液量、泵回执与真实称量应分别保留。</p>
 </section>
 <section id="id5">
-<h2>人工确认<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>人工确认<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>人工确认不是无设备的独立工作流节点。用户应在设备包中把一个真实设备动作声明为
 <code class="docutils literal notranslate"><span class="pre">NodeType.MANUAL_CONFIRM</span></code>，工作流仍按普通设备动作调用它。Uni-Lab OS 会在取得该动作所需资源后等待批准，批准后再执行同一个设备 Job。</p>
 <section id="id6">
-<h3>1. 在设备类中声明“执行前确认”<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>1. 在设备类中声明“执行前确认”<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># example_lab/devices/reactor/device.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
 
@@ -749,75 +751,75 @@
 
 
 <span class="nd">@device</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"example_reactor"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"reaction"</span><span class="p">,</span> <span class="s2">"reactor"</span><span class="p">],</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"反应器"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"执行受控升温。"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;example_reactor&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;reaction&quot;</span><span class="p">,</span> <span class="s2">&quot;reactor&quot;</span><span class="p">],</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;反应器&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;执行受控升温。&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">Reactor</span><span class="p">:</span>
     <span class="nd">@action</span><span class="p">(</span>
         <span class="n">node_type</span><span class="o">=</span><span class="n">NodeType</span><span class="o">.</span><span class="n">MANUAL_CONFIRM</span><span class="p">,</span>
-        <span class="n">displayname</span><span class="o">=</span><span class="s2">"确认后升温"</span><span class="p">,</span>
-        <span class="n">description</span><span class="o">=</span><span class="s2">"操作员批准后执行升温。"</span><span class="p">,</span>
+        <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;确认后升温&quot;</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="s2">&quot;操作员批准后执行升温。&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">heat</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HeatResult</span><span class="p">:</span>
         <span class="c1"># 此处必须调用具体型号的真实驱动，不能返回假成功。</span>
         <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_driver</span><span class="o">.</span><span class="n">heat</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
         <span class="k">return</span> <span class="p">{</span>
-            <span class="s2">"status"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
-            <span class="s2">"actual_temperature"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">actual_temperature</span><span class="p">,</span>
+            <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+            <span class="s2">&quot;actual_temperature&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">actual_temperature</span><span class="p">,</span>
         <span class="p">}</span>
 </pre></div>
 </div>
 <p>关键规范只有一条：<code class="docutils literal notranslate"><span class="pre">node_type=NodeType.MANUAL_CONFIRM</span></code> 必须写在真实设备动作的 <code class="docutils literal notranslate"><span class="pre">&#64;action</span></code> 上；动作参数、返回值、资源合同和驱动实现与普通设备动作完全相同。</p>
 </section>
 <section id="id7">
-<h3>2. 在工作流中正常调用设备动作<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>2. 在工作流中正常调用设备动作<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># example_lab/experiment_operations/heat_after_confirmation.py</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">device</span><span class="p">,</span> <span class="n">workflow</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">example_lab.devices.reactor.device</span><span class="w"> </span><span class="kn">import</span> <span class="n">HeatResult</span><span class="p">,</span> <span class="n">Reactor</span>
 
-<span class="n">reactor</span><span class="p">:</span> <span class="n">Reactor</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">"reactor_01"</span><span class="p">)</span>
+<span class="n">reactor</span><span class="p">:</span> <span class="n">Reactor</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">&quot;reactor_01&quot;</span><span class="p">)</span>
 
 
 <span class="nd">@workflow</span><span class="p">(</span>
-    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">"d25efee5-618f-4ca9-8f27-3a64e35b64ca"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"反应器升温前人工确认"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"人工核对反应器和样品后，再执行升温动作。"</span><span class="p">,</span>
-    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">"experiment_operation"</span><span class="p">,</span>
+    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">&quot;d25efee5-618f-4ca9-8f27-3a64e35b64ca&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;反应器升温前人工确认&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;人工核对反应器和样品后，再执行升温动作。&quot;</span><span class="p">,</span>
+    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">&quot;experiment_operation&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">heat_after_confirmation</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">temperature</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">42.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">HeatResult</span><span class="p">:</span>
     <span class="c1"># unilab:node_uuid=41a9ee20-02af-44de-bb45-a78f6647cb8b</span>
     <span class="n">heated</span> <span class="o">=</span> <span class="n">reactor</span><span class="o">.</span><span class="n">heat</span><span class="p">(</span><span class="n">temperature</span><span class="o">=</span><span class="n">temperature</span><span class="p">)</span>
     <span class="k">return</span> <span class="p">{</span>
-        <span class="s2">"status"</span><span class="p">:</span> <span class="n">heated</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
-        <span class="s2">"actual_temperature"</span><span class="p">:</span> <span class="n">heated</span><span class="o">.</span><span class="n">actual_temperature</span><span class="p">,</span>
+        <span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="n">heated</span><span class="o">.</span><span class="n">status</span><span class="p">,</span>
+        <span class="s2">&quot;actual_temperature&quot;</span><span class="p">:</span> <span class="n">heated</span><span class="o">.</span><span class="n">actual_temperature</span><span class="p">,</span>
     <span class="p">}</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">reactor_01</span></code> 必须是启动图中的真实设备实例。编译器从 <code class="docutils literal notranslate"><span class="pre">Reactor.heat</span></code> 的动作元数据识别人工确认，不需要也不支持 <code class="docutils literal notranslate"><span class="pre">manual_confirm()</span></code> 或 <code class="docutils literal notranslate"><span class="pre">with</span> <span class="pre">manual_confirm()</span></code>。</p>
 </section>
 <section id="uni-lab-os-api">
-<h3>3. 通过 Uni-Lab OS API 批准或拒绝<a class="headerlink" href="#uni-lab-os-api" title="Link to this heading">¶</a></h3>
+<h3>3. 通过 Uni-Lab OS API 批准或拒绝<a class="headerlink" href="#uni-lab-os-api" title="链接到此标题。">¶</a></h3>
 <p>调用任务 Job 查询接口取得等待确认的 <code class="docutils literal notranslate"><span class="pre">job_uuid</span></code>，再通过 Uni-Lab OS HTTP API 提交决定：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span><span class="s2">"&lt;UNILABOS_URL&gt;/api/v1/workflow-tasks/&lt;TASK_UUID&gt;/jobs"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span><span class="s2">&quot;&lt;UNILABOS_URL&gt;/api/v1/workflow-tasks/&lt;TASK_UUID&gt;/jobs&quot;</span>
 
 curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">"&lt;UNILABOS_URL&gt;/api/v1/workflow-node-jobs/&lt;JOB_UUID&gt;/manual-confirmation"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-H<span class="w"> </span><span class="s2">"Content-Type: application/json"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>-d<span class="w"> </span><span class="s1">'{"action":"approve"}'</span>
+<span class="w">  </span><span class="s2">&quot;&lt;UNILABOS_URL&gt;/api/v1/workflow-node-jobs/&lt;JOB_UUID&gt;/manual-confirmation&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-H<span class="w"> </span><span class="s2">&quot;Content-Type: application/json&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>-d<span class="w"> </span><span class="s1">&#39;{&quot;action&quot;:&quot;approve&quot;}&#39;</span>
 </pre></div>
 </div>
 <p>拒绝时把 <code class="docutils literal notranslate"><span class="pre">approve</span></code> 改为 <code class="docutils literal notranslate"><span class="pre">reject</span></code>。当前 Python 声明使用默认确认超时 3600 秒；拒绝或超时会取消整个 Task，批准后原设备动作只下发一次。</p>
 </section>
 </section>
 <section id="id8">
-<h2>子工作流与实验操作<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>子工作流与实验操作<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>可复用子流程先声明并发布为实验操作：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@workflow</span><span class="p">(</span>
-    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">"e7c53119-9fde-5250-9bf5-264f23d157a8"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"用户设备包 标准物料转运"</span><span class="p">,</span>
-    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">"experiment_operation"</span><span class="p">,</span>
+    <span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">&quot;e7c53119-9fde-5250-9bf5-264f23d157a8&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;用户设备包 标准物料转运&quot;</span><span class="p">,</span>
+    <span class="n">workflow_type</span><span class="o">=</span><span class="s2">&quot;experiment_operation&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">s_z_lab_标准物料转运</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">resource</span><span class="p">:</span> <span class="n">ResourceSlot</span><span class="p">):</span>
     <span class="o">...</span>
@@ -832,11 +834,11 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 <span class="c1"># unilab:node_uuid=&lt;本次调用 UUID&gt;</span>
 <span class="n">moved</span> <span class="o">=</span> <span class="n">standard_material_transfer</span><span class="p">(</span>
     <span class="n">resource</span><span class="o">=</span><span class="n">source_beaker</span><span class="p">,</span>
-    <span class="n">source_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">"source_container_warehouse"</span><span class="p">),</span>
-    <span class="n">target_device</span><span class="o">=</span><span class="s2">"dosing_station_01"</span><span class="p">,</span>
-    <span class="n">target_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">"dosing_process_warehouse"</span><span class="p">),</span>
-    <span class="n">source_site</span><span class="o">=</span><span class="s2">"SOURCE_01"</span><span class="p">,</span>
-    <span class="n">target_site</span><span class="o">=</span><span class="s2">"PROCESS_01"</span><span class="p">,</span>
+    <span class="n">source_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">&quot;source_container_warehouse&quot;</span><span class="p">),</span>
+    <span class="n">target_device</span><span class="o">=</span><span class="s2">&quot;dosing_station_01&quot;</span><span class="p">,</span>
+    <span class="n">target_warehouse</span><span class="o">=</span><span class="n">resource_ref</span><span class="p">(</span><span class="s2">&quot;dosing_process_warehouse&quot;</span><span class="p">),</span>
+    <span class="n">source_site</span><span class="o">=</span><span class="s2">&quot;SOURCE_01&quot;</span><span class="p">,</span>
+    <span class="n">target_site</span><span class="o">=</span><span class="s2">&quot;PROCESS_01&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 </pre></div>
 </div>
@@ -844,12 +846,12 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 <p>在可编辑的 <code class="docutils literal notranslate"><span class="pre">develop</span></code> Workspace 冷启动中，系统会按依赖从子到父应用已登记源码，直到目录达到固定点；无需人为逐个打开子流程。产品发布、画布插入和产品运行仍要求子流程是已发布的 <code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code>。</p>
 </section>
 <section id="id9">
-<h2>图编辑与源码往返<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>图编辑与源码往返<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <p>Python 是人维护的来源，画布图是它的投影。保存复杂编辑时，系统必须完成“Python → AST → 图 → Python → 图”的语义固定点：两张图等价，Workflow/节点身份、类型 Handle、物料身份与支持的标题说明保持不变，再次生成不继续漂移。</p>
 <p>不要用 <code class="docutils literal notranslate"><span class="pre">#</span> <span class="pre">unilab:parallelize</span></code>、空 <code class="docutils literal notranslate"><span class="pre">pass</span></code> 或伪造的 Fork/Join 节点保存拓扑。不是所有 DAG 都能由当前结构化语言表达；遇到不可表达的断边或交叉依赖时，应保留原编辑并根据诊断恢复依赖或重构源码，不能把差异藏进注释。</p>
 </section>
 <section id="id10">
-<h2>常见错误写法<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>常见错误写法<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -908,7 +910,7 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
 </div>
 </section>
 <section id="id11">
-<h2>作者提交前检查表<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>作者提交前检查表<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <p>这份清单同样适用于 AI 生成的源码；AI 自己报告“已检查”不能代替人工复核和产品编译。</p>
 <ul class="simple">
 <li><p>模块级只包含 import、可选 docstring、设备声明、至多一个输出 <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> 和一个工作流函数；</p></li>
@@ -940,15 +942,15 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="workflow.html">
+          <a class="prev-page" href="workflow-concepts.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
-
-                <div class="title">4. 工作流</div>
-
+                
+                <div class="title">先理解工作流</div>
+                
               </div>
             </a>
         </div>
@@ -1016,10 +1018,10 @@ curl<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </spa
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

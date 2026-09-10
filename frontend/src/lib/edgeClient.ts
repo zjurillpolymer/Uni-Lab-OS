@@ -17,8 +17,15 @@ import type {
   WorkflowGraphNode,
   WorkflowSource,
   WorkflowTask,
+  WorkflowTaskExecutionLock,
+  WorkflowTaskExecutionLockReleaseRequest,
+  WorkflowTaskExecutionLockReleaseResult,
+  WorkflowTaskExecutionLockSnapshot,
+  FailedMaterialTransferSettlementContext,
+  FailedMaterialTransferSettlementRequest,
   WorkflowTaskPriority,
   WorkflowStepState,
+  WorkflowIntervention,
   ResourceTemplateRecord,
   ActionTemplateRecord,
   ControlTemplateRecord,
@@ -214,6 +221,45 @@ async function writeData<T>(method: 'POST' | 'PUT' | 'PATCH' | 'DELETE', path: s
     if (error instanceof EdgeApiError) throw error
     throw new Error(`${error instanceof Error ? error.message : 'Edge API 业务错误'}（${method} ${path}）`)
   }
+}
+
+function adaptIntervention(value: RawRecord): WorkflowIntervention {
+  return {
+    uuid: String(value.uuid || ''),
+    workflowTaskUuid: String(value.workflow_task_uuid || ''),
+    workflowNodeJobUuid: String(value.workflow_node_job_uuid || ''),
+    revision: Number(value.revision || 1),
+    status: String(value.status || ''),
+    options: Array.isArray(value.options) ? value.options.map((option: RawRecord) => ({
+      id: String(option.id || option.action || ''), action: String(option.action || option.id || ''),
+      label: String(option.label || option.action || option.id || ''),
+      description: typeof option.description === 'string' ? option.description : undefined,
+    })) : [],
+    metaData: value.meta_data && typeof value.meta_data === 'object' ? value.meta_data as RawRecord : {},
+    openedAt: String(value.opened_at || ''),
+  }
+}
+
+export async function loadWorkflowInterventions(signal?: AbortSignal): Promise<WorkflowIntervention[]> {
+  const values = await requestData<RawRecord[]>('/workflow-interventions?status=open&limit=100', signal)
+  return Array.isArray(values) ? values.map(adaptIntervention) : []
+}
+
+export async function decideWorkflowIntervention(intervention: WorkflowIntervention, optionId: string): Promise<void> {
+  const response = await fetch(`${EDGE_API_BASE}/workflow-interventions/${intervention.uuid}/decisions`, {
+    method: 'POST',
+    headers: {
+      Accept: 'application/json', 'Content-Type': 'application/json',
+      'Idempotency-Key': `${intervention.uuid}:${intervention.revision}:${optionId}`,
+    },
+    body: JSON.stringify({
+    revision: intervention.revision,
+    option_id: optionId,
+  })
+  })
+  const body = await response.json().catch(() => null)
+  if (!response.ok) throw new Error(formatApiError(body, response.status))
+  unwrapEnvelope(body as EdgeEnvelope<unknown>)
 }
 
 function schemaType(schema: unknown): string {
@@ -2319,6 +2365,130 @@ export async function loadWorkflowTaskDetail(
     new Set(materials.map((material) => material.uuid)),
     '',
     labels,
+  )
+}
+
+function adaptWorkflowTaskExecutionLock(raw: RawRecord): WorkflowTaskExecutionLock {
+  return {
+    uuid: String(raw.uuid || ''),
+    workflowTaskUuid: String(raw.workflow_task_uuid || ''),
+    workflowNodeJobUuid: String(raw.workflow_node_job_uuid || ''),
+    lockKey: String(raw.lock_key || ''),
+    scope: String(raw.scope || 'unknown'),
+    materialUuid: raw.material_uuid ? String(raw.material_uuid) : undefined,
+    siteUuid: raw.site_uuid ? String(raw.site_uuid) : undefined,
+    state: String(raw.state || 'unknown'),
+    claimUuid: String(raw.claim_uuid || ''),
+    fencingToken: Number(raw.fencing_token || 0),
+    jobStatus: String(raw.job_status || 'unknown'),
+    claimState: String(raw.claim_state || 'unknown'),
+    canRelease: Boolean(raw.can_release),
+    releaseBlockReason: raw.release_block_reason
+      ? String(raw.release_block_reason)
+      : undefined,
+  }
+}
+
+export async function loadWorkflowTaskExecutionLocks(
+  taskUuid: string,
+  signal?: AbortSignal,
+): Promise<WorkflowTaskExecutionLockSnapshot> {
+  const snapshot = await requestData<RawRecord>(
+    `/workflow-tasks/${encodeURIComponent(taskUuid)}/execution-locks`,
+    signal,
+  )
+  return {
+    workflowTaskUuid: String(snapshot.workflow_task_uuid || taskUuid),
+    taskStatus: String(snapshot.task_status || 'unknown'),
+    locks: Array.isArray(snapshot.locks)
+      ? snapshot.locks.map((lock: RawRecord) => adaptWorkflowTaskExecutionLock(lock))
+      : [],
+    activeDeviceTenancyCount: Number(snapshot.active_device_tenancy_count || 0),
+  }
+}
+
+export async function forceReleaseWorkflowTaskExecutionLock(
+  taskUuid: string,
+  leaseUuid: string,
+  request: WorkflowTaskExecutionLockReleaseRequest,
+): Promise<WorkflowTaskExecutionLockReleaseResult> {
+  const result = await postData<RawRecord>(
+    `/workflow-tasks/${encodeURIComponent(taskUuid)}/execution-locks/${encodeURIComponent(leaseUuid)}/force-release`,
+    {
+      expected_claim_uuid: request.expectedClaimUuid,
+      expected_fencing_token: request.expectedFencingToken,
+      reason: request.reason,
+      physical_settlement_confirmed: request.physicalSettlementConfirmed,
+    },
+  )
+  return {
+    status: String(result.status || 'unknown'),
+    releasedLockUuids: Array.isArray(result.released_lock_uuids)
+      ? result.released_lock_uuids.map(String)
+      : [],
+    action: result.action && typeof result.action === 'object'
+      ? {
+          uuid: result.action.uuid ? String(result.action.uuid) : undefined,
+          result: result.action.result ? String(result.action.result) : undefined,
+          reason: result.action.reason ? String(result.action.reason) : undefined,
+          createTime: result.action.create_time ? String(result.action.create_time) : undefined,
+        }
+      : undefined,
+  }
+}
+
+/**
+ * 读取失败转运作业等待人工核验的权威上下文。
+ * @param jobUuid 工作流节点作业（WorkflowNodeJob）的稳定身份。
+ * @param signal 可选的 HTTP 取消信号。
+ * @returns 只含原转运物料及来源/目标库位（Site）稳定身份的结算上下文。
+ * @throws 作业并非等待物料位置对账或持久字段不完整时抛出错误并关闭失败。
+ */
+export async function loadFailedMaterialTransferSettlementContext(
+  jobUuid: string,
+  signal?: AbortSignal,
+): Promise<FailedMaterialTransferSettlementContext> {
+  const job = await requestData<RawRecord>(
+    `/workflow-node-jobs/${encodeURIComponent(jobUuid)}`,
+    signal,
+  )
+  const expected = job.expected_change_set
+  if (
+    job.uncertainty_reason !== 'material_transfer_inventory_reconciliation_required'
+    || !expected
+    || typeof expected !== 'object'
+    || expected.kind !== 'material_transfer'
+    || !expected.material_uuid
+    || !expected.source_site_uuid
+    || !expected.target_site_uuid
+  ) {
+    throw new Error('该作业不是等待物料转运物理结算的失败作业')
+  }
+  return {
+    jobUuid: String(job.uuid || jobUuid),
+    materialUuid: String(expected.material_uuid),
+    sourceSiteUuid: String(expected.source_site_uuid),
+    targetSiteUuid: String(expected.target_site_uuid),
+  }
+}
+
+/**
+ * 提交操作员核验的失败转运实际位置。
+ * @param jobUuid 工作流节点作业（WorkflowNodeJob）的稳定身份。
+ * @param request 实际库位（Site）、父物料和审计原因。
+ * @returns 后端完成库存物理结算后的作业事实。
+ * @throws 身份、占用（Claim）、栅栏（Fence）或库存事实冲突时抛出错误。
+ */
+export async function settleFailedMaterialTransfer(
+  jobUuid: string,
+  request: FailedMaterialTransferSettlementRequest,
+): Promise<RawRecord> {
+  return postData<RawRecord>(
+    `/workflow-node-jobs/${encodeURIComponent(jobUuid)}/settle-material-transfer`,
+    {
+      actual_change_set: request.actualChangeSet,
+      reason: request.reason,
+    },
   )
 }
 

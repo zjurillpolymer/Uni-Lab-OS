@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="workflow-concepts.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="工作流编排特性" href="workflow-features.html"><link rel="prev" title="4. 工作流运行" href="workflow.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>先理解工作流 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
-<ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>先理解工作流<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>先理解工作流<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -365,7 +367,7 @@
 <p>Uni-Lab 工作流不是一段由 Python 解释器顺序执行的脚本。它是一份静态 DSL 源码：Uni-Lab OS 解析 AST，把设备动作、数据依赖、控制结构和资源要求编译成可验证的 DAG，再创建 Task 和 Job。</p>
 <p>日常创作推荐使用<a class="reference internal" href="ai-workflow-authoring.html"><span class="std std-doc">AI 辅助方式</span></a>：让 AI 读取当前代码和 用户设备包 相似流程后生成草稿，再由人审查并交给产品编译。本页的概念仍是必修内容，因为只有理解这些合同，才能判断 AI 是否误用了设备动作、资源或控制结构。</p>
 <section id="id2">
-<h2>从源码到一次运行<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>从源码到一次运行<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>Python DSL 源码
       │ 静态编译，不执行作者代码
       ▼
@@ -393,13 +395,13 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 </div>
 </section>
 <section id="id3">
-<h2>工作流内部如何运行<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>工作流内部如何运行<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>产品级对象及其关系统一见<a class="reference internal" href="overview.html"><span class="std std-doc">认识 Uni-Lab OS</span></a>。在工作流内部，Workflow 表示完整实验目标，Experiment Operation 表示可复用的局部工艺，Node 表示动作或控制步骤；创建 Task 后，每个需要设备执行的动作会形成具体 Job。</p>
 <p>工作流和实验操作使用同一编译模型，但用途不同：普通 <code class="docutils literal notranslate"><span class="pre">normal</span></code> 工作流可以创建 Task；<code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code> 作为上层流程的子工作流使用，不能在产品模式下独立当作完整实验运行。</p>
 <p>可编辑的 <code class="docutils literal notranslate"><span class="pre">develop</span></code> Workspace 启动时，会按依赖从子到父应用已登记源码，直到组合目录达到固定点；作者不应依赖“先手工打开一次子流程”才能加载。进入产品发布和运行合同后，子流程仍必须是已发布的 <code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code>。</p>
 </section>
 <section id="id4">
-<h2>节点不等于每一行代码<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>节点不等于每一行代码<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>常见的图结构包括：</p>
 <ul class="simple">
 <li><p>设备动作：形成可执行 Job；</p></li>
@@ -422,9 +424,9 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <p>第二个动作读取第一个动作的输出，因此编译器会创建数据依赖。没有数据依赖并不一定表示可以物理并发；Uni-Lab OS 还会检查设备锁、资源区间和库存预留。</p>
 </section>
 <section id="id5">
-<h2>设备选择器<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>设备选择器<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>模块级设备声明把一个可读变量绑定到设备类型和选择方式：</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">probe</span><span class="p">:</span> <span class="n">用户设备包ControlFlowProbeDevice</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">"example_lab_control_flow_probe"</span><span class="p">)</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">probe</span><span class="p">:</span> <span class="n">用户设备包ControlFlowProbeDevice</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">&quot;example_lab_control_flow_probe&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
@@ -434,7 +436,7 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <p>设备类型必须显式导入并作为变量注解。动作写成 <code class="docutils literal notranslate"><span class="pre">result</span> <span class="pre">=</span> <span class="pre">selector.action(keyword=value)</span></code>；只允许命名参数，不允许位置参数、<code class="docutils literal notranslate"><span class="pre">*args</span></code> 或 <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code>。</p>
 </section>
 <section id="id6">
-<h2>公开输入与输出合同<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>公开输入与输出合同<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>所有工作流参数都必须是带类型的关键字专用参数：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">my_workflow</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">):</span>
     <span class="o">...</span>
@@ -457,14 +459,14 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <span class="k">def</span><span class="w"> </span><span class="nf">my_workflow</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">value</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">True</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ProbeOutput</span><span class="p">:</span>
     <span class="c1"># unilab:node_uuid=&lt;节点 UUID&gt;</span>
     <span class="n">result</span> <span class="o">=</span> <span class="n">probe</span><span class="o">.</span><span class="n">observe_boolean</span><span class="p">(</span><span class="n">value</span><span class="o">=</span><span class="n">value</span><span class="p">)</span>
-    <span class="k">return</span> <span class="p">{</span><span class="s2">"observed"</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
+    <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;observed&quot;</span><span class="p">:</span> <span class="n">result</span><span class="o">.</span><span class="n">value</span><span class="p">}</span>
 </pre></div>
 </div>
 <p>输出值必须来自工作流输入、物料来源或节点结果，不能用一个常量冒充运行结果。</p>
 <p>不要把 Action 结果与 Workflow 输出混为一谈。Action 结果可按当前 Action Catalog 合同使用 <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> 或合规的 frozen dataclass；Workflow 作者源码当前只接受普通 <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> 结果记录，不接受 dataclass 或 Pydantic <code class="docutils literal notranslate"><span class="pre">BaseModel</span></code>。</p>
 </section>
 <section id="uuid">
-<h2>节点 UUID 是稳定身份<a class="headerlink" href="#uuid" title="Link to this heading">¶</a></h2>
+<h2>节点 UUID 是稳定身份<a class="headerlink" href="#uuid" title="链接到此标题。">¶</a></h2>
 <p>每个动作、物料来源、条件、循环、展示分组和子工作流调用前都要有紧邻的唯一 UUID：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># [观察输入]: 将公开输入送到软件探针</span>
 <span class="c1"># unilab:node_uuid=966d4242-af1f-400f-93c9-268927de1451</span>
@@ -480,7 +482,7 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <p>禁用会改变编译图；应用后仍要重新检查数据依赖和发布修订。</p>
 </section>
 <section id="task">
-<h2>修订、发布与 Task 快照<a class="headerlink" href="#task" title="Link to this heading">¶</a></h2>
+<h2>修订、发布与 Task 快照<a class="headerlink" href="#task" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p><strong>保存/应用</strong>：把通过编译的候选图变成当前定义修订；</p></li>
 <li><p><strong>发布</strong>：冻结当前修订及合同；</p></li>
@@ -491,7 +493,7 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <p>预检通过不等于之后必然立即运行。预检与提交之间，另一任务可能占用设备或库存；以创建 Task 时的结果和任务等待原因作为事实。</p>
 </section>
 <section id="id7">
-<h2>开发模式与产品模式<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>开发模式与产品模式<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -515,7 +517,7 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
 <p>先在 <code class="docutils literal notranslate"><span class="pre">dry-run</span> <span class="pre">+</span> <span class="pre">develop</span></code> 完成学习，再在受控环境中发布和验收。不要把模式名理解成设备安全等级：是否接触真实硬件由 <code class="docutils literal notranslate"><span class="pre">runtimeMode</span></code>/<code class="docutils literal notranslate"><span class="pre">action_mode</span></code> 决定。</p>
 </section>
 <section id="id8">
-<h2>继续学习<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>继续学习<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>按<a class="reference internal" href="first-workflow.html"><span class="std std-doc">手写并运行第一个工作流（用户设备包 教学）</span></a>掌握最小 DSL；</p></li>
 <li><p>在<a class="reference internal" href="materials.html"><span class="std std-doc">物料管理</span></a>和<a class="reference internal" href="reagents.html"><span class="std std-doc">试剂管理</span></a>中理解工作流绑定的运行资源；</p></li>
@@ -532,8 +534,26 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="workflow-features.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">工作流编排特性</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="workflow.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">4. 工作流运行</div>
+                
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -587,10 +607,10 @@ WorkflowNodeJob ──► Uni-Lab OS 设备动作 ──► 结果 / 事件 / Tr
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

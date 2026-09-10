@@ -7,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from unilabos.app.scheduler.inventory.backend_api import install_backend_resource_api
 from unilabos.app.scheduler.inventory.backend_contract import BackendResourceService
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import SCHEMA_VERSION, InventoryStore
 
 
 def _client(tmp_path) -> tuple[TestClient, InventoryStore]:
@@ -82,7 +82,9 @@ def test_v9_database_adds_sample_and_current_substance_tables(tmp_path) -> None:
             "SELECT name FROM sqlite_master WHERE type='table'"
         )
     }
-    assert reopened.query_one("PRAGMA user_version") == {"user_version": 13}
+    assert reopened.query_one("PRAGMA user_version") == {
+        "user_version": SCHEMA_VERSION
+    }
     assert {"sample", "current_substance"} <= tables
     reopened.close()
 

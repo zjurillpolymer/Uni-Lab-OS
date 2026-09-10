@@ -5,7 +5,6 @@ from __future__ import annotations
 from collections.abc import Mapping, Sequence
 from typing import Any
 
-
 TRANSFER_CONTRACT_FIELDS: tuple[str, ...] = (
     "material_param",
     "source_owner_param",
@@ -16,6 +15,11 @@ TRANSFER_CONTRACT_FIELDS: tuple[str, ...] = (
     "target_site_name_param",
     "gripper_site_role",
 )
+TRANSFER_RESOURCE_ROLE_FIELDS: tuple[str, ...] = (
+    "motion_resource_roles",
+    "tool_resource_roles",
+)
+RESOURCE_PARAM_ROLES = frozenset({"device", "tool", "motion", "site", "material"})
 
 
 class ActionResourceContractError(ValueError):
@@ -45,7 +49,7 @@ def normalize_action_resource_contract(
 
     参数：``value`` 是 ``@action(resource_contract=...)`` 经 AST 提取的 JSON
     对象；只允许参数名和资源角色，不允许运行时取得/释放代码。返回：字段顺序稳定、
-    可直接嵌入动作 Schema 的第 1 版合同；省略时返回空字典。异常：字段未知、版本、
+    可直接嵌入动作 Schema 的第 1/2 版合同；省略时返回空字典。异常：字段未知、版本、
     参数名、设备托管或转运角色非法时抛 ``ActionResourceContractError``。
     """
 
@@ -56,9 +60,12 @@ def normalize_action_resource_contract(
     allowed = {
         "version",
         "required_device_params",
+        "resource_params",
         "device_tenancy",
         "transfer",
         "operate_in_place",
+        "transfer_step",
+        "order_sensitive",
         "aliquot",
     }
     unknown = set(value) - allowed
@@ -69,20 +76,45 @@ def normalize_action_resource_contract(
             "动作资源合同包含未知字段：" + ",".join(sorted(unknown)),
         )
     version = value.get("version", 1)
-    if isinstance(version, bool) or version != 1:
+    if isinstance(version, bool) or not isinstance(version, int) or version not in {1, 2}:
         _fail(
             "unsupported_action_resource_version",
             "/version",
-            "动作资源合同版本必须是 1",
+            "动作资源合同版本必须是 1 或 2",
         )
-    normalized: dict[str, Any] = {"version": 1}
-    if "required_device_params" in value:
-        normalized["required_device_params"] = list(
-            _parameter_names(
-                value["required_device_params"],
-                "/required_device_params",
+    if version == 1 and "resource_params" in value:
+        _fail(
+            "unsupported_action_resource_field",
+            "/resource_params",
+            "resource_params 需要动作资源合同版本 2",
+        )
+    raw_transfer = value.get("transfer")
+    if version == 1 and isinstance(raw_transfer, Mapping):
+        unsupported_transfer_fields = set(raw_transfer) & set(TRANSFER_RESOURCE_ROLE_FIELDS)
+        if unsupported_transfer_fields:
+            _fail(
+                "unsupported_action_resource_field",
+                "/transfer",
+                "motion/tool 资源角色需要动作资源合同版本 2",
             )
+    normalized: dict[str, Any] = {"version": version}
+    legacy_device_params: tuple[str, ...] = ()
+    if "required_device_params" in value:
+        legacy_device_params = _parameter_names(
+            value["required_device_params"],
+            "/required_device_params",
         )
+        normalized["required_device_params"] = list(legacy_device_params)
+    if "resource_params" in value:
+        normalized["resource_params"] = _resource_params(
+            value["resource_params"],
+            "/resource_params",
+            legacy_device_params=legacy_device_params,
+        )
+    elif version == 2 and legacy_device_params:
+        normalized["resource_params"] = [
+            {"param": name, "role": "device"} for name in legacy_device_params
+        ]
     if value.get("device_tenancy") is not None:
         normalized["device_tenancy"] = _device_tenancy(value["device_tenancy"])
     if value.get("transfer") is not None:
@@ -91,6 +123,36 @@ def normalize_action_resource_contract(
         normalized["operate_in_place"] = _operate_in_place(value["operate_in_place"])
     if value.get("aliquot") is not None:
         normalized["aliquot"] = _aliquot(value["aliquot"])
+    if "order_sensitive" in value:
+        if not isinstance(value["order_sensitive"], bool):
+            _fail("invalid_order_sensitive", "/order_sensitive", "order_sensitive 必须是布尔值")
+        normalized["order_sensitive"] = value["order_sensitive"]
+    if "transfer_step" in value:
+        step = value["transfer_step"]
+        fields = {"operation", "material_param", "owner_param", "site_param", "carrier_params"}
+        if (
+            version != 2
+            or not isinstance(step, Mapping)
+            or set(step) != fields
+            or step.get("operation") not in {"pick", "place"}
+        ):
+            _fail(
+                "invalid_transfer_step",
+                "/transfer_step",
+                "transfer_step 需要 v2、pick/place 和完整参数映射",
+            )
+        normalized["transfer_step"] = {
+            "operation": step["operation"],
+            **{
+                key: _parameter_name(step[key], f"/transfer_step/{key}")
+                for key in ("material_param", "owner_param", "site_param")
+            },
+            "carrier_params": list(
+                _parameter_names(step["carrier_params"], "/transfer_step/carrier_params")
+            ),
+        }
+        if not normalized["transfer_step"]["carrier_params"]:
+            _fail("invalid_transfer_step", "/transfer_step/carrier_params", "搬运器参数不能为空")
     if len(normalized) == 1:
         _fail(
             "empty_action_resource_contract",
@@ -122,18 +184,52 @@ def validate_action_resource_contract_schema(
             "动作资源合同缺少可验证的 Goal Schema",
         )
     resource_fields: list[tuple[str, str]] = []
+    resource_params = contract.get("resource_params", [])
+    if not isinstance(resource_params, Sequence) or isinstance(resource_params, (str, bytes)):
+        _fail("invalid_resource_params", "/resource_params", "resource_params 必须是数组")
+    for index, item in enumerate(resource_params):
+        if not isinstance(item, Mapping):
+            _fail(
+                "invalid_resource_param",
+                f"/resource_params/{index}",
+                "资源参数项必须是对象",
+            )
+        name = item.get("param")
+        role = item.get("role")
+        if not isinstance(name, str) or not name:
+            _fail(
+                "invalid_resource_param",
+                f"/resource_params/{index}/param",
+                "资源参数名无效",
+            )
+        if role not in RESOURCE_PARAM_ROLES:
+            _fail(
+                "invalid_resource_role",
+                f"/resource_params/{index}/role",
+                "资源参数角色必须是 device、tool、motion、site 或 material",
+            )
+        resource_fields.append((name, f"/resource_params/{index}/param"))
     for index, name in enumerate(contract.get("required_device_params", [])):
         resource_fields.append((str(name), f"/required_device_params/{index}"))
     tenancy = contract.get("device_tenancy")
     if isinstance(tenancy, Mapping):
-        resource_fields.append(
-            (str(tenancy["material_param"]), "/device_tenancy/material_param")
-        )
+        resource_fields.append((str(tenancy["material_param"]), "/device_tenancy/material_param"))
         for field in ("acquire_device_param", "release_device_param"):
             if tenancy.get(field):
-                resource_fields.append(
-                    (str(tenancy[field]), f"/device_tenancy/{field}")
-                )
+                resource_fields.append((str(tenancy[field]), f"/device_tenancy/{field}"))
+    step = contract.get("transfer_step")
+    if isinstance(step, Mapping):
+        for field in ("material_param", "owner_param"):
+            resource_fields.append((str(step[field]), f"/transfer_step/{field}"))
+        for name in step["carrier_params"]:
+            resource_fields.append((str(name), "/transfer_step/carrier_params"))
+        site_schema = goal_properties.get(step["site_param"])
+        if not isinstance(site_schema, Mapping) or site_schema.get("type") != "string":
+            _fail(
+                "invalid_site_parameter_type",
+                "/transfer_step/site_param",
+                "搬运端点 Site 参数必须是字符串",
+            )
     transfer = contract.get("transfer")
     if isinstance(transfer, Mapping):
         resource_fields.extend(
@@ -172,9 +268,7 @@ def validate_action_resource_contract_schema(
                     f"动作资源合同引用不存在的参数 {name}",
                 )
             field_type = schema.get("type")
-            allowed_types = (
-                set(field_type) if isinstance(field_type, list) else {field_type}
-            )
+            allowed_types = set(field_type) if isinstance(field_type, list) else {field_type}
             if "string" not in allowed_types:
                 _fail(
                     "invalid_site_parameter_type",
@@ -195,9 +289,7 @@ def validate_action_resource_contract_schema(
             (str(aliquot["source_material_param"]), "/aliquot/source_material_param")
         )
         for index, name in enumerate(aliquot["target_material_params"]):
-            resource_fields.append(
-                (str(name), f"/aliquot/target_material_params/{index}")
-            )
+            resource_fields.append((str(name), f"/aliquot/target_material_params/{index}"))
     for name, path in resource_fields:
         schema = goal_properties.get(name)
         if not isinstance(schema, Mapping):
@@ -296,7 +388,7 @@ def _device_tenancy(value: Any) -> dict[str, Any]:
     }
 
 
-def _transfer(value: Any) -> dict[str, str]:
+def _transfer(value: Any) -> dict[str, Any]:
     """规范机械臂转运完整资源集参数映射。
 
     参数：``value`` 是 ``transfer`` 字面量。返回：待搬物料、目标父物料、目标
@@ -306,7 +398,7 @@ def _transfer(value: Any) -> dict[str, str]:
 
     if not isinstance(value, Mapping):
         _fail("invalid_transfer_contract", "/transfer", "transfer 必须是对象")
-    allowed = set(TRANSFER_CONTRACT_FIELDS)
+    allowed = set(TRANSFER_CONTRACT_FIELDS) | set(TRANSFER_RESOURCE_ROLE_FIELDS)
     if set(value) - allowed:
         _fail(
             "unknown_transfer_field",
@@ -363,7 +455,7 @@ def _transfer(value: Any) -> dict[str, str]:
         value.get("gripper_site_role"),
         "/transfer/gripper_site_role",
     )
-    return {
+    normalized_transfer = {
         "material_param": material_param,
         "source_owner_param": source_owner_param,
         "source_site_uuid_param": source_site_uuid_param,
@@ -373,6 +465,12 @@ def _transfer(value: Any) -> dict[str, str]:
         "target_site_name_param": site_name_param,
         "gripper_site_role": gripper_role,
     }
+    for field in ("motion_resource_roles", "tool_resource_roles"):
+        if field in value:
+            normalized_transfer[field] = list(
+                _resource_roles(value[field], f"/transfer/{field}")
+            )
+    return normalized_transfer
 
 
 def _operate_in_place(value: Any) -> dict[str, str]:
@@ -441,6 +539,66 @@ def _parameter_names(value: Any, path: str) -> tuple[str, ...]:
     if len(set(names)) != len(names):
         _fail("duplicate_parameter_name", path, "设备参数声明包含重复项")
     return names
+
+
+def _resource_params(
+    value: Any,
+    path: str,
+    *,
+    legacy_device_params: Sequence[str] = (),
+) -> list[dict[str, str]]:
+    """规范 v2 资源参数及其角色，并拒绝重复参数。"""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        _fail("invalid_resource_params", path, "resource_params 必须是数组")
+    result: list[dict[str, str]] = [
+        {"param": name, "role": "device"} for name in legacy_device_params
+    ]
+    seen = {item["param"] for item in result}
+    for index, item in enumerate(value):
+        item_path = f"{path}/{index}"
+        if not isinstance(item, Mapping) or set(item) != {"param", "role"}:
+            _fail(
+                "invalid_resource_param",
+                item_path,
+                "资源参数项必须且只能包含 param 与 role",
+            )
+        name = _parameter_name(item.get("param"), f"{item_path}/param")
+        role = item.get("role")
+        if role not in RESOURCE_PARAM_ROLES:
+            _fail(
+                "invalid_resource_role",
+                f"{item_path}/role",
+                "资源参数角色必须是 device、tool、motion、site 或 material",
+            )
+        if name in seen:
+            _fail(
+                "duplicate_resource_parameter",
+                f"{item_path}/param",
+                f"资源参数重复：{name}",
+            )
+        seen.add(name)
+        result.append({"param": name, "role": str(role)})
+    if not result:
+        _fail("empty_resource_params", path, "resource_params 至少声明一项资源参数")
+    return result
+
+
+def _resource_roles(value: Any, path: str) -> tuple[str, ...]:
+    """规范 transfer 的 motion/tool 资源角色列表。"""
+
+    if not isinstance(value, Sequence) or isinstance(value, (str, bytes)):
+        _fail("invalid_resource_roles", path, "资源角色必须是字符串数组")
+    roles: list[str] = []
+    for index, item in enumerate(value):
+        if not isinstance(item, str) or not item or item != item.strip():
+            _fail("invalid_resource_role", f"{path}/{index}", "资源角色必须是非空字符串")
+        if item in roles:
+            _fail("duplicate_resource_role", path, f"资源角色重复：{item}")
+        roles.append(item)
+    if not roles:
+        _fail("empty_resource_roles", path, "资源角色数组不能为空")
+    return tuple(roles)
 
 
 def _parameter_name(value: Any, path: str) -> str:

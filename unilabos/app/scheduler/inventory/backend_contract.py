@@ -24,7 +24,12 @@ from unilabos.app.scheduler.inventory.dispatch_admission import (
     InventoryMutationConflict,
     assert_inventory_mutation_unclaimed,
 )
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import (
+    InventoryStore,
+    SiteOccupancyConflict,
+    clear_site_occupancy,
+    set_site_occupancy,
+)
 from unilabos.resources.site_definition import normalize_available_sites
 
 
@@ -1283,10 +1288,10 @@ class BackendResourceService:
                 raise BackendContractError(
                     INVALID_PARAMETER, "remove must not provide site_uuid"
                 )
-            conn.execute(
-                "UPDATE site SET occupied_material_uuid=NULL,update_time=? "
-                "WHERE occupied_material_uuid=? AND deleted_at IS NULL",
-                (_now(), material_uuid),
+            clear_site_occupancy(
+                conn,
+                material_uuid=material_uuid,
+                update_time=_now(),
             )
             return
         if action != "place" or not site_uuid:
@@ -1315,21 +1320,27 @@ class BackendResourceService:
             raise BackendContractError(
                 MATERIAL_SITE_OCCUPIED, "Target site is occupied by another material"
             )
-        conn.execute(
-            "UPDATE site SET occupied_material_uuid=NULL,update_time=? "
-            "WHERE occupied_material_uuid=? AND deleted_at IS NULL",
-            (_now(), material_uuid),
-        )
         owner_material_uuid = str(site["material_uuid"])
         self._check_parent_cycle(conn, material_uuid, owner_material_uuid)
+        timestamp = _now()
+        try:
+            set_site_occupancy(
+                conn,
+                site_uuid=site_uuid,
+                material_uuid=material_uuid,
+                update_time=timestamp,
+            )
+        except SiteOccupancyConflict as error:
+            code = (
+                MATERIAL_SITE_CYCLE
+                if error.code == "site_occupancy_cycle"
+                else MATERIAL_SITE_OCCUPIED
+            )
+            raise BackendContractError(code, str(error)) from error
         conn.execute(
             "UPDATE material SET parent_uuid=?,update_time=? "
             "WHERE uuid=? AND deleted_at IS NULL",
-            (owner_material_uuid, _now(), material_uuid),
-        )
-        conn.execute(
-            "UPDATE site SET occupied_material_uuid=?,update_time=? WHERE uuid=?",
-            (material_uuid, _now(), site_uuid),
+            (owner_material_uuid, timestamp, material_uuid),
         )
 
     def _current_site_uuid(self, material_uuid: str) -> Optional[str]:

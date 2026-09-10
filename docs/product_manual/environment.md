@@ -10,7 +10,7 @@ Uni-Lab OS 的“环境”分为三层：Conda 软件环境决定有哪些 Pytho
 
 ## 选择 Conda 环境
 
-Uni-Lab OS 提供三档环境。这里解释它们的用途，不重复安装步骤；首次安装统一按照[系统安装](installation.md)中的版本和命令执行。
+Uni-Lab OS 提供三档 Conda 包。默认安装入口只推荐“一键安装包”和“`unilabos-env` + 仓库源码”两条路径；这里解释各包用途，不重复安装步骤。首次安装统一按照[系统安装](installation.md)中的顺序执行。
 
 | 包 | 适合谁 | 包含什么 | 本手册建议 |
 | --- | --- | --- | --- |
@@ -18,7 +18,7 @@ Uni-Lab OS 提供三档环境。这里解释它们的用途，不重复安装步
 | `unilabos-env` | 需要修改 OS 源码、构建操作页面的开发者 | Python/ROS 环境，不固定 OS 源码 | 本手册源码教程使用 |
 | `unilabos-full` | 需要 RViz、Gazebo、MoveIt 或 Jupyter 的仿真开发者 | `unilabos` 加桌面仿真与可视化栈 | 仅按需安装 |
 
-本手册的源码安装路径使用 `unilabos-env`。只有直接运行正式发布包时才选择 `unilabos`；只有确实需要三维仿真或可视化时才选择 `unilabos-full`。环境类型由部署负责人在安装前确认，业务人员不应在安装过程中自行替换。
+本手册的源码安装路径使用 `unilabos-env`，随后拉取仓库并以可编辑模式安装；仓库已经包含可由 Workspace Backend 提供的轻量操作页面。`unilabos` 是标准 Conda 发布包，`unilabos-full` 只在确实需要三维仿真或可视化时选择。
 
 :::{note}
 `--override-channels`、版本号和频道顺序用于保证安装结果一致。升级 Uni-Lab OS 时，应同时确认设备包、启动图（Graph JSON）和环境版本的兼容性，并重新执行验收。

@@ -1,8 +1,4 @@
----
-orphan: true
----
-
-# 用 AI 编写工作流（推荐）
+# AI 编写工作流（推荐）
 
 :::{admonition} 阅读角色
 - **业务负责人**：确认实验目的、输入输出、参数单位、成功标准和失败处理。
@@ -12,7 +8,7 @@ orphan: true
 
 本页假设设备包已经能被 Uni-Lab OS 加载，而且你已完成[工作流基础](workflow-concepts.md)、[用户设备包 手写教程](first-workflow.md)和[编排特性](workflow-features.md)。这些基础让你能够审查 AI 生成的 DSL，而不是直接相信生成结果。
 
-若你还没有 `pyproject.toml`、设备定义、启动图（Graph JSON）和 `package.yaml`，先按[工作区](workspace.md)完成最小闭环。也可选择本地 Workbench 的[AI 设备包生成器](repository-builder-skill.md)辅助新建、迁移或诊断。
+若你还没有 `pyproject.toml`、设备定义、启动图（Graph JSON）和 `package.yaml`，先按[工作区](workspace.md)完成最小闭环。维护用户自己的设备包时，也可使用[AI 设备包生成器（实验性）](repository-builder-skill.md)，让本地 Coding Agent 协助修改或排查。
 
 日常工作流创作推荐交给能够读取当前 Uni-Lab OS 与实验室设备包的 AI 编码助手：让它先从 Catalog、设备驱动、资源模板和 用户设备包 已登记流程中取证，再生成静态 Python DSL。人负责确认实验意图、审查证据、批准发布，并决定是否运行。
 

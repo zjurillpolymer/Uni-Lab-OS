@@ -1,189 +1,246 @@
----
-orphan: true
----
-
 # 使用 AI 设备包生成器（实验性）
 
-:::{admonition} 阅读角色
-- **业务负责人**：确认设备包范围、现场对象、业务名称和交付目标。
-- **开发人员**：建立目录、登记清单、依赖、启动图和测试。
-- **验收人员**：确认设备包能够被检查、加载、模拟启动并留下版本记录。
+:::{admonition} 这页适合谁
+- **业务负责人**：说明设备、动作、单位、现场限制和交付目标，不需要编写代码。
+- **开发人员**：让 Coding Agent 在明确边界内创建或修改设备包，并运行当前仓库支持的检查。
+- **验收人员**：区分静态检查、构建、模拟加载和真机验收，不把较低等级的证据写成生产通过。
 :::
 
-`unilab-domain-repo-builder` 是本地 UniLab Workbench 随附的 Coding Agent Skill。它帮助新手把实验室事实整理成可维护的设备包，也可以迁移旧 Driver，或诊断 Package、Registry、Catalog、工作流往返和运行加载问题。
-
-这是安装主路径之外的可选开发分支。没有 Workbench 或 Agent 时，Uni-Lab OS 页面、CLI 和工作流运行仍然可用；用户可以直接按[工作区](workspace.md)手写同一份设备包合同。
+当前 `Uni-Lab-OS` 仓库已经提供 `unilab-domain-repo-builder` Skill。它可以协助新建设备包、迁移旧代码或分层诊断设备包问题，但不会自动知道实验室现场事实，也不能代替人工审查和产品验收。
 
 :::{warning}
-这是辅助开发能力，不是一键生成器，也不代表生产就绪。AI 生成的代码必须经过人工审查和产品验收。Uni-Lab OS 业务页面没有 Agent 入口；本页操作只适用于安装在开发机上的本地 Workbench。
+这不是一键生成器。地址、单位、超时、联锁、物料位置、工作流 UUID 和凭证必须来自用户确认的资料。资料缺失时，AI 应停止猜测并列出待确认项。
 :::
 
-## 它负责什么
+## 当前仓库中可以使用的内容
 
-| 场景 | 可以请 AI 完成 | 它不负责 |
-| --- | --- | --- |
-| 新建设备包 | 建立包身份、目录、设备、资源、启动图（Graph JSON）、工作流和测试骨架 | 猜测真实地址、单位、联锁或物料事实 |
-| 迁移设备包 | 盘点旧代码，逐步迁移装饰器、清单、模拟器和验证链路 | 静默删除兼容代码或改写现场协议 |
-| 诊断设备包 | 按 Package → Registry → Catalog → Authoring → Runtime 分层定位失败 | 用后层绕过前层错误，或把仿真成功写成真机通过 |
-
-完整的设备包加载合同仍以[工作区](workspace.md)为准。Skill 负责读取事实、生成或修改代码和执行检查，不取代 Uni-Lab OS 的编译器、任务调度、库存权威或安全联锁。
-
-## 前置条件
-
-开始前应准备：
-
-- 已按[开发工具与接口](interfaces.md#本地安装与启动)中的说明启动本地 UniLab Workbench；
-- AionUi `2.1.52+` 的本地 Agent 载荷；非默认位置用 `UNILAB_AIONUI_APP` 指定，且不要设置 `UNILAB_AGENT_ENABLED=0`；
-- 一个已经存在、可写且至少含 `deployment/local_config.py` 的 Workspace 目录；
-- 该 Workspace 实际使用的 Uni-Lab OS Python 环境；
-- 设备协议、地址表、参数单位、资源与放置位（Site）、目标工作流和仿真范围；
-- Git 状态或其他可回退副本，且真实凭证没有写入需求卡。
-
-新建设备包不能直接从完全空的目录启动；桌面 Workbench 欢迎页会拒绝不含 `deployment/local_config.py` 的目录。先按下一节创建最小启动壳，再把设备包根目录选为 Workspace。
-
-不要让 Agent 在错误的父目录、另一个设备包或无法回退的共享目录中工作。
-
-## 为新设备包创建启动壳
-
-先建立下面两个目录层级；文件必须位于目标设备包根目录之下，而不是放在它的父目录：
-
-```text
-new-lab/
-└── deployment/
-    └── local_config.py
-```
-
-把以下最小配置写入 `deployment/local_config.py`：
-
-```python
-class BasicConfig:
-    ak = ""
-    sk = ""
-    disable_browser = True
-    no_update_feedback = True
-    log_level = "INFO"
-```
-
-这一步只让 Workbench 能识别并打开该 Workspace，以便独立启动的 Agent 继续建立 Package。此时默认 启动图 和包结构尚不存在，Uni-Lab OS 启动失败是预期现象；它不代表设备包已可安装或能启动设备。不要在文件中填写真实密钥。
-
-## 在 Workbench 中确认 Agent 和 Skill
-
-1. 在 Workbench 中选择目标 Editable Package，确认标题或环境管理器中的 `Workdir` 指向目标 Workspace。
-2. 打开“环境管理”，等待 Agent 卡片显示“工作区 Agent 已就绪”；未启动时点击“启动 Agent”。
-3. 点击 Activity Bar 中的“Agent”，确认右侧面板显示当前 Workspace 名称。
-4. 在 Workbench 终端中执行下面的只读检查：
+先将本机的 Uni-Lab OS 源码目录填写为通用变量：
 
 ```bash
-test -f .agents/skills/unilab-domain-repo-builder/SKILL.md \
-  && echo "repository builder ready"
+export UNILAB_ROOT="/absolute/path/to/Uni-Lab-OS"
 ```
 
-Workbench 启动所选 Workspace 的 Agent 时，会先把随应用打包的托管 Skill 播种到 `<workspace>/.agents/skills/`，再以该 Workspace 为 Agent 工作目录。Skill 不存在时，不要让 Agent 假装已经读取；先按[失败与回退](#失败与回退)处理。
+在该源码仓库中可以核对到：
 
-托管 Skill 采用内容摘要管理。未改动的旧副本可以随 Workbench 更新；预先存在或由用户修改过的目录会被播种逻辑保留，不会被新版载荷静默覆盖。需要升级定制版本时，应先比较差异并人工合并。
+| 路径 | 用途 |
+| --- | --- |
+| `$UNILAB_ROOT/` | Uni-Lab OS 源码、CLI、设备包合同和产品手册 |
+| `$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/SKILL.md` | 新建、迁移、诊断和验证设备包的 Coding Agent 指南 |
+| `$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/references/` | 包模板、装饰器和 Workflow Python 合同 |
+| `$UNILAB_ROOT/.cursor/skills/add-device/SKILL.md` | 编写单个设备驱动时的补充参考 |
+| `PLC-Sim/` | 可选的 PLC、OPC UA 和 Modbus 联调工具；仅在设备包明确需要时使用 |
 
-## 先填写新手需求卡
+先在终端执行只读检查：
 
-把未知项明确写成“待确认”，不要让 AI 用合理猜测填充实验室事实。
+```bash
+test -f "$UNILAB_ROOT/setup.py"
+test -f "$UNILAB_ROOT/unilabos/package_manager/cli.py"
+test -f "$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/SKILL.md"
+test -f "$UNILAB_ROOT/.cursor/skills/add-device/SKILL.md"
+```
+
+四条命令都不输出错误，才说明本页引用的 Uni-Lab OS 文件在当前仓库中存在。`PLC-Sim` 是可选工具，不是设备包开发或 Uni-Lab OS 启动的必需条件。
+
+## AI 能做什么
+
+| 场景 | 可以请 AI 完成 | 必须由人确认 |
+| --- | --- | --- |
+| 新建设备包 | 创建包结构、清单、设备和工作流骨架，补充测试 | 业务名称、设备型号、动作含义、单位和交付范围 |
+| 迁移设备包 | 盘点旧代码，逐步迁移装饰器、清单、模拟器和测试 | 兼容范围、现场协议和允许删除的旧能力 |
+| 修改设备 | 找到同类实现，小范围修改 Driver、模拟器、启动图和测试 | 地址表、参数、超时、安全联锁和恢复方式 |
+| 排查失败 | 按 Package、Registry、Catalog、Authoring、Runtime 分层定位 | 现场连接、硬件故障和真机验收结论 |
+
+AI 不应连接真机、启动实验、发布包、写入凭证或更改生产配置，除非业务负责人对本次任务明确授权。
+
+## 第一步：确认目标设备包
+
+设备包是用户自己的项目，不由本手册虚构名称。先取得它的绝对路径，并确认至少包含以下文件：
+
+```bash
+export DEVICE_PACKAGE_ROOT="/absolute/path/to/user-device-package"
+
+test -f "$DEVICE_PACKAGE_ROOT/pyproject.toml"
+test -f "$DEVICE_PACKAGE_ROOT/package.yaml"
+test -f "$DEVICE_PACKAGE_ROOT/deployment/local_config.py"
+```
+
+如果文件缺失，不要从其他项目复制现场数据。新项目应先按[手工初始化工作区](workspace-init.md)创建空骨架，再填写自己的包身份和配置。
+
+## 第二步：填写需求卡
+
+把下面内容复制到任务中。不会填写的项目写“待确认”。
 
 ```text
-任务类型：新建 / 迁移 / 诊断
+任务类型：新建 / 迁移 / 修改 / 只读排查
 目标设备包绝对路径：
-distribution 名称与 import package：
-设备：名称、协议、动作、参数单位、结果、状态：
-地址表或供应商资料位置：
-资源与 放置位：模板、实例、父子关系、可用位置：
-目标工作流：输入、输出、顺序、并行、失败条件：
-模拟器：类型、端点、已覆盖的握手行为：
-禁止事项：真机连接、发布、运行、凭证写入等：
-完成标准：本次允许执行到哪一道验证门：
+业务目标：完成后用户能够做什么
+
+发布名称与 Python 包名：
+设备名称和型号：
+通信协议：串口 / Modbus / OPC UA / HTTP / 其他
+协议资料或地址表：文件路径、版本和负责人
+动作：名称、输入、单位、输出、超时和失败表现
+状态：需要展示或记录的状态、单位和更新频率
+
+资源与放置位：容器、载架、父子关系和允许位置
+目标工作流：输入、输出、顺序、并行和失败条件
+模拟范围：可以模拟什么，哪些项目必须真机确认
+
+允许 AI 执行：只读 / 修改代码 / 运行测试 / 构建 / dry-run
+禁止 AI 执行：连接真机 / 启动任务 / 发布 / 写入凭证 / 其他
+完成标准：本次允许执行到哪一道验证门
 ```
 
-地址、单位、超时、联锁和现场恢复规则缺失时，AI 应停在接口骨架或模拟层，并列出待确认项。它不应从 用户设备包 示例复制设备实例 ID、NodeId、Workflow UUID 或物理布局。
+业务负责人至少确认业务目标、动作含义、单位、失败表现、现场限制和完成标准。技术字段可以由开发人员补充，但必须注明资料来源。
 
-## 可复制提示词
+## 第三步：把任务交给 Coding Agent
+
+将下面提示词中的路径替换为实际设备包路径，然后连同填写好的需求卡一起提交：
 
 ```text
-请使用 unilab-domain-repo-builder Skill 处理下面的设备包任务。
+请使用以下本地 Skill 处理 Uni-Lab OS 设备包任务：
+<Uni-Lab-OS 源码绝对路径>/.cursor/skills/unilab-domain-repo-builder/SKILL.md
 
-先读取设备包内的 AGENTS.md、pyproject.toml、package.yaml、目标 启动图、
-地址表和现有测试，再确认 Git 状态。使用将实际运行该设备包的 Python，
-输出 sys.executable、unilabos.__file__ 和 pip show unilabos；不要根据
-相邻目录猜测 OS 版本或装饰器合同。
+如需修改单个设备驱动，再读取：
+<Uni-Lab-OS 源码绝对路径>/.cursor/skills/add-device/SKILL.md
 
-按“包与导入 → 资源和 放置位 → 设备与模拟器 → Typed Actions → 最小叶子
-Workflow → 组合 Workflow → 产品验收”的依赖顺序工作。真实 Driver 与
-模拟器保持相同动作、参数、结果和 topic 合同，只替换传输层。
+目标设备包：/absolute/path/to/user-device-package
 
-先列出已知事实、未知项、拟修改文件和验证计划。不要发明设备、动作、
-单位、PLC 地址、资源、API 或 UUID；不要连接真机、发布或运行任务，除非
-我在需求卡中明确授权。保留已有修改，不覆盖无关工作。
+开始前先读取目标设备包内实际存在的 AGENTS.md、pyproject.toml、package.yaml、
+README、目标启动图和相关测试，并报告 Git 状态。使用实际运行该设备包的 Python，
+输出 sys.executable、unilabos.__file__ 和 pip show unilabos。不要根据相邻目录、
+旧文档或其他设备包猜测版本和现场事实。
 
-完成后按产品手册的 Package inspect、Registry check、package build 和
-dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩余风险和人工
-待办；任何一道门失败都不要声称设备包已经可用。
+先列出已知事实、待确认项、拟修改文件和验证计划。每次只完成一个可验证的小闭环。
+不要发明设备、动作、单位、地址、NodeId、资源关系、UUID、超时、联锁或凭证；
+保留已有修改，不覆盖无关工作。未经需求卡明确授权，不连接真机、不启动实验、
+不发布、不写入密钥。
+
+修改后按产品手册的依赖与 Python 包、package inspect、package build 和 dry-run
+验证门逐项检查。报告每条命令、退出状态、运行模式、关键结果、剩余风险和人工待办。
+任何一道门失败，都不要声称设备包已经可用。
 
 需求卡：
 <粘贴填写后的需求卡>
 ```
 
-如果只想诊断，不想修改，请在首句追加：“本轮只读诊断，不修改文件、安装依赖、启动设备或运行任务。”
+如果本轮只需要诊断，在提示词第一行补充：
 
-## AI 应按什么顺序工作
+```text
+本轮只做只读排查，不修改文件、不安装依赖、不启动服务、模拟器或设备。
+```
 
-1. 读取设备包规则、Git/依赖状态、清单、启动图、地址表和测试，列出已知与未知事实。
-2. 从实际 Python 解释器解析 `unilabos` 位置和版本，再核对当前装饰器与工作流合同。
-3. 先让 packaging、imports 和清单可检查，再登记稳定的资源模板、物理资源与 放置位。
-4. 每次只增加一个设备垂直切片：Driver、启动图 实例、模拟 transport、Typed Action 和最小叶子 Workflow。
-5. 叶子 Workflow 通过后再添加组合 Workflow；先加载子流程，再验证父流程达到稳定固定点。
-6. 验证 Python → AST → 启动图 → Python → 启动图 的语义固定点，不用魔法注释、空 `pass` 或无效 Fork/Join 保存拓扑。
-7. 最后运行允许范围内的模拟器和 Workbench 验收；真机证据必须单独记录。
+## 第四步：人工审查修改
 
-这一顺序避免在包身份、资源或动作合同尚未稳定时先堆叠复杂流程。AI 若建议修改 Uni-Lab OS 或共享页面，应先说明为何问题不属于设备包，并把系统修改作为独立决策。
+运行服务前，先由开发人员检查改动。下面命令中的路径必须是已经确认的设备包路径：
 
-## 人工审查生成结果
+```bash
+git -C "$DEVICE_PACKAGE_ROOT" status --short
+git -C "$DEVICE_PACKAGE_ROOT" diff
+```
 
-在接受修改前，至少核对以下内容：
+至少确认：
 
-- Git diff 只包含目标设备包文件，没有删除用户改动、写入密钥或夹带构建产物；
-- distribution、import package、`package.yaml` 和 `community.*` 身份一致；
-- 启动图 中的实例、端点、父子关系和配置来自用户设备包事实；
-- Action 参数名、类型、单位、默认值、超时和结果与 Driver 一致；
-- real/simulator 的动作与 topic 合同一致，差异只在传输和配置；
-- Workflow 使用 启动图 实例 ID，节点 UUID 稳定，物料身份和输入绑定没有被复制或猜测；
-- dry-run、模拟器和真机证据被明确分开，失败与未知结果有恢复说明。
+- 修改只发生在目标设备包，没有覆盖其他人的工作；
+- 没有密钥、令牌、生产地址或个人信息；
+- `pyproject.toml`、Python 包目录和 `package.yaml` 使用同一包身份；
+- 动作名称、参数、类型、单位、返回值和状态符合需求卡；
+- 真实驱动与模拟器使用相同的动作合同；
+- 启动图中的实例和连接配置有明确来源；
+- 工作流没有复制其他项目的现场 UUID、地址或物理布局。
 
-AI 生成的 README、注释和测试也可能复述错误假设。审查时应回到当前代码、供应商协议、地址表、活动 启动图 和现场验收记录，而不是用生成文本证明生成文本正确。
+有任何现场事实无法确认时，停止验收，回到需求卡补充。
 
-## 继续走产品验收门
+## 第五步：按验证门检查
 
-生成完成后，按设备包教程中的[四道验证门](workspace.md#步骤五通过四道验证门)继续验收：
+先激活当前安装使用的环境，并确认 Python 来源：
 
-1. [验证门一：依赖与 Python 包](workspace.md#验证门一依赖与-python-包)，确认依赖、导入包和 Python 语法。
-2. [验证门二：设备包目录与合同](workspace.md#验证门二设备包目录与合同)，确认包身份、设备、物料和工作流清单。
-3. [验证门三：构建交付物](workspace.md#验证门三构建交付物)，防止本地可用但发布包缺少文件。
-4. [验证门四：安全加载工作区](workspace.md#验证门四安全加载工作区)，只用 `dry-run + develop` 核对 Uni-Lab OS 整体状态、设备连接与工作流。
+```bash
+mamba activate unilab
+export UNILAB_ROOT="/absolute/path/to/Uni-Lab-OS"
+export DEVICE_PACKAGE_ROOT="/absolute/path/to/user-device-package"
+cd "$DEVICE_PACKAGE_ROOT"
 
-四道门全部通过，也只证明设备包可被安全模式发现、编译和加载。连接隔离模拟器、PLC-Sim 或真机前，继续执行同页的运行边界，并分别记录模拟器与物理见证证据。
+python -c 'import sys, unilabos; print(sys.executable); print(unilabos.__file__)'
+python -m pip show unilabos
+```
 
-## 失败与回退
+### 验证门一：依赖和 Python 包
+
+```bash
+python -m pip install -e '.[dev]'
+python -m pip check
+python -m compileall <实际的_Python_包目录>
+```
+
+尖括号中的内容必须替换为 `pyproject.toml` 中登记并实际存在的 Python 包目录。不要直接复制占位符执行。
+
+### 验证门二：设备包目录与合同
+
+```bash
+unilab package inspect \
+  --path "$DEVICE_PACKAGE_ROOT" \
+  --out "$DEVICE_PACKAGE_ROOT/dist/inspect"
+```
+
+报告中不能有语法错误、重复 ID、重复 UUID、缺失源文件或无法解析的类型。
+
+### 验证门三：构建交付物
+
+```bash
+unilab package build \
+  --path "$DEVICE_PACKAGE_ROOT" \
+  --out "$DEVICE_PACKAGE_ROOT/dist/build"
+```
+
+检查 wheel、Catalog 和设备包需要的配置、模型及图片是否都进入交付物。构建成功不代表设备已连接。
+
+### 验证门四：安全加载
+
+只有需求卡明确允许启动本地组件时才执行，并将启动图替换为设备包中真实存在的模拟或隔离测试文件：
+
+```bash
+unilab workspace start \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --graph deployment/graphs/<实际的测试启动图>.json \
+  --runtime-mode dry-run \
+  --startup-mode develop \
+  --wait 300 \
+  --json
+
+unilab workspace status \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --json
+
+unilab workspace stop \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --wait 300 \
+  --json
+```
+
+`dry-run` 只证明 Uni-Lab OS 能在安全模式发现和加载设备包，不能证明通信、联锁、急停或物理动作正确。
+
+## 如何写验收结论
+
+| 已取得的证据 | 可以得出的结论 | 不能得出的结论 |
+| --- | --- | --- |
+| Python 编译成功 | 源码可解析 | 设备包合同正确 |
+| `package inspect` 成功 | 包结构和静态合同可检查 | 运行时或真机正常 |
+| 测试及 `package build` 成功 | 已覆盖测试通过，交付物可生成 | 所有现场场景都已覆盖 |
+| Workspace `dry-run` 成功 | 产品可安全发现并加载设备包 | 模拟器或真机已经通过 |
+| 隔离模拟器通过 | 指定的模拟行为通过 | 真实硬件和联锁正确 |
+| 受控真机验收通过 | 记录中覆盖的硬件场景通过 | 未验收的型号或工况也通过 |
+
+推荐写法是：“已通过 Package 检查、构建和 dry-run，真机未验收。”不要只写“设备包已完成”。
+
+## 常见失败
 
 | 现象 | 处理方式 |
 | --- | --- |
-| Workbench 没有 Agent 入口 | 确认使用本地 Theia Workbench，而不是 Uni-Lab OS 业务页面；改按手工设备包教程继续 |
-| Agent 显示启动失败 | 在环境管理器查看 Agent 日志，核对本地 Agent 载荷与 Workspace 可写性，再重试 |
-| Skill 文件不存在 | 重启所选 Workspace 的 Agent；仍缺失时更新或修复 Workbench，不让 Agent 凭记忆生成 |
-| Skill 没有随新版更新 | 检查目标 Skill 目录是否有用户修改；保留定制副本，人工比较新版后合并 |
-| AI 修改方向错误 | 停止 Agent，检查 Git diff，回退本轮目标文件，再用更完整需求卡重新开始 |
-| 某道验证门失败 | 保留原始诊断，从最早失败层修复；不要跳到 Workbench 或真机掩盖错误 |
-| 只有仿真通过 | 标记为模拟证据，保持真机未验收，不切换 `normal` |
+| 找不到 Skill | 确认 `$UNILAB_ROOT` 指向当前 Uni-Lab OS 源码仓库，再检查上文列出的实际文件路径 |
+| `ModuleNotFoundError` | 核对 `sys.executable` 和 `unilabos.__file__`，切换到实际 Uni-Lab 环境 |
+| `package inspect` 失败 | 从第一条错误开始修复包名、清单、源码、UUID 或注册信息 |
+| 构建后缺文件 | 补充 `pyproject.toml` 的 package data 配置，再重新构建和检查 wheel |
+| dry-run 成功、真机失败 | 单独检查协议、地址、超时、联锁和硬件状态，不把 dry-run 当真机证据 |
 
-如果没有可用 Agent，产品主路径不受影响。可以完全按照[工作区](workspace.md)手工实现，再使用[用 AI 编写工作流](ai-workflow-authoring.md)中的审查提示词辅助后续工作流。
-
-## 当前边界
-
-- 该 Skill 只随本地 Workbench Agent 使用，Uni-Lab OS 业务页面没有对应入口。
-- 它是可修改代码的 Coding Agent 指南，不是服务器端建仓 API，也不是无人值守流水线。
-- `evals/evals.json` 目前只记录场景提示词和期望输出，不是这些场景已经运行或通过的证明。
-- Skill 不提供实验室事实、供应商保证、物理联锁或硬件见证，不能据此声明生产就绪。
-- 生成设备包仍必须通过 Package、Registry、Catalog、Authoring、模拟器和所需硬件的分层验收。
+设备包每个文件的职责和完整验证要求见[工作区](workspace.md)；单个设备驱动的业务模板见[设备接入模板](device-template.md)。

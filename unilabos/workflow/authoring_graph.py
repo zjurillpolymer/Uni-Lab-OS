@@ -44,6 +44,7 @@ from unilabos.workflow.composite import CompositeAuthoring, CompositeExpansion
 from unilabos.workflow.composite_compatibility import (
     classify_pinned_published_workflow_invocation,
 )
+from unilabos.workflow.composite_graph_rewrite import merge_expanded_resource_scopes
 from unilabos.workflow.material_graph_validation import (
     MaterialGraphValidationError,
     validate_material_graph_projection,
@@ -105,6 +106,13 @@ def build_candidate_graph(
         catalog=catalog,
     )
     compatible_catalog_replacements: set[str] = set()
+    composite_scope_expansions: list[
+        tuple[
+            str,
+            tuple[str, ...],
+            tuple[Mapping[str, Any], ...],
+        ]
+    ] = []
     disabled_node_uuids = set(program.disabled_node_uuids)
     declarations_by_result = {
         declaration.result_name: declaration for declaration in program.actions
@@ -244,6 +252,16 @@ def build_candidate_graph(
             ]
             nodes.extend(internal_nodes)
             edges.extend(deepcopy(list(expansion.edges)))
+            composite_scope_expansions.append(
+                (
+                    declaration.node_uuid,
+                    (
+                        declaration.node_uuid,
+                        *(str(node["uuid"]) for node in internal_nodes),
+                    ),
+                    expansion.resource_scopes,
+                )
+            )
             for expanded_node in [invocation, *internal_nodes]:
                 try:
                     expanded_action = catalog.require_template(
@@ -434,8 +452,38 @@ def build_candidate_graph(
         root_fields.add("meta_data")
     if program.workflow_type is not None:
         root_fields.add("workflow_type")
+    if program.root_resources:
+        unilab_meta["resources"] = list(program.root_resources)
+        root_fields.add("resources")
+    elif "resources" in root_fields:
+        unilab_meta.pop("resources", None)
+        root_fields.discard("resources")
+    parent_resource_scopes = [
+        {
+            "scope_id": scope.scope_id,
+            "kind": "with",
+            "resources": list(scope.resources),
+            "parent_scope_id": scope.parent_scope_id,
+            "entry_node_uuid": scope.entry_node_uuid,
+            "exit_node_uuid": scope.exit_node_uuid,
+            "node_uuids": list(scope.node_uuids),
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        }
+        for scope in program.resource_scopes
+    ]
+    resource_scopes = merge_expanded_resource_scopes(
+        parent_resource_scopes,
+        nested_invocations=composite_scope_expansions,
+    )
+    if resource_scopes:
+        unilab_meta["resource_scopes"] = list(resource_scopes)
+    else:
+        unilab_meta.pop("resource_scopes", None)
     if root_fields:
         unilab_meta["authoring_root_fields"] = sorted(root_fields)
+    else:
+        unilab_meta.pop("authoring_root_fields", None)
     unilab_meta.update(
         {
             "authoring_function_name": program.function_name,

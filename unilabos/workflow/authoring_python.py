@@ -234,6 +234,12 @@ def render_authoring_python(
         if _is_repeat_until(control_scan_catalog[str(node["uuid"])])
     ]
     marker_imports = "device, workflow"
+    workflow_unilab = (workflow.get("meta_data") or {}).get("unilab", {})
+    has_resource_scopes = isinstance(workflow_unilab, Mapping) and bool(
+        workflow_unilab.get("resources") or workflow_unilab.get("resource_scopes")
+    )
+    if has_resource_scopes:
+        marker_imports += ", resources"
     if group_nodes:
         marker_imports += ", group"
         if any(_parallel_scope(node) is not None for node in group_nodes):
@@ -296,6 +302,17 @@ def render_authoring_python(
         ]
     )
     root_fields = _authoring_root_fields(workflow)
+    if "resources" in root_fields:
+        raw_resources = (
+            workflow_unilab.get("resources")
+            if isinstance(workflow_unilab, Mapping)
+            else None
+        )
+        if not isinstance(raw_resources, list) or not raw_resources:
+            raise AuthoringGraphError(
+                "candidate_invalid", "工作流根 resources 创作元数据无效"
+            )
+        lines.append(f"    resources={tuple(str(value) for value in raw_resources)!r},")
     if "tags" in root_fields:
         lines.append(f"    tags={_stable_python_json(workflow.get('tags') or [])!r},")
     if "meta_data" in root_fields:
@@ -553,6 +570,15 @@ def render_authoring_python(
         lines.append(f"    return {{{rendered_values}}}")
     else:
         lines.append("    return workflow_output()")
+    _apply_resource_scope_sources(
+        lines=lines,
+        source_map=source_map,
+        resource_scopes=(
+            workflow_unilab.get("resource_scopes", [])
+            if isinstance(workflow_unilab, Mapping)
+            else []
+        ),
+    )
     return RenderedAuthoringSource(
         python_source="\n".join(lines).rstrip() + "\n",
         source_map=source_map,
@@ -646,6 +672,99 @@ def _append_quantity_requirement_sources(
         lines.append(f"    quantity_requirement({', '.join(arguments)})")
 
 
+def _apply_resource_scope_sources(
+    *,
+    lines: list[str],
+    source_map: list[dict[str, Any]],
+    resource_scopes: Any,
+) -> None:
+    """把候选图中的资源范围包回确定性 Python 源码。
+
+    资源范围不拥有执行节点；此处仅按入口/出口节点的源码映射插入词法上下文，
+    同时修正后续 UTF-16 行号。资源范围必须覆盖可定位的真实节点，未知范围由
+    候选图编译阶段失败关闭。
+    """
+
+    if not isinstance(resource_scopes, list) or not resource_scopes:
+        return
+    positions = {
+        str(item.get("workflow_node_uuid")): item
+        for item in source_map
+        if isinstance(item, Mapping) and item.get("workflow_node_uuid")
+    }
+    # 组合子作用域由被调用实验操作的源码拥有；父源码只保留调用表达式，不能把
+    # 子图节点反向渲染成第二份 ``with resources(...)``。下一轮静态展开会按
+    # provenance 字段从同一冻结合同确定性恢复这些派生作用域。
+    scopes = [
+        item
+        for item in resource_scopes
+        if isinstance(item, Mapping)
+        and item.get("composite_invocation_uuid") is None
+    ]
+
+    parent_by_scope = {
+        str(item.get("scope_id")): str(item.get("parent_scope_id"))
+        for item in scopes
+        if item.get("scope_id")
+    }
+
+    def scope_depth(scope: Mapping[str, Any]) -> int:
+        """返回词法作用域深度；同一入口时父范围必须先插入。"""
+
+        depth = 0
+        current = str(scope.get("scope_id") or "")
+        seen: set[str] = set()
+        while current and current not in seen:
+            seen.add(current)
+            parent = parent_by_scope.get(current, "")
+            if not parent:
+                break
+            depth += 1
+            current = parent
+        return depth
+
+    scopes.sort(
+        key=lambda item: (
+            -int(positions.get(str(item.get("entry_node_uuid")), {}).get("start_line", 0)),
+            scope_depth(item),
+            int(positions.get(str(item.get("exit_node_uuid")), {}).get("end_line", 0)),
+        )
+    )
+    for scope in scopes:
+        aliases = scope.get("resources") or scope.get("resource_aliases")
+        entry_uuid = str(scope.get("entry_node_uuid") or "")
+        exit_uuid = str(scope.get("exit_node_uuid") or "")
+        entry = positions.get(entry_uuid)
+        exit_item = positions.get(exit_uuid)
+        if (
+            not isinstance(aliases, list)
+            or not aliases
+            or entry is None
+            or exit_item is None
+        ):
+            raise AuthoringGraphError(
+                "candidate_invalid", "资源作用域缺少可恢复的入口/出口节点"
+            )
+        if any(not isinstance(alias, str) or not alias.strip() for alias in aliases):
+            raise AuthoringGraphError("candidate_invalid", "资源作用域别名无效")
+        start_line = int(entry["start_line"]) - 1
+        end_line = int(exit_item["end_line"]) - 1
+        if start_line < 0 or end_line < start_line or end_line >= len(lines):
+            raise AuthoringGraphError("candidate_invalid", "资源作用域源码范围无效")
+        indentation = lines[start_line][: len(lines[start_line]) - len(lines[start_line].lstrip())]
+        for index in range(start_line, end_line + 1):
+            lines[index] = "    " + lines[index]
+        lines.insert(
+            start_line,
+            indentation + f"with resources({', '.join(repr(str(alias)) for alias in aliases)}):",
+        )
+        for item in source_map:
+            for field in ("start_line", "end_line"):
+                value = int(item[field])
+                if value - 1 >= start_line:
+                    item[field] = value + 1
+
+
 def _public_workflow_meta_data(workflow: Mapping[str, Any]) -> dict[str, Any]:
     """返回可由领域 Python 源码拥有的工作流公开元数据。"""
 
@@ -659,7 +778,8 @@ def _authoring_root_fields(workflow: Mapping[str, Any]) -> set[str]:
     """读取由领域 Python 明确拥有的可选工作流根字段。
 
     参数：``workflow`` 是当前完整图中的工作流根投影。返回：允许生成器写回的
-    ``tags``、``meta_data``、``workflow_type`` 子集；旧图未声明所有权时为空。
+    ``tags``、``meta_data``、``workflow_type``、``resources`` 子集；旧图未声明
+    所有权时为空。
     异常：无；畸形元数据按未声明处理，不把运行派生字段写入作者源码。
     """
 
@@ -671,7 +791,9 @@ def _authoring_root_fields(workflow: Mapping[str, Any]) -> set[str]:
     if not isinstance(values, list):
         return set()
     return {
-        value for value in values if value in {"tags", "meta_data", "workflow_type"}
+        value
+        for value in values
+        if value in {"tags", "meta_data", "workflow_type", "resources"}
     }
 
 

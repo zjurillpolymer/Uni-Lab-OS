@@ -37,6 +37,8 @@ requirements:
   - ninja
   - setuptools
   - cython
+  # ROS Humble rosidl_adapter still requires empy 3.x (BUFFERED_OPT).
+  - empy >=3.3.4,<4
   - cmake
   - if: unix
     then:
@@ -51,6 +53,7 @@ requirements:
   host:
   - numpy
   - pip
+  - empy >=3.3.4,<4
   - if: build_platform == target_platform
     then:
     - pkg-config

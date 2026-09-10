@@ -22,12 +22,15 @@ WORKFLOW_SPEC_COMPILATION_CODES = frozenset(
         "invalid_job_param",
         "invalid_job_snapshot",
         "invalid_node_identity",
+        "invalid_resource_plan",
         "invalid_task_identity",
         "invalid_task_snapshot",
         "invalid_workflow_snapshot",
         "job_node_identity_mismatch",
         "missing_workflow_node_job",
+        "resource_plan_unbound",
         "unsupported_executor_kind",
+        "unsupported_execution_plan_capability",
     }
 )
 

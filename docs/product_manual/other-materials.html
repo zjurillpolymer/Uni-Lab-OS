@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="3. 启动文件" href="startup-files.html"><link rel="prev" title="物料状态、条码与内容物" href="material-state.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>其他可追踪物料 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>其他可追踪物料<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>其他可追踪物料<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -369,7 +371,7 @@
 </div>
 <p>盖板、封膜底座等整体搬运的物料可以使用 <code class="docutils literal notranslate"><span class="pre">Container</span></code>；自身还能放置另一件物料的底座，则使用带一个放置位的 <code class="docutils literal notranslate"><span class="pre">ItemizedCarrier</span></code>。这样系统可以自动判断物料能否放入，而不是只在备注里写“其他物料”。</p>
 <section id="id2">
-<h2>1. 根据实际用途选择类型<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>1. 根据实际用途选择类型<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -398,26 +400,26 @@
 </div>
 </section>
 <section id="id3">
-<h2>2. 登记不能承载其他物料的对象<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>2. 登记不能承载其他物料的对象<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Container</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">resource</span>
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_plate_cover"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"My Lab 孔板盖"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"my_lab"</span><span class="p">,</span> <span class="s2">"labware"</span><span class="p">,</span> <span class="s2">"plate_cover"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"可独立取放和追踪的孔板盖；不承载液体。"</span><span class="p">,</span>
-    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"reusable"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"model_accuracy"</span><span class="p">:</span> <span class="s2">"layout_only"</span><span class="p">},</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_plate_cover&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;My Lab 孔板盖&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_lab&quot;</span><span class="p">,</span> <span class="s2">&quot;labware&quot;</span><span class="p">,</span> <span class="s2">&quot;plate_cover&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;可独立取放和追踪的孔板盖；不承载液体。&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;reusable&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;model_accuracy&quot;</span><span class="p">:</span> <span class="s2">&quot;layout_only&quot;</span><span class="p">},</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MyLabPlateCover</span><span class="p">(</span><span class="n">Container</span><span class="p">):</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"my-lab-plate-cover"</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;my-lab-plate-cover&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="fm">__init__</span><span class="p">(</span>
             <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
             <span class="n">size_x</span><span class="o">=</span><span class="mf">127.76</span><span class="p">,</span>
             <span class="n">size_y</span><span class="o">=</span><span class="mf">85.48</span><span class="p">,</span>
             <span class="n">size_z</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span>
-            <span class="n">category</span><span class="o">=</span><span class="s2">"plate_cover"</span><span class="p">,</span>
+            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;plate_cover&quot;</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
         <span class="p">)</span>
 </pre></div>
@@ -425,7 +427,7 @@
 <p>如果对象没有容量，可以选择普通 <code class="docutils literal notranslate"><span class="pre">Resource</span></code> 类型；应优先使用当前系统版本能够稳定保存和读取的最接近类型。</p>
 </section>
 <section id="id4">
-<h2>3. 登记带一个放置位的转接底座<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>3. 登记带一个放置位的转接底座<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">collections</span><span class="w"> </span><span class="kn">import</span> <span class="n">OrderedDict</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coordinate</span><span class="p">,</span> <span class="n">ResourceHolder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.resources.itemized_carrier</span><span class="w"> </span><span class="kn">import</span> <span class="n">ItemizedCarrier</span>
@@ -433,14 +435,14 @@
 
 <span class="k">def</span><span class="w"> </span><span class="nf">make_adapter_base</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">ItemizedCarrier</span><span class="p">:</span>
     <span class="n">holder</span> <span class="o">=</span> <span class="n">ResourceHolder</span><span class="p">(</span>
-        <span class="n">name</span><span class="o">=</span><span class="s2">"slot"</span><span class="p">,</span>
+        <span class="n">name</span><span class="o">=</span><span class="s2">&quot;slot&quot;</span><span class="p">,</span>
         <span class="n">size_x</span><span class="o">=</span><span class="mf">127.76</span><span class="p">,</span>
         <span class="n">size_y</span><span class="o">=</span><span class="mf">85.48</span><span class="p">,</span>
         <span class="n">size_z</span><span class="o">=</span><span class="mf">5.0</span><span class="p">,</span>
         <span class="n">child_location</span><span class="o">=</span><span class="n">Coordinate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="mf">5.0</span><span class="p">),</span>
     <span class="p">)</span>
     <span class="n">holder</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_96_well_assay_plate"</span><span class="p">],</span>
+        <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_96_well_assay_plate&quot;</span><span class="p">],</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">ItemizedCarrier</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
@@ -450,15 +452,15 @@
         <span class="n">num_items_x</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">num_items_y</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
         <span class="n">num_items_z</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
-        <span class="n">sites</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">({</span><span class="s2">"A1"</span><span class="p">:</span> <span class="n">holder</span><span class="p">}),</span>
-        <span class="n">category</span><span class="o">=</span><span class="s2">"plate_adapter"</span><span class="p">,</span>
+        <span class="n">sites</span><span class="o">=</span><span class="n">OrderedDict</span><span class="p">({</span><span class="s2">&quot;A1&quot;</span><span class="p">:</span> <span class="n">holder</span><span class="p">}),</span>
+        <span class="n">category</span><span class="o">=</span><span class="s2">&quot;plate_adapter&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <p>用 <code class="docutils literal notranslate"><span class="pre">&#64;resource</span></code> 为该工厂补充稳定 ID、类别、显示名称和描述。底座与板的关系由 放置位 表达，不要只写在 <code class="docutils literal notranslate"><span class="pre">metadata</span></code> 备注中。</p>
 </section>
 <section id="id5">
-<h2>4. 补充信息中可以写什么<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>4. 补充信息中可以写什么<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>可以在 <code class="docutils literal notranslate"><span class="pre">metadata</span></code> / <code class="docutils literal notranslate"><span class="pre">unilabos_extra</span></code> 中记录模型精度、供应商代码、外部系统物料类型码、视觉颜色和 放置位 角色，但这些数据应：</p>
 <ul class="simple">
 <li><p>能保存为标准 JSON 数据；</p></li>
@@ -470,7 +472,7 @@
 <p>外部物料类型码/ID可以合并到 <code class="docutils literal notranslate"><span class="pre">unilabos_extra</span></code>，并为代理模型记录来源和精度。这类映射适合放在设备包边界，便于与外部系统互操作。</p>
 </section>
 <section id="id6">
-<h2>5. 交付前必须检查<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>5. 交付前必须检查<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>已确认标准物料类确实不能表达该对象；</p></li>
 <li><p>资源 ID、类别、包络和用途清楚且稳定；</p></li>
@@ -556,10 +558,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

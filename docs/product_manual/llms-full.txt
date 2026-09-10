@@ -11,7 +11,7 @@ Source: /index.md
 产品定位、业务能力和核心对象统一见[认识 Uni-Lab OS](overview.md)。本页只用于选择适合当前任务的阅读入口。
 
 <div class="manual-meta">
-适用环境：通用安装与接入场景　·　手册版本：2026.09.08　·　设备包由用户准备
+适用环境：通用安装与接入场景　·　手册版本：2026.09.08　·　设备包可在安装 OS 后创建
 </div>
 
 <div class="entry-links">
@@ -25,7 +25,7 @@ Source: /index.md
 ## 从哪里开始
 
 - **已有可用环境**：先读[认识产品](overview.md)，再进入[Uni-Lab OS 快速上手](console.md)。
-- **从零建设环境**：依次完成[系统安装](installation.md) → [设备包规范与系统启动](unilabos-installation.md) → [环境与运行配置](environment.md)。
+- **从零建设环境**：先完成[系统安装](installation.md)，再下载并启动[示例设备包](demo-lab.md)，最后按[设备包规范与系统启动](unilabos-installation.md)替换为真实设备。
 - **编写设备包**：在[设备包规范与系统启动](unilabos-installation.md)中依次完成工作区、设备、物料、启动图和工作流。
 - **发布并运行**：进入[工作流发布与任务运行](workflows.md)，生产上线前完成[运行模式、安全与恢复](runtime-safety.md)和[Kubernetes 部署](deployment.md)。
 - **验收与排查**：使用[设备包验收](scenario-guide.md)、[故障排查](troubleshooting.md)和[API 使用参考](api-reference.md)。
@@ -50,6 +50,7 @@ Source: /index.md
 
 overview
 console
+示例设备包 <demo-lab>
 ```
 
 ```{toctree}
@@ -61,20 +62,21 @@ environment
 ```
 
 ```{toctree}
-:caption: 设备包开发
+:caption: 设备包开发规范
 :maxdepth: 2
 
 unilabos-installation
+使用 AI 设备包生成器（实验性） <repository-builder-skill>
+scenario-guide
 ```
 
 ```{toctree}
-:caption: 运行、部署与验收
+:caption: 环境、部署、运行
 :maxdepth: 1
 
-workflows
-runtime-safety
 deployment
-scenario-guide
+runtime-safety
+workflows
 ```
 
 ```{toctree}
@@ -253,7 +255,7 @@ Source: /console.md
 
 # Uni-Lab OS 快速上手
 
-本页介绍 Uni-Lab OS 网页的日常入口、页面状态和第一次安全体验。产品能力与对象关系见[认识 Uni-Lab OS](overview.md)；从零部署请先阅读[系统安装](installation.md)，设备包目录和配置规范见[设备包规范与系统启动](unilabos-installation.md)。
+本页介绍 Uni-Lab OS 网页的日常入口、页面状态和基本操作。产品能力与对象关系见[认识 Uni-Lab OS](overview.md)；从零部署请先阅读[系统安装](installation.md)，设备包目录和配置规范见[设备包规范与系统启动](unilabos-installation.md)。
 
 ## 打开与识别当前界面
 
@@ -318,10 +320,6 @@ Uni-Lab OS 的网页入口地址是：
 不要用浏览器刷新、重复点击或手工修改请求来“绕过”冲突。任务、库存和设备动作使用幂等键与修订检查来防止重复执行；绕过这些约束会破坏恢复依据。
 :::
 
-## 第一次安全体验
-
-完成页面和连接状态确认后，按照[第一次安全运行](quickstart.md)选择已获准的无危险动作工作流，完成预检、创建任务和结果核对。该体验只适用于已经部署并验收的环境，不代替设备接入或真机安全验收。
-
 ---
 
 Source: /installation.md
@@ -329,235 +327,184 @@ Source: /installation.md
 # 系统安装
 
 :::{admonition} 阅读角色
-- **业务负责人**：确认部署目的、设备包来源、运行环境、安全边界和成功标准。
-- **开发或运维人员**：执行安装、配置、启动、升级和故障处理。
-- **验收人员**：核对版本、运行状态、失败路径、安全配置和回滚能力。
+- **首次使用者**：先安装并验证 Uni-Lab OS，再创建自己的第一个设备包。
+- **开发或运维人员**：选择安装方式，维护环境、源码版本和启动配置。
+- **验收人员**：确认安装来源、版本、初始 `dry-run` 和停止流程均可追溯。
 :::
 
-本页说明如何在一台新的 Mac 上安装 Uni-Lab OS，并加载用户自行准备的设备包。设备包决定现场有哪些设备、物料、启动图和可选仿真组件，因此安装系统后必须先检查设备包配置，再决定怎样启动。
+本页按“**安装 Uni-Lab OS → 下载示例设备包 → 启动示例**”的顺序操作。安装系统时不要求用户提前准备设备包；OS 命令可用后，再下载带有示例驱动、示例工作流和安全启动图的 `demo-lab` 设备包。
 
 :::{important}
-Uni-Lab OS 是通用运行基础；设备包由用户自行准备，不随本页提供。示例中的目录、端口和名称都是占位符，必须替换为用户设备包中已经确认的配置。第一次启动建议使用模拟设备或隔离测试环境。
+第一次启动固定使用示例设备包自带的 `dry-run` 启动图。它只用于验证 OS、设备包发现和工作流加载，不连接真实设备，也不能代替真机安全验收。
 :::
 
-## 1. 安装前需要用户提供什么
+## 1. 选择安装路径
 
-| 内容 | 用途 | 必须确认 |
+系统规划下面两条安装路径；当前请使用可用的源码安装路径：
+
+| 路径 | 适合谁 | 得到什么 |
 | --- | --- | --- |
-| 设备包目录或发布文件 | 提供设备、物料和工作流 | 来源可信、版本明确、文件完整 |
-| `package.yaml` | 声明设备包身份和可发布内容 | 文件存在且能通过检查 |
-| 启动图（Graph JSON） | 声明本次启动的设备与物料实例 | 使用模拟、测试还是真实配置 |
-| Python 版本与依赖 | 创建兼容运行环境 | 与 Uni-Lab OS 版本兼容 |
-| 可选仿真器 | 模拟 PLC 或其他外部设备 | 仅在设备包确实需要时安装 |
-| 连接配置 | 串口、IP、端口、超时等 | 测试和生产配置分开 |
-| 密钥提供方式 | API 令牌、账号、证书 | 不写入代码、启动图 或文档 |
+| **一键安装包（暂无法提供）** | 首次体验、演示和不修改 OS 源码的用户 | 已打包的 Uni-Lab OS 运行环境、命令行和操作页面 |
+| **Conda/Mamba + `unilabos-env` + 源码** | 需要创建设备包、开发驱动或修改 OS 的用户 | ROS/Python 依赖、可编辑源码，以及仓库内置的轻量操作页面 |
 
-如果用户还没有设备包，请先完成[工作区初始化](workspace-init.md)和[设备接入模板](device-template.md)，再返回本页。
+`unilabos-full` 等仿真和可视化环境不是默认安装路径。确实需要 Gazebo、RViz 或 MoveIt 时，再按[环境与运行配置](environment.md)选择。
 
-## 2. 系统要求
+## 2. 安装前检查
 
-| 项目 | 建议要求 |
+| 项目 | 要求 |
 | --- | --- |
-| 操作系统 | macOS 10.15 或更高版本 |
-| Python | 用户设备包指定的 3.11.x |
-| Node.js | 前端所要求的版本 |
+| 操作系统 | Windows 10/11、Ubuntu 20.04+ 或 macOS 10.15+ |
+| Python | 安装路径会准备兼容的 Python 3.11 环境 |
 | 磁盘空间 | 至少 10 GB 可用空间 |
-| 网络 | 能访问团队提供的软件源 |
-| Docker | 只有设备包配置明确要求时才安装 |
+| 网络 | 源码安装时能访问 Conda 软件源和 Git 仓库 |
+| Conda/Mamba | 两条路径都需要；推荐安装带 `mamba` 的 Miniforge |
+| 设备包 | **不需要提前准备**，安装 OS 后再创建 |
 
-## 3. 安装基础工具
+如果终端中已经能执行 `conda --version` 或 `mamba --version`，直接选择下一节的一条路径。否则先安装 Miniforge，并重新打开终端。
 
-### 3.1 Xcode Command Line Tools
-
-```bash
-xcode-select --install
-```
-
-系统提示已经安装时可以继续，否则等待安装完成。
-
-### 3.2 Homebrew、Git、jq、Node.js 和 Miniforge
-
-先按 Homebrew 官方说明完成安装，再执行：
-
-```bash
-brew install git jq node@24
-brew link --overwrite --force node@24
-brew install --cask miniforge
-```
-
-初始化 Miniforge：
-
-```bash
-MINIFORGE_ROOT="$(brew --prefix)/Caskroom/miniforge/base"
-export PATH="$MINIFORGE_ROOT/bin:$MINIFORGE_ROOT/condabin:$PATH"
-"$MINIFORGE_ROOT/condabin/conda" init zsh
-exec zsh
-```
-
-检查工具：
-
-```bash
-git --version
-jq --version
-node --version
-npm --version
-mamba --version
-```
-
-每条命令都能显示版本号后再继续。
-
-## 4. 准备系统和用户设备包
-
-```bash
-mkdir -p "$HOME/unilab-workspace"
-export UNILAB_INSTALL_ROOT="$HOME/unilab-workspace"
-export OS_ROOT="$UNILAB_INSTALL_ROOT/unilab-os"
-export DEVICE_PACKAGE_ROOT="$UNILAB_INSTALL_ROOT/device-package"
-export ENV_NAME="unilab"
-```
-
-把团队提供的 Uni-Lab OS 放入 `OS_ROOT`，把用户自己的设备包放入 `DEVICE_PACKAGE_ROOT`。可以从受控代码源下载，也可以解压正式发布文件；文档和共享脚本中不要保存内部下载地址或访问令牌。
-
-检查必要文件：
-
-```bash
-test -f "$OS_ROOT/pyproject.toml" || echo "缺少 Uni-Lab OS"
-test -f "$DEVICE_PACKAGE_ROOT/pyproject.toml" || echo "缺少设备包 pyproject.toml"
-test -f "$DEVICE_PACKAGE_ROOT/package.yaml" || echo "缺少设备包 package.yaml"
-```
-
-## 5. 先识别设备包需要哪些组件
-
-不要直接套用某个固定启动命令。先检查用户设备包中的 `package.yaml`、启动图、README 和部署配置，填写下面的启动确认表：
-
-| 检查项 | 判断方法 | 对安装的影响 |
-| --- | --- | --- |
-| 包内有 `virtual`/`mock` 设备 | 启动图 的 `class` 指向模拟类型 | 通常不需要外部仿真器 |
-| 启动图 包含 PLC/OPC UA | 节点配置含 PLC 或 OPC UA 地址 | 需要真实 PLC 或匹配的仿真器 |
-| 启动图 包含串口设备 | `config` 含 `port`、`baudrate` | 需要线缆、端口权限或串口模拟器 |
-| 启动图 包含网络/API 设备 | `config` 含服务地址 | 需要服务可达、认证和 TLS 配置 |
-| 设备包包含前端扩展 | 包配置明确声明 | 按设备包说明构建对应扩展 |
-| 设备包要求额外进程 | 部署配置列出组件 | 安装并记录启动、停止和健康检查方式 |
-| 启动图 指向真实设备 | 地址和实例属于现场生产配置 | 只能在受控现场按真机流程启动 |
+## 3. 路径一：使用一键安装包
 
 :::{warning}
-设备包中出现某个配置字段，不代表可以猜测其值。缺少 启动图、点位表、端口、证书或仿真器时，应停止在静态检查阶段并向用户索取，不能从其他设备包复制。
+**一键安装包暂无法提供。** 当前请使用第 4 节“安装 `unilabos-env` 后拉取源码”的方式安装 Uni-Lab OS。
 :::
 
-## 6. 确认设备包的目录和配置
+一键安装包适合最快完成首次体验。它已经包含 Uni-Lab OS 运行环境，不需要先克隆仓库或寻找设备包。
 
-安装阶段只核对交付是否完整，不在这里重新定义设备包目录、启动图 字段或工作流格式。完整规范统一见[设备包规范与系统启动](unilabos-installation.md)。
+### 3.1 获取对应平台的安装包
 
-安装人员需要确认以下内容：
+从交付方取得最新的一键安装包；使用公开构建时，可进入 [GitHub Actions - Conda Pack Build](https://github.com/deepmodeling/Uni-Lab-OS/actions/workflows/conda-pack-build.yml)，选择最新的成功构建并下载对应平台的 Artifact：
 
-| 检查项 | 合格条件 |
-| --- | --- |
-| 包入口 | `pyproject.toml` 存在，Python 版本和依赖要求明确 |
-| 发布清单 | `package.yaml` 存在，登记的工作流源文件可以找到 |
-| 启动图 | 设备包负责人明确指出本次使用的模拟、联调或生产 启动图 |
-| 连接参数 | IP、端口、串口和超时来自现场交付表，不使用猜测值 |
-| 敏感信息 | 账号、令牌和证书通过环境变量或密钥系统提供 |
-| 附加组件 | 需要仿真器或厂商服务时，提供版本、启动、检查和停止方法 |
+- Windows：`unilab-pack-win-64-<branch>.zip`
+- macOS Intel：`unilab-pack-osx-64-<branch>.tar.gz`
+- macOS Apple Silicon：`unilab-pack-osx-arm64-<branch>.tar.gz`
+- Linux：`unilab-pack-linux-64-<branch>.tar.gz`
 
-设备包交付不完整时，应记录缺失项并退回补充。安装人员不能自行编造设备类型、协议点位、物料尺寸、安全范围或生产地址。
+GitHub Actions 下载的 Artifact 可能还有一层 ZIP 包装；先解开外层 ZIP，再使用里面的平台安装包和安装脚本。
 
-## 7. 创建 Python 环境
+### 3.2 解压并安装
+
+macOS 或 Linux：
 
 ```bash
-mamba create -n "$ENV_NAME" \
-  --override-channels \
-  -c uni-lab \
-  -c robostack-staging \
-  -c conda-forge \
-  python=3.11.14 \
-  "uni-lab::unilabos-env=0.11.4" \
-  -y
+tar -xzf unilab-pack-<platform>-<branch>.tar.gz
+cd unilab-pack-<platform>-<branch>
+bash install_unilab.sh
+conda activate unilab
 ```
 
-本页采用源码安装路径，因此使用 `unilabos-env` 准备 Python/ROS 依赖，再在下一步安装 Uni-Lab OS 源码。如果设备包锁定了其他精确版本，必须先确认它与 Uni-Lab OS 兼容，不能只修改其中一个版本。
+Windows 解压 ZIP 后，双击 `install_unilab.bat`，或在命令行执行：
 
-## 8. 安装 Uni-Lab OS 和用户设备包
-
-```bash
-mamba run -n "$ENV_NAME" \
-  python "$OS_ROOT/scripts/dev_install.py" --use-pip
-
-mamba run -n "$ENV_NAME" \
-  python -m pip install -e "$DEVICE_PACKAGE_ROOT"
+```batch
+install_unilab.bat
+conda activate unilab
 ```
 
-执行设备包检查：
+安装脚本会找到本机 Conda、把预打包环境安装为 `unilab`，并完成 `conda-unpack`。已有同名环境时先确认是否允许替换，不要误删仍在使用的环境。
+
+完成后继续执行第 5 节“验证 OS 安装”。
+
+## 4. 路径二：安装 `unilabos-env` 后拉取源码
+
+这条路径适合设备包和驱动开发。`unilabos-env` 只提供 ROS2、Python 依赖和 `uv` 等开发环境；Uni-Lab OS 本身随后从仓库以可编辑模式安装。
+
+### 4.1 安装来源与源码分支
+
+| 内容 | 安装或拉取地址 | 版本或分支 |
+| --- | --- | --- |
+| **Conda/Mamba** | [Miniforge 官方安装包](https://github.com/conda-forge/miniforge/releases/latest) | 按操作系统和 CPU 架构选择最新的 `Miniforge3` 安装包；不对应 Uni-Lab OS 分支 |
+| **`unilabos-env`** | [Anaconda.org：`uni-lab/unilabos-env`](https://anaconda.org/uni-lab/unilabos-env) | 从 `uni-lab` channel 安装；不对应 Git 分支 |
+| **Uni-Lab OS 源码** | [GitHub：`Uni-Lab-OS/Uni-Lab-OS`](https://github.com/Uni-Lab-OS/Uni-Lab-OS) | `product/durable-scheduler-kernel-v2` |
+
+Conda/Mamba 是环境管理工具，`unilabos-env` 是 Conda 环境依赖包，Uni-Lab OS 才是需要指定 Git 分支的源码仓库。三者不是同一个安装包，也不共用一个“分支”概念。
+
+### 4.2 创建并激活环境
+
+下面的 `unilabos-env` 安装方式与仓库根目录的 `README_zh.md` 保持一致：
 
 ```bash
-mamba run -n "$ENV_NAME" unilab package inspect \
-  --path "$DEVICE_PACKAGE_ROOT" \
-  --out "$UNILAB_INSTALL_ROOT/inspect-output"
+mamba create -n unilab python=3.11.14
+mamba activate unilab
+mamba install uni-lab::unilabos-env -c robostack-staging -c conda-forge
 ```
 
-检查报告必须能识别用户设备包声明的设备、物料和工作流。重复 ID、导入失败、缺失文件或无法解析的类型必须处理完再启动。
+如果使用 Conda 激活环境，也可以执行 `conda activate unilab`。后续所有命令必须在同一个 `unilab` 环境中运行。
 
-## 9. 安装前端
-
-发布包已经带有构建后前端时可以跳过。需要从源码构建时执行：
+### 4.3 克隆 `kernel-v2` 分支并安装 Uni-Lab OS
 
 ```bash
-cd "$OS_ROOT/frontend"
-npm ci
-npm test -- --run
-npm run build
+git clone \
+  --branch product/durable-scheduler-kernel-v2 \
+  --single-branch \
+  https://github.com/Uni-Lab-OS/Uni-Lab-OS.git
+cd Uni-Lab-OS
+pip install -e .
+uv pip install -r unilabos/utils/requirements.txt
 ```
 
-## 10. 选择并检查启动图
-
-从用户设备包中选择与本次目的相符的 启动图：
-
-| 目的 | 启动图 要求 |
-| --- | --- |
-| 软件功能验证 | 全部使用模拟设备，不包含真实生产地址 |
-| PLC 联调 | 指向隔离 PLC 或仿真器，点位与设备包一致 |
-| 设备集成测试 | 只包含获准参与测试的真实设备 |
-| 正式生产 | 使用经过审批和版本锁定的生产 启动图 |
+已经克隆过该仓库时，在仓库目录内更新同一分支：
 
 ```bash
-export GRAPH_FILE="$DEVICE_PACKAGE_ROOT/<GRAPH_RELATIVE_PATH>"
-test -f "$GRAPH_FILE" || echo "启动图 文件不存在"
-jq empty "$GRAPH_FILE" && echo "启动图 格式正确"
+git switch product/durable-scheduler-kernel-v2
+git pull --ff-only origin product/durable-scheduler-kernel-v2
 ```
 
-启动前确认：
+源码仓库已经包含构建好的轻量操作页面，位于 `unilabos/app/web/static/console/`，会随 Uni-Lab OS 一起提供。只使用页面时不需要执行 `npm install` 或单独启动前端；只有修改 `frontend/` 源码时，才需要 Node.js 并重新执行前端测试和构建。
 
-- 每个节点 `id` 唯一；
-- `class` 从设备包检查报告复制；
-- `config` 与设备构造参数一致；
-- 设备和物料的父子关系完整；
-- 密码和令牌通过环境变量或密钥服务提供；
-- 模拟、测试和生产地址没有混用。
+:::{note}
+`pip install -e .` 让本地源码修改立即生效；`uv pip install` 安装运行所需的 pip 依赖。以后切换仓库分支或拉取新代码时，应重新验证依赖和命令版本。
+:::
 
-## 11. 按设备包配置启动可选组件
+## 5. 验证 OS 安装
 
-只有设备包明确要求时，才启动 PLC 仿真器、厂商服务或其他进程。每个可选组件都应有：
-
-- 明确的版本和配置文件；
-- 端口和网络范围；
-- 启动、健康检查和停止命令；
-- 与 启动图 对应的连接地址；
-- 故障、超时和恢复方法。
-
-启动 PLC/OPC UA 仿真器时，先确认端口没有被占用：
+无论选择哪条路径，都先确认当前终端使用的是刚安装的环境：
 
 ```bash
-lsof -nP -iTCP:<PLC_GUI_PORT> -iTCP:<PLC_PROTOCOL_PORT> -sTCP:LISTEN
+conda activate unilab
+python -c "import unilabos; print(unilabos.__version__)"
+unilab --help
+unilab workspace --help
 ```
 
-共享仿真环境中不要修改点位、停止服务或切换配置。仿真只能验证通信和流程逻辑，不能替代真机安全验收。
+四条命令都成功，才说明 OS 已经安装。此时即使本机还没有任何用户设备包，安装也已经完成。
 
-## 12. 启动 Uni-Lab OS
+## 6. 下载并安装示例设备包
+
+当前分支尚未提供 `unilab workspace init`，不能通过命令自动生成设备包。首次体验请先下载已经准备好的示例设备包：
+
+:::{admonition} 示例文件下载
+:class: note
+
+- {download}`下载 demo-lab.zip <_static/example-package/demo-lab.zip>`
+- [查看示例设备包说明](demo-lab.md)
+:::
+
+将下载的压缩包放到准备使用的目录，解压后进入设备包：
 
 ```bash
-mamba run -n "$ENV_NAME" unilab workspace start \
+unzip demo-lab.zip
+export DEVICE_PACKAGE_ROOT="$(pwd)/demo-lab"
+cd "$DEVICE_PACKAGE_ROOT"
+```
+
+安装示例设备包并执行本地检查：
+
+```bash
+python -m pip install -e '.[dev]'
+python -m pytest -q
+unilab package inspect --path . --out dist/inspect
+```
+
+这些检查通过后，只能说明教学设备包可以被发现和静态解析，不表示任何真实设备已经接入。
+
+## 7. 以安全模式启动
+
+第一次启动显式指定示例设备包自带的启动图，避免读取其他项目或旧环境的默认配置：
+
+```bash
+unilab workspace start \
   --workspace "$DEVICE_PACKAGE_ROOT" \
   --component all \
-  --graph "$GRAPH_FILE" \
+  --graph "$DEVICE_PACKAGE_ROOT/deployment/graphs/dry-run.json" \
   --runtime-mode dry-run \
   --startup-mode develop \
   --json
@@ -566,52 +513,43 @@ mamba run -n "$ENV_NAME" unilab workspace start \
 查看状态：
 
 ```bash
-mamba run -n "$ENV_NAME" unilab workspace status \
+unilab workspace status \
   --workspace "$DEVICE_PACKAGE_ROOT" \
   --json
 ```
 
-Uni-Lab OS 显示整体就绪且设备已连接后再打开操作页面。页面地址以状态命令实际输出为准，不在文档中固定某台机器的 IP 或动态端口。
+操作页面地址以状态命令实际输出为准。源码路径安装时，页面由 Workspace Backend 直接从 `/console/` 提供，不需要再运行一个独立前端服务。
 
-启动完成后，应保存本次安装记录：Uni-Lab OS 版本、设备包版本、启动图 文件及校验值、运行模式、实际启用的附加组件和验收时间。以后升级时按这份记录比较，不能只替换其中一个组件后直接进入生产。
-
-## 13. 第一次业务验收
-
-优先选择用户设备包中专门用于验证、不会产生危险动作的工作流：
-
-1. 确认设备页中的实例、中文名称和状态正确；
-2. 确认动作参数有单位、范围和清楚的填写说明；
-3. 执行“运行准备”或预检；
-4. 使用明确的测试参数创建任务；
-5. 查看每个步骤和最终结果；
-6. 验证参数越界、设备离线和超时的失败路径。
-
-如果设备包没有安全的测试工作流，不要随意选择生产工作流代替。应先由设备包作者补充模拟或只读验证路径。
-
-## 14. 停止服务
+如果启动失败，先查看组件日志，不要改用真实设备配置反复尝试：
 
 ```bash
-mamba run -n "$ENV_NAME" unilab workspace stop \
+unilab workspace logs \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --component backend \
+  --json
+```
+
+结束体验后停止工作区：
+
+```bash
+unilab workspace stop \
   --workspace "$DEVICE_PACKAGE_ROOT" \
   --component all \
   --json
 ```
 
-如使用外部仿真器或厂商服务，应先停止 Uni-Lab OS，再按用户设备包规定的顺序关闭其他组件。
+## 8. 从示例转为真实设备包
 
-## 15. 常见问题
+确认 OS、设备包示例和 `dry-run` 都能正常工作后，再按以下顺序替换示例内容：
 
-| 现象 | 常见原因 | 处理方式 |
-| --- | --- | --- |
-| 找不到 `mamba` | 终端未加载 Miniforge | 重新打开终端或重新初始化 |
-| 找不到设备类型 | 设备包未安装、模块未导入或 ID 不一致 | 重新运行设备包检查，从报告复制类型名称 |
-| 启动图 无法加载 | JSON、父子关系或配置字段错误 | 用 `jq empty` 和 启动图 检查逐项修正 |
-| 页面请求失败 | Uni-Lab OS 未就绪或仍使用旧地址 | 从 `workspace status` 获取当前地址 |
-| 工作流一直等待 | 设备离线、物料未就绪或安全条件未满足 | 查看具体步骤和设备状态，不要盲目重试 |
-| 动作重复执行 | 超时后直接重新提交 | 先查询原任务，再决定是否恢复 |
-| PLC 连接失败 | 仿真器/真实 PLC 与 启动图 配置不一致 | 核对协议地址、点位表、命名空间和握手规则 |
+1. 填写 `DEVICE_PACKAGE_REQUIREMENTS.md`，记录设备型号、协议、动作、单位和安全边界；
+2. 按[设备接入模板](device-template.md)实现真实驱动；
+3. 按[物料定义模板](material-template.md)登记物料与位置；
+4. 新建独立的联调或生产启动图，不修改教学 `dry-run.json` 来承载生产地址；
+5. 按[工作流运行](workflow.md)编写和验证工作流；
+6. 完成[设备包验收](scenario-guide.md)后，才进入受控真机运行。
 
-安装完成后，继续阅读[设备包规范与系统启动](unilabos-installation.md)和[环境与运行配置](environment.md)。
+安装和初次启动的最短顺序始终是：**先安装 OS，再创建设备包，最后启动设备包**。用户不需要为了安装 Uni-Lab OS 预先取得一个现场设备包。
 
 ---
 
@@ -629,7 +567,7 @@ Uni-Lab OS 的“环境”分为三层：Conda 软件环境决定有哪些 Pytho
 
 ## 选择 Conda 环境
 
-Uni-Lab OS 提供三档环境。这里解释它们的用途，不重复安装步骤；首次安装统一按照[系统安装](installation.md)中的版本和命令执行。
+Uni-Lab OS 提供三档 Conda 包。默认安装入口只推荐“一键安装包”和“`unilabos-env` + 仓库源码”两条路径；这里解释各包用途，不重复安装步骤。首次安装统一按照[系统安装](installation.md)中的顺序执行。
 
 | 包 | 适合谁 | 包含什么 | 本手册建议 |
 | --- | --- | --- | --- |
@@ -637,7 +575,7 @@ Uni-Lab OS 提供三档环境。这里解释它们的用途，不重复安装步
 | `unilabos-env` | 需要修改 OS 源码、构建操作页面的开发者 | Python/ROS 环境，不固定 OS 源码 | 本手册源码教程使用 |
 | `unilabos-full` | 需要 RViz、Gazebo、MoveIt 或 Jupyter 的仿真开发者 | `unilabos` 加桌面仿真与可视化栈 | 仅按需安装 |
 
-本手册的源码安装路径使用 `unilabos-env`。只有直接运行正式发布包时才选择 `unilabos`；只有确实需要三维仿真或可视化时才选择 `unilabos-full`。环境类型由部署负责人在安装前确认，业务人员不应在安装过程中自行替换。
+本手册的源码安装路径使用 `unilabos-env`，随后拉取仓库并以可编辑模式安装；仓库已经包含可由 Workspace Backend 提供的轻量操作页面。`unilabos` 是标准 Conda 发布包，`unilabos-full` 只在确实需要三维仿真或可视化时选择。
 
 :::{note}
 `--override-channels`、版本号和频道顺序用于保证安装结果一致。升级 Uni-Lab OS 时，应同时确认设备包、启动图（Graph JSON）和环境版本的兼容性，并重新执行验收。
@@ -938,7 +876,7 @@ Source: /unilabos-installation.md
 - **验收人员**：按章节顺序检查设备包、模拟启动、异常路径和真机边界。
 :::
 
-本目录面向负责设备包开发、设备联调和实验流程配置的人员。文档按照“创建工作区 → 接入设备 → 定义物料 → 编写启动文件 → 编写工作流”的顺序组织，完成从设备包项目初始化到模拟启动的全过程。
+本目录面向负责设备包开发、设备联调和实验流程配置的人员。文档按照“准备工作区 → 接入设备 → 定义物料 → 编写启动文件 → 编写工作流”的顺序组织，完成从设备包目录准备到模拟启动的全过程。
 
 > **推荐阅读顺序：** 先了解工作区和设备包组成结构，再根据设备控制方式选择接入模板；随后定义物料、编写启动图（Graph JSON），最后完成实验操作（子工作流）和完整工作流。
 
@@ -955,10 +893,6 @@ workflow
 ## 工作区（设备包组成结构）
 
 工作区是设备包项目的根目录，用于统一保存包描述文件、设备接入代码、物料定义、启动图、工作流和测试。
-
-### [初始化工作区（unilab workspace init）](workspace-init.md)
-
-当前版本尚未提供 `init` 子命令。请在专用的新目录中手工生成项目骨架，再填写 `package.yaml`、`pyproject.toml`、设备与物料定义、启动图、工作流和测试；链接页面提供可复制的当前操作步骤，并单独说明未来命令的预期行为。
 
 ## 1. 设备接入模板
 
@@ -983,9 +917,351 @@ workflow
 
 编写 `启动图`，声明设备实例、物料库位、连接参数和启动模式；模拟环境和真实环境应使用不同配置。
 
-## 4. 工作流
+## 4. 工作流运行
 
 包括可复用的实验操作（子工作流）和完整工作流的编写。工作流只调用已登记的设备动作和物料资源，并在 `package.yaml` 中登记唯一的 `workflow_uuid` 与源文件。
+
+---
+
+Source: /repository-builder-skill.md
+
+# 使用 AI 设备包生成器（实验性）
+
+:::{admonition} 这页适合谁
+- **业务负责人**：说明设备、动作、单位、现场限制和交付目标，不需要编写代码。
+- **开发人员**：让 Coding Agent 在明确边界内创建或修改设备包，并运行当前仓库支持的检查。
+- **验收人员**：区分静态检查、构建、模拟加载和真机验收，不把较低等级的证据写成生产通过。
+:::
+
+当前 `Uni-Lab-OS` 仓库已经提供 `unilab-domain-repo-builder` Skill。它可以协助新建设备包、迁移旧代码或分层诊断设备包问题，但不会自动知道实验室现场事实，也不能代替人工审查和产品验收。
+
+:::{warning}
+这不是一键生成器。地址、单位、超时、联锁、物料位置、工作流 UUID 和凭证必须来自用户确认的资料。资料缺失时，AI 应停止猜测并列出待确认项。
+:::
+
+## 当前仓库中可以使用的内容
+
+先将本机的 Uni-Lab OS 源码目录填写为通用变量：
+
+```bash
+export UNILAB_ROOT="/absolute/path/to/Uni-Lab-OS"
+```
+
+在该源码仓库中可以核对到：
+
+| 路径 | 用途 |
+| --- | --- |
+| `$UNILAB_ROOT/` | Uni-Lab OS 源码、CLI、设备包合同和产品手册 |
+| `$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/SKILL.md` | 新建、迁移、诊断和验证设备包的 Coding Agent 指南 |
+| `$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/references/` | 包模板、装饰器和 Workflow Python 合同 |
+| `$UNILAB_ROOT/.cursor/skills/add-device/SKILL.md` | 编写单个设备驱动时的补充参考 |
+| `PLC-Sim/` | 可选的 PLC、OPC UA 和 Modbus 联调工具；仅在设备包明确需要时使用 |
+
+先在终端执行只读检查：
+
+```bash
+test -f "$UNILAB_ROOT/setup.py"
+test -f "$UNILAB_ROOT/unilabos/package_manager/cli.py"
+test -f "$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/SKILL.md"
+test -f "$UNILAB_ROOT/.cursor/skills/add-device/SKILL.md"
+```
+
+四条命令都不输出错误，才说明本页引用的 Uni-Lab OS 文件在当前仓库中存在。`PLC-Sim` 是可选工具，不是设备包开发或 Uni-Lab OS 启动的必需条件。
+
+## AI 能做什么
+
+| 场景 | 可以请 AI 完成 | 必须由人确认 |
+| --- | --- | --- |
+| 新建设备包 | 创建包结构、清单、设备和工作流骨架，补充测试 | 业务名称、设备型号、动作含义、单位和交付范围 |
+| 迁移设备包 | 盘点旧代码，逐步迁移装饰器、清单、模拟器和测试 | 兼容范围、现场协议和允许删除的旧能力 |
+| 修改设备 | 找到同类实现，小范围修改 Driver、模拟器、启动图和测试 | 地址表、参数、超时、安全联锁和恢复方式 |
+| 排查失败 | 按 Package、Registry、Catalog、Authoring、Runtime 分层定位 | 现场连接、硬件故障和真机验收结论 |
+
+AI 不应连接真机、启动实验、发布包、写入凭证或更改生产配置，除非业务负责人对本次任务明确授权。
+
+## 第一步：确认目标设备包
+
+设备包是用户自己的项目，不由本手册虚构名称。先取得它的绝对路径，并确认至少包含以下文件：
+
+```bash
+export DEVICE_PACKAGE_ROOT="/absolute/path/to/user-device-package"
+
+test -f "$DEVICE_PACKAGE_ROOT/pyproject.toml"
+test -f "$DEVICE_PACKAGE_ROOT/package.yaml"
+test -f "$DEVICE_PACKAGE_ROOT/deployment/local_config.py"
+```
+
+如果文件缺失，不要从其他项目复制现场数据。新项目应先按[手工初始化工作区](workspace-init.md)创建空骨架，再填写自己的包身份和配置。
+
+## 第二步：填写需求卡
+
+把下面内容复制到任务中。不会填写的项目写“待确认”。
+
+```text
+任务类型：新建 / 迁移 / 修改 / 只读排查
+目标设备包绝对路径：
+业务目标：完成后用户能够做什么
+
+发布名称与 Python 包名：
+设备名称和型号：
+通信协议：串口 / Modbus / OPC UA / HTTP / 其他
+协议资料或地址表：文件路径、版本和负责人
+动作：名称、输入、单位、输出、超时和失败表现
+状态：需要展示或记录的状态、单位和更新频率
+
+资源与放置位：容器、载架、父子关系和允许位置
+目标工作流：输入、输出、顺序、并行和失败条件
+模拟范围：可以模拟什么，哪些项目必须真机确认
+
+允许 AI 执行：只读 / 修改代码 / 运行测试 / 构建 / dry-run
+禁止 AI 执行：连接真机 / 启动任务 / 发布 / 写入凭证 / 其他
+完成标准：本次允许执行到哪一道验证门
+```
+
+业务负责人至少确认业务目标、动作含义、单位、失败表现、现场限制和完成标准。技术字段可以由开发人员补充，但必须注明资料来源。
+
+## 第三步：把任务交给 Coding Agent
+
+将下面提示词中的路径替换为实际设备包路径，然后连同填写好的需求卡一起提交：
+
+```text
+请使用以下本地 Skill 处理 Uni-Lab OS 设备包任务：
+<Uni-Lab-OS 源码绝对路径>/.cursor/skills/unilab-domain-repo-builder/SKILL.md
+
+如需修改单个设备驱动，再读取：
+<Uni-Lab-OS 源码绝对路径>/.cursor/skills/add-device/SKILL.md
+
+目标设备包：/absolute/path/to/user-device-package
+
+开始前先读取目标设备包内实际存在的 AGENTS.md、pyproject.toml、package.yaml、
+README、目标启动图和相关测试，并报告 Git 状态。使用实际运行该设备包的 Python，
+输出 sys.executable、unilabos.__file__ 和 pip show unilabos。不要根据相邻目录、
+旧文档或其他设备包猜测版本和现场事实。
+
+先列出已知事实、待确认项、拟修改文件和验证计划。每次只完成一个可验证的小闭环。
+不要发明设备、动作、单位、地址、NodeId、资源关系、UUID、超时、联锁或凭证；
+保留已有修改，不覆盖无关工作。未经需求卡明确授权，不连接真机、不启动实验、
+不发布、不写入密钥。
+
+修改后按产品手册的依赖与 Python 包、package inspect、package build 和 dry-run
+验证门逐项检查。报告每条命令、退出状态、运行模式、关键结果、剩余风险和人工待办。
+任何一道门失败，都不要声称设备包已经可用。
+
+需求卡：
+<粘贴填写后的需求卡>
+```
+
+如果本轮只需要诊断，在提示词第一行补充：
+
+```text
+本轮只做只读排查，不修改文件、不安装依赖、不启动服务、模拟器或设备。
+```
+
+## 第四步：人工审查修改
+
+运行服务前，先由开发人员检查改动。下面命令中的路径必须是已经确认的设备包路径：
+
+```bash
+git -C "$DEVICE_PACKAGE_ROOT" status --short
+git -C "$DEVICE_PACKAGE_ROOT" diff
+```
+
+至少确认：
+
+- 修改只发生在目标设备包，没有覆盖其他人的工作；
+- 没有密钥、令牌、生产地址或个人信息；
+- `pyproject.toml`、Python 包目录和 `package.yaml` 使用同一包身份；
+- 动作名称、参数、类型、单位、返回值和状态符合需求卡；
+- 真实驱动与模拟器使用相同的动作合同；
+- 启动图中的实例和连接配置有明确来源；
+- 工作流没有复制其他项目的现场 UUID、地址或物理布局。
+
+有任何现场事实无法确认时，停止验收，回到需求卡补充。
+
+## 第五步：按验证门检查
+
+先激活当前安装使用的环境，并确认 Python 来源：
+
+```bash
+mamba activate unilab
+export UNILAB_ROOT="/absolute/path/to/Uni-Lab-OS"
+export DEVICE_PACKAGE_ROOT="/absolute/path/to/user-device-package"
+cd "$DEVICE_PACKAGE_ROOT"
+
+python -c 'import sys, unilabos; print(sys.executable); print(unilabos.__file__)'
+python -m pip show unilabos
+```
+
+### 验证门一：依赖和 Python 包
+
+```bash
+python -m pip install -e '.[dev]'
+python -m pip check
+python -m compileall <实际的_Python_包目录>
+```
+
+尖括号中的内容必须替换为 `pyproject.toml` 中登记并实际存在的 Python 包目录。不要直接复制占位符执行。
+
+### 验证门二：设备包目录与合同
+
+```bash
+unilab package inspect \
+  --path "$DEVICE_PACKAGE_ROOT" \
+  --out "$DEVICE_PACKAGE_ROOT/dist/inspect"
+```
+
+报告中不能有语法错误、重复 ID、重复 UUID、缺失源文件或无法解析的类型。
+
+### 验证门三：构建交付物
+
+```bash
+unilab package build \
+  --path "$DEVICE_PACKAGE_ROOT" \
+  --out "$DEVICE_PACKAGE_ROOT/dist/build"
+```
+
+检查 wheel、Catalog 和设备包需要的配置、模型及图片是否都进入交付物。构建成功不代表设备已连接。
+
+### 验证门四：安全加载
+
+只有需求卡明确允许启动本地组件时才执行，并将启动图替换为设备包中真实存在的模拟或隔离测试文件：
+
+```bash
+unilab workspace start \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --graph deployment/graphs/<实际的测试启动图>.json \
+  --runtime-mode dry-run \
+  --startup-mode develop \
+  --wait 300 \
+  --json
+
+unilab workspace status \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --json
+
+unilab workspace stop \
+  --workspace "$DEVICE_PACKAGE_ROOT" \
+  --wait 300 \
+  --json
+```
+
+`dry-run` 只证明 Uni-Lab OS 能在安全模式发现和加载设备包，不能证明通信、联锁、急停或物理动作正确。
+
+## 如何写验收结论
+
+| 已取得的证据 | 可以得出的结论 | 不能得出的结论 |
+| --- | --- | --- |
+| Python 编译成功 | 源码可解析 | 设备包合同正确 |
+| `package inspect` 成功 | 包结构和静态合同可检查 | 运行时或真机正常 |
+| 测试及 `package build` 成功 | 已覆盖测试通过，交付物可生成 | 所有现场场景都已覆盖 |
+| Workspace `dry-run` 成功 | 产品可安全发现并加载设备包 | 模拟器或真机已经通过 |
+| 隔离模拟器通过 | 指定的模拟行为通过 | 真实硬件和联锁正确 |
+| 受控真机验收通过 | 记录中覆盖的硬件场景通过 | 未验收的型号或工况也通过 |
+
+推荐写法是：“已通过 Package 检查、构建和 dry-run，真机未验收。”不要只写“设备包已完成”。
+
+## 常见失败
+
+| 现象 | 处理方式 |
+| --- | --- |
+| 找不到 Skill | 确认 `$UNILAB_ROOT` 指向当前 Uni-Lab OS 源码仓库，再检查上文列出的实际文件路径 |
+| `ModuleNotFoundError` | 核对 `sys.executable` 和 `unilabos.__file__`，切换到实际 Uni-Lab 环境 |
+| `package inspect` 失败 | 从第一条错误开始修复包名、清单、源码、UUID 或注册信息 |
+| 构建后缺文件 | 补充 `pyproject.toml` 的 package data 配置，再重新构建和检查 wheel |
+| dry-run 成功、真机失败 | 单独检查协议、地址、超时、联锁和硬件状态，不把 dry-run 当真机证据 |
+
+设备包每个文件的职责和完整验证要求见[工作区](workspace.md)；单个设备驱动的业务模板见[设备接入模板](device-template.md)。
+
+---
+
+Source: /scenario-guide.md
+
+# 设备包验收
+
+:::{admonition} 阅读角色
+- **业务负责人**：确认可运行范围、审批条件、结果要求和异常处置责任。
+- **开发或运维人员**：配置运行模式、资源调度、监控、停止和恢复机制。
+- **验收人员**：验证资源冲突、超时、取消、未知结果、安全停机和追溯记录。
+:::
+
+本页说明如何验证用户自行准备的设备包。验收目标不是“页面能打开”，而是确认设备、物料、工作流和现场约束在同一个配置版本下能够正确配合。
+
+开始前先用[能力检查表](capability-matrix.md)确认设备包已经达到“已定义、已加载、已连接、已联调”中的哪一层；验收完成后，按[版本与验收记录](evidence.md)保存系统版本、设备包版本、启动图（Graph JSON）和结果证据。
+
+## 先确认验收范围
+
+设备包负责人应提供：设备包版本、启动图、运行模式、工作流清单、所需物料、可用设备、风险说明和预期结果。安装人员通过 `unilab package inspect` 与 `unilab workspace status` 核对实际加载内容，不能使用记忆中的数量或旧截图判断。
+
+## 分阶段验收
+
+| 阶段 | 目的 | 建议场景 |
+| --- | --- | --- |
+| 静态检查 | 发现缺文件、重复 ID 和参数错误 | 检查设备包与 启动图，不启动设备 |
+| 模拟联调 | 验证动作合同、状态转换和失败路径 | 全模拟设备或协议仿真器 |
+| 单设备测试 | 验证一台真实设备的连接和基础动作 | 只加载获准测试的设备 |
+| 多设备联调 | 验证搬运、共享资源和步骤依赖 | 小批量、无危险材料的测试流程 |
+| 生产验收 | 验证正式 启动图、权限和安全规程 | 审批后的完整流程 |
+
+前一阶段没有通过时，不进入下一阶段。
+
+## 工作流覆盖建议
+
+设备包至少应准备以下类型的验收工作流：
+
+- 只读状态检查：不产生设备动作，用于确认实例和连接；
+- 单动作冒烟测试：用安全参数验证每类设备的一个核心动作；
+- 物料约束测试：验证物料类型、单位、容量、库位和占用规则；
+- 多设备串联测试：验证上一步输出能否正确传给下一台设备；
+- 共享资源测试：两个任务竞争同一设备或库位时应等待，而不是同时占用；
+- 故障测试：设备离线、参数越界、超时和人工取消都要有清楚结果。
+
+## 创建任务前的业务核对
+
+1. 工作流名称、用途和风险与本次验收一致。
+2. 输入参数标明单位、允许范围和默认值，默认值不会触发危险动作。
+3. 所有设备在线，且实例 ID 与 启动图 一致。
+4. 物料类型正确，数量、容量、状态和当前位置满足要求。
+5. 来源和目标库位存在、空闲且允许放置该物料。
+6. 模拟与真实设备没有混用，生产地址没有进入测试 启动图。
+7. 急停、互锁、人员防护和现场清场已经按管理制度确认。
+
+## 通用端到端示例
+
+下面是一条与具体行业无关的样品处理流程，用于说明验收思路：
+
+1. 从原料区取得容器并确认容器类型。
+2. 由加料设备按目标量加入物料。
+3. 将容器移动到混合设备，按规定时间和速度处理。
+4. 将样品送到检测设备并记录结果。
+5. 将容器送回指定库位，提交最终物料位置和状态。
+
+验收时为每一步记录：调用的设备实例、输入参数、开始/结束时间、输出、物料位置变化和异常。示例中的设备名称必须替换为用户设备包实际定义的实例，不能照抄为生产配置。
+
+## 如何判断等待与故障
+
+共享设备、机械臂或唯一库位被占用时，任务可以进入等待。应在任务详情中看到具体等待对象；资源释放后任务继续。以下情况应判为故障并处理，而不是无限等待：设备持续离线、目标库位不存在、输入不合法、互锁未满足、动作超过规定超时。
+
+## 结果验收
+
+| 结果 | 需要确认 |
+| --- | --- |
+| 任务成功 | 所有必要步骤成功，且没有被忽略的设备告警 |
+| 设备输出 | 数值有单位和合理范围，文件或检测结果确实存在 |
+| 物料变化 | 数量、状态和位置与实际现场一致 |
+| 调度记录 | 共享资源没有被重复占用，等待和释放顺序可解释 |
+| 失败结果 | 明确指出失败步骤、设备和原因，不把超时当成功 |
+
+设备发出的“目标值”不一定等于传感器实测值。设备包应为两类字段使用不同名称，并在页面说明其业务含义。
+
+## 验收完成的判据
+
+- 使用的 Uni-Lab OS、设备包和 启动图 版本均有记录；
+- 关键工作流在规定模式下通过；
+- 参数越界、设备离线和超时能够安全失败；
+- 物料账面位置与现场一致；
+- 生产所需的人工步骤、权限和恢复办法已写入交付记录。
+
+未满足任一项时，应记录问题并回到相应的设备、物料或部署章节修正。
 
 ---
 
@@ -1002,12 +1278,6 @@ Source: /workspace.md
 工作区是用户设备包的项目根目录。它把设备类型、物料模板、启动图（Graph JSON）、工作流和测试放在同一个可交付版本中，供 Uni-Lab OS 检查和加载。
 
 设备包由用户自行准备。Uni-Lab OS 不会从任意目录猜测要加载哪些文件；启动时必须通过 `--workspace` 指向一个明确的设备包根目录。
-
-```{toctree}
-:maxdepth: 1
-
-workspace-init
-```
 
 ## Uni-Lab OS 如何读取设备包
 
@@ -1243,164 +1513,6 @@ unilab workspace stop \
 - [ ] 依赖检查、设备包检查、构建和 dry-run 全部通过；
 - [ ] 真实运行前已完成连接、联锁、急停、取消和异常恢复验收；
 - [ ] README 说明安装、启动、停止、升级和故障处理方式。
-
----
-
-Source: /workspace-init.md
-
-# 初始化工作区（unilab workspace init）
-
-:::{admonition} 阅读角色
-- **业务负责人**：确定设备包用途、业务名称、负责人和保存位置。
-- **开发人员**：创建目录和基础文件，并填写包身份与初始配置。
-- **验收人员**：确认没有覆盖既有项目，且生成结构符合设备包规范。
-:::
-
-:::{warning}
-当前版本尚未提供 `unilab workspace init` 子命令。现阶段请按照本页的“当前操作步骤”手工创建工作区，不要直接执行规划命令。
-:::
-
-## 这一步要得到什么
-
-完成后，你会得到一个新的设备包项目骨架。它只包含目录和基础文件，还不能直接连接设备；接下来仍需填写设备、物料、启动图（Graph JSON）和工作流。
-
-开始前由业务负责人确认：
-
-| 项目 | 示例 | 要求 |
-| --- | --- | --- |
-| 设备包保存目录 | `/Users/name/labs/sample-lab` | 使用专用的新目录，不覆盖现有项目 |
-| Python 包名 | `sample_lab` | 只用小写英文字母、数字和下划线，不能以数字开头 |
-| 发布名称 | `sample-lab` | 对外识别名称，应能对应到 Python 包名 |
-| 负责人 | `张三` | 负责版本、现场配置和交付确认 |
-| 初始用途 | `样品前处理设备包` | 用业务语言说明设备包服务的场景 |
-
-## 当前操作步骤
-
-### 步骤一：设置名称与路径
-
-打开终端，把下面两项替换为自己的值。目标目录必须尚不存在：
-
-```bash
-export DEVICE_PACKAGE_ROOT="/absolute/path/to/new-device-package"
-export DEVICE_PACKAGE_NAME="sample_lab"
-```
-
-检查目标是否安全：
-
-```bash
-if [ -e "$DEVICE_PACKAGE_ROOT" ]; then
-  echo "目标已存在，请换一个新目录"
-else
-  echo "目标目录可用，可以继续"
-fi
-```
-
-看到“目标已存在”时立即停止，选择其他目录。没有输出表示可以继续。
-
-### 步骤二：创建目录骨架
-
-```bash
-mkdir -p \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/devices" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/resources" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/experiment_operations" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/workflows" \
-  "$DEVICE_PACKAGE_ROOT/deployment/graphs" \
-  "$DEVICE_PACKAGE_ROOT/tests"
-
-touch \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/__init__.py" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/devices/__init__.py" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/resources/__init__.py" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/experiment_operations/__init__.py" \
-  "$DEVICE_PACKAGE_ROOT/$DEVICE_PACKAGE_NAME/workflows/__init__.py" \
-  "$DEVICE_PACKAGE_ROOT/pyproject.toml" \
-  "$DEVICE_PACKAGE_ROOT/package.yaml" \
-  "$DEVICE_PACKAGE_ROOT/deployment/local_config.py" \
-  "$DEVICE_PACKAGE_ROOT/deployment/graphs/dry-run.json" \
-  "$DEVICE_PACKAGE_ROOT/README.md"
-```
-
-生成结果应为：
-
-```text
-new-device-package/
-├── package.yaml
-├── pyproject.toml
-├── sample_lab/
-│   ├── __init__.py
-│   ├── devices/
-│   ├── resources/
-│   ├── experiment_operations/
-│   └── workflows/
-├── deployment/
-│   ├── local_config.py
-│   └── graphs/
-│       └── dry-run.json
-├── tests/
-└── README.md
-```
-
-Python 包必须直接位于工作区根目录，并包含 `__init__.py`。不要把它放到额外的 `src/` 目录中。
-
-### 步骤三：填写最小包身份
-
-目录创建完成后，按照[工作区的“统一包身份”](workspace.md#步骤二统一包身份)填写 `pyproject.toml`。发布名称、Python 包名和清单包名必须指向同一个设备包。
-
-在 `package.yaml` 中先写入：
-
-```yaml
-package:
-  name: sample_lab
-
-workflows: []
-```
-
-将 `sample_lab` 替换为步骤一确定的 Python 包名。尚未创建工作流时必须使用空列表 `[]`，不能写 `null` 或虚构源文件。
-
-### 步骤四：准备安全的初始启动图
-
-`deployment/graphs/dry-run.json` 只用于最初的结构检查，不填写生产设备地址、账号或密钥。至少先写入一个合法的空结构：
-
-```json
-{
-  "nodes": [],
-  "links": []
-}
-```
-
-接入设备和物料后，再按照[启动文件](startup-files.md)增加实际实例。模拟配置与生产配置必须使用不同文件。
-
-### 步骤五：记录交付信息
-
-在 `README.md` 中记录：
-
-- 设备包名称、用途和负责人；
-- 当前版本及适用的 Uni-Lab OS 版本；
-- 安装、启动和停止方法；
-- 模拟与生产启动图的位置；
-- 现场联锁、急停和异常恢复责任人；
-- 已知限制和本次未接入的设备。
-
-## 规划中的命令行为
-
-后续版本提供该能力时，预期通过下面的形式指定生成目录：
-
-```bash
-unilab workspace init --output /absolute/path/to/new-device-package
-```
-
-`--output` 应创建新的设备包目录并生成与本页相同的骨架，不应覆盖已有目录。正式使用前必须先通过 `unilab workspace init --help` 确认当前安装版本已经提供该命令；若帮助信息中没有 `init`，继续使用上面的手工步骤。
-
-## 完成标准
-
-- [ ] 目标目录为新建的专用目录，没有覆盖已有设备包；
-- [ ] Python 包直接位于工作区根目录，并包含 `__init__.py`；
-- [ ] `pyproject.toml`、`package.yaml` 与 Python 包名一致；
-- [ ] `package.yaml` 的空工作流清单写为 `workflows: []`；
-- [ ] 初始启动图不包含生产地址、账号或密钥；
-- [ ] README 已记录负责人、用途、版本和安全边界；
-- [ ] 可以继续执行[工作区的四道验证门](workspace.md#步骤五通过四道验证门)。
 
 ---
 
@@ -5029,7 +5141,7 @@ unilab workspace start \
 
 Source: /workflow.md
 
-# 4. 工作流
+# 4. 工作流运行
 
 :::{admonition} 阅读角色
 - **业务负责人**：确认实验目的、输入输出、参数单位、成功标准和失败处理。
@@ -5040,9 +5152,12 @@ Source: /workflow.md
 ```{toctree}
 :maxdepth: 1
 
-workflow-features
-experiment-operations
-complete-workflow
+先理解工作流 <workflow-concepts>
+工作流编排特性 <workflow-features>
+实验操作 <experiment-operations>
+完整工作流 <complete-workflow>
+手写并运行第一个工作流 <first-workflow>
+AI 编写工作流（推荐） <ai-workflow-authoring>
 ```
 
 工作流把业务人员描述的实验步骤转换成 Uni-Lab OS 能检查、调度和追踪的流程。它只能使用用户设备包中已经登记的设备动作、物料模板和启动图（Graph JSON）实例，不能在工作流里重新实现设备通信。
@@ -5884,9 +5999,9 @@ unilab workspace start \
 
 ---
 
-Source: /workflows.md
+Source: /ai-workflow-authoring.md
 
-# 工作流发布与任务运行
+# AI 编写工作流（推荐）
 
 :::{admonition} 阅读角色
 - **业务负责人**：确认实验目的、输入输出、参数单位、成功标准和失败处理。
@@ -5894,189 +6009,269 @@ Source: /workflows.md
 - **验收人员**：执行静态检查、预检、模拟运行、异常路径和受控真机验收。
 :::
 
-工作流面向一次完整实验目标。用户从已发布修订准备输入，先执行零写入预检，再创建普通或单步任务。
+本页假设设备包已经能被 Uni-Lab OS 加载，而且你已完成[工作流基础](workflow-concepts.md)、[用户设备包 手写教程](first-workflow.md)和[编排特性](workflow-features.md)。这些基础让你能够审查 AI 生成的 DSL，而不是直接相信生成结果。
 
-本页解释已经进入产品目录的工作流怎样发布、预检和运行。第一次创作应先完成[工作流基础](workflow-concepts.md)、[用户设备包 手写教程](first-workflow.md)和[编排特性](workflow-features.md)，之后日常创作推荐使用[AI 辅助方式](ai-workflow-authoring.md)。
+若你还没有 `pyproject.toml`、设备定义、启动图（Graph JSON）和 `package.yaml`，先按[工作区](workspace.md)完成最小闭环。维护用户自己的设备包时，也可使用[AI 设备包生成器（实验性）](repository-builder-skill.md)，让本地 Coding Agent 协助修改或排查。
 
-开始实际运行前，还应准备[物料](materials.md)与[试剂](reagents.md)，发布被引用的[实验操作（子工作流）](experiment-operations.md)，并理解[运行模式、安全与恢复](runtime-safety.md)。
+日常工作流创作推荐交给能够读取当前 Uni-Lab OS 与实验室设备包的 AI 编码助手：让它先从 Catalog、设备驱动、资源模板和 用户设备包 已登记流程中取证，再生成静态 Python DSL。人负责确认实验意图、审查证据、批准发布，并决定是否运行。
 
-## 两种创作入口
+这不是“让 AI 猜一段 Python 后直接开设备”。推荐闭环是：
 
-- **AI 辅助创作（推荐）**：AI 先读取当前 Catalog、驱动、资源与 用户设备包 已跟踪流程，生成静态 Python DSL 草稿；人审查后通过“导入 Python”创建，再检查、发布和运行。
-- **人工创作**：作者直接编写静态 Python DSL，适合学习最小语法、修复诊断和审查 AI 结果。
-- **可复用实验操作**：在“实验室操作”画布创建或导入 `experiment_operation`，发布后插入上层流程。
+```text
+实验需求
+   │
+   ▼
+AI 只读扫描当前代码与 Catalog ──► 选择 用户设备包 相似流程
+   │
+   ▼
+生成静态 DSL 草稿 ──► 人工审查 diff 与动作证据
+   │
+   ▼
+产品静态编译 / 导入 ──► package inspect ──► 诊断归零
+   │
+   ▼
+人工发布 ──► 零写入预检 ──► dry-run Task ──► 结果验收
+   │
+   └────────────────────────► 单独的真机安全验收
+```
 
-当前“新建工作流”按钮只是入口占位，不能从空白画布创建普通工作流；Uni-Lab OS 页面也没有通用的一键 AI 生成入口。AI 的推荐接入方式与安全边界见[用 AI 编写工作流](ai-workflow-authoring.md)，完整语法和约束见[工作流编排特性](workflow-features.md)。
+AI 负责提高创作效率；Uni-Lab OS 的编译器、发布合同、预检、调度和设备执行结果仍是判断“能否进入产品运行链路”的权威。AI 的文字回答或语法高亮不能代替这些检查。
 
-## 查找和理解工作流
+## 当前支持到什么程度
 
-进入“工作流”页后：
-
-1. 按名称或关键词搜索。
-2. 打开详情，查看类型、当前修订和发布状态。
-3. 在“拓扑”中查看节点和依赖。
-4. 在“合同”中查看公开输入、输出和资源要求。
-5. 在“诊断”中处理定义错误或未绑定项。
-6. 在“源码”中只读查看或复制定义。
-
-工作流可以从 Python 或 JSON 导入。Python 文件只进入静态 AST 编译器，不会作为普通程序执行；导入用于创建新身份，不覆盖已经存在的工作流 UUID。
-
-## 发布修订
-
-产品模式只运行已发布内容。发布前应确认：
-
-- 节点与连线完整；
-- 每个设备动作绑定到有效实例；
-- 必填参数有来源；
-- 输入输出类型兼容；
-- 子工作流引用已发布合同；
-- 材料来源和站点选择不冲突。
-
-发布形成不可变修订。已经创建的任务持有自己的冻结执行图和源码快照，之后编辑或发布新版本不会改变它。
-
-## 准备一次运行
-
-打开“运行准备”，完成以下内容：
-
-1. 选择已发布修订。
-2. 填写公开输入。
-3. 为每个 `ResourceSlot` 选择具体物料或来源站点。
-4. 如果工作流暴露站点参数，保证同类来源没有选择同一占用位。
-5. 选择运行方式：普通或单步。
-6. 选择普通/高优先级并填写描述。
-7. 核对页面推导出的材料依赖和试剂数量要求。
-
-优先级只影响可调度节点之间的选择，不会绕过设备锁、工位锁、库存预留或安全条件。
-
-## 运行前检查
-
-预检可能给出三类结果：
-
-| 结果 | 含义 | 下一步 |
+| 环节 | 推荐工具 | 当前边界 |
 | --- | --- | --- |
-| `runnable_now` | 当前快照下满足运行条件。 | 可以提交；提交时仍会复检。 |
-| `temporarily_unavailable` | 定义有效，但设备、资源或库存暂时不可用。 | 查看阻塞明细，处理后重检。 |
-| `invalid` | 输入、定义、绑定或资源合同不成立。 | 修正配置或重新发布。 |
+| 查找相似流程、驱动和资源 | 能读取两个仓库的 AI 编码助手 | 必须以当前检出的已跟踪代码为证据，不能凭模型记忆发明动作。 |
+| 生成或修改源码 | AI 在个人草稿文件中生成静态 DSL | 新定义先生成草稿；不要直接执行该 Python 文件。 |
+| 创建新定义 | Uni-Lab OS 页面/API 的“导入 Python” | 静态编译通过后，产品才原子写入设备包源码并登记 `package.yaml`。 |
+| 修改现有定义 | Local Authoring 编辑链路 | 使用 draft → candidate → apply 的并发控制；不能把同一 UUID 当作新文件重复导入。 |
+| 检查与观察 | Uni-Lab OS 页面、CLI；可选 MCP | MCP 能查看工作区/流程/Task 并等待创作修订，但当前没有生成、写入、导入、发布或预检工作流的 MCP 工具。 |
+| 发布与运行 | 人在 Uni-Lab OS 页面明确确认 | `run_workflow` 会直接创建 Task；不要授权 AI 在未审查、未预检时调用。 |
 
-预检是零写入操作：不会创建 Task、Job、执行锁或库存预留。任务提交会重新检查并原子地建立需要的运行状态，因此“刚才预检通过”不保证此刻一定立即运行。
+因此，现阶段最稳妥的组合是“AI 读仓库和写草稿 + Uni-Lab OS 导入与运行”，而不是期待页面内有一个通用的“一键 AI 生成并运行”按钮。
 
-## 普通运行与单步运行
+## 1. 建立干净基线
 
-- **普通运行**按依赖和资源条件持续调度，适合已验证流程。
-- **单步运行**创建标准 step Task，初始或切换后由操作员选择下一个可执行节点，适合开发模式验证。
+先完成[系统安装](installation.md)，保持 `dry-run + develop`。在让 AI 修改任何内容前运行：
 
-旧的 `/api/v1/debug/*` 断点调试接口已经固定返回 HTTP 410。不要使用旧 CLI、MCP 或 Workbench 中仍指向该接口的“debug launch/breakpoint”；当前正确路径是标准 step Task。
+```bash
+git -C "$LAB_ROOT/Uni-Lab OS" status --short
+git -C "$LAB_ROOT/user-device-package" status --short
+git -C "$LAB_ROOT/user-device-package" ls-files \
+  'example_device_package/workflows/*.py'
 
-## 组合工作流
+cd "$LAB_ROOT/user-device-package"
+./scripts/check-package.sh
+mkdir -p workflow_drafts
+```
 
-工作流可以引用已发布实验操作。调度器在运行计划中原子展开组合调用，同时保留合同版本、参数、设备绑定和物料依赖。不要依赖“子操作最新版本”这种隐式行为；每次修改后应重新检查并发布上层工作流。
+记录检查结果和原有未提交修改。AI 必须保留与本次工作流无关的修改；若基线检查已经失败，先分清旧问题与新问题，不能把旧失败归咎于生成结果。
 
-## 提交后的去向
+`git ls-files` 的结果是可作为产品示例的已跟踪流程清单。已跟踪文件本身若出现在 `git status` 中，也要先看 diff；需要锁定基线时让 AI 读取 `git show HEAD:<相对路径>`，不能把未提交内容冒充版本事实。不要让 AI 把本地未跟踪的验证夹具、临时产物或历史脚本当作产品语法依据。
 
-创建成功后转到“任务”页。任务会经历等待资源、运行、暂停、需要人工处理、成功、失败或取消等状态。继续按[任务运行、并行调度与异常处理](tasks.md)查看节点、理解等待、处理人工确认并核对结果。
+## 2. 写清实验需求卡
 
----
+先把需求写成这张卡，再交给 AI。信息不确定时写“待确认”，不要让 AI 自行补成看似合理的设备参数。
 
-Source: /runtime-safety.md
+```yaml
+目标: "这个流程最终完成什么实验结果"
+流程类型: "normal 或 experiment_operation"
+公开输入:
+  - "名称 / 类型 / 单位 / 默认值 / 合法范围"
+正式输出:
+  - "名称 / 类型 / 来源"
+步骤:
+  - "按实验语义列出，不要先写代码"
+允许使用的设备:
+  - "设备业务 ID；未知时写待扫描"
+物料与试剂:
+  - "模板、来源工位、保管策略、用量与单位"
+控制流: "条件 / 循环上限 / 可并行步骤"
+共享资源: "设备、工位或区域互斥要求"
+人工复核点: "哪些真实动作下发前必须确认"
+目标 启动图: "要在哪一张部署 启动图 中编译和验收"
+运行环境: "dry-run / 隔离 driver-sim / 真机"
+验收结果: "dry-run 中应观察到的 Task、Job 和输出"
+```
 
-# 运行模式、安全与恢复
+`normal` 表示可直接创建完整实验 Task；`experiment_operation` 表示先发布，再由其他流程复用。不能确定时，完整实验目标通常选 `normal`，可复用的局部工艺才选 `experiment_operation`。
 
-:::{admonition} 阅读角色
-- **业务负责人**：确认可运行范围、审批条件、结果要求和异常处置责任。
-- **开发或运维人员**：配置运行模式、资源调度、监控、停止和恢复机制。
-- **验收人员**：验证资源冲突、超时、取消、未知结果、安全停机和追溯记录。
-:::
+## 3. 让 AI 先理解当前设备包
 
-## 开发模式与产品模式
+不要让 AI 根据设备名称猜测动作。应先让它读取用户设备包中本次要用的内容：
 
-| 模式 | 用途 | 调度行为 | 可用控制 |
-| --- | --- | --- | --- |
-| `develop` | 新流程逐步验证 | 同一时间只接受一个开发任务 | 普通/step、暂停、选择下一节点、继续、取消 |
-| `product` | 已发布流程连续运行与并行调度 | 允许多个任务并存，按资源约束仲裁 | 普通运行；不提供单步调试 |
+| 想实现的能力 | 必须检查 | 重点确认 |
+| --- | --- | --- |
+| 单设备动作 | 对应 `device.py` | 动作名、参数类型、单位、默认值和返回字段 |
+| 条件与循环 | 编译器约束和已有安全测试流程 | 条件来源、最大循环次数和退出条件 |
+| 物料搬运 | 资源模板、启动图 和原子搬运动作 | 来源、目标、占位、位置提交和失败恢复 |
+| 并行处理 | 设备、工位和区域资源声明 | 哪些步骤可并行，哪些共享资源必须串行 |
+| 可复用实验操作 | 已发布的操作合同 | 输入输出、版本和物料连续性 |
+| 动态库位和数量记账 | 站点组与数量约束 | 候选站点、单位、预留、消费和回位 |
 
-使用前应从 Workspace 状态确认实际运行模式。模式切换只影响之后创建的任务，不迁移已有任务。系统会在有活动任务、未满足条件或其他阻塞项时拒绝切换。
+旧流程可能包含兼容写法或固定现场身份。创建新流程时，以当前编译诊断、设备动作合同和本次 启动图 为准；不能照抄设备 ID、物料 UUID、站点 UUID、体积或安全阈值。
 
-:::{note}
-“产品模式”描述调度行为，不代表部署自动获得生产安全、鉴权、TLS 或真机验收。当前公网演示环境仍应按授权测试系统对待。
-:::
+AI 在写代码前至少要读取：
 
-## 任务为何能恢复
+1. `package.yaml` 中的工作流登记；
+2. 所选相似流程的完整源码；
+3. 每个目标设备对应的 `devices/.../device.py` 动作签名与返回类型；
+4. 使用到的 `resources/` 模板定义；
+5. 本次 启动图 中的设备业务 ID、资源映射和动作模式；
+6. Uni-Lab OS 的 `unilabos/workflow/authoring.py` 和相关编译约束，或本手册的[工作流编排特性](workflow-features.md)。
 
-创建任务时，系统会冻结工作流修订、执行图、节点参数和设备绑定，并为任务维护持久状态。恢复依赖以下机制：
+如果这些证据不能证明某个动作、参数、输出字段或资源存在，AI 应停在“待确认”，而不是生成猜测代码。
 
-- 幂等任务/命令身份，防止网络重试重复创建物理动作；
-- 设备、物料和工位执行锁；
-- 试剂数量预留和消耗台账；
-- Uni-Lab OS 的持久快照与日志；
-- 设备连接恢复、命令反馈和未知结果解决；
-- 人工确认、干预、转移结算和强制解锁的审计原因。
+## 4. 复制这段提示词
 
-浏览器页面不是运行权威。关闭或刷新 Uni-Lab OS 页面不会取消任务；重新打开后应从系统读取最新状态。
+把下面提示词和上一节的需求卡一起交给能访问当前工作区的 AI 编码助手；将 `<流程名>` 换成小写英文文件名。
 
-## 资源锁与库存预留
+```text
+请为当前 user-device-package 工作区编写一个新的 Uni-Lab 静态 Python DSL 工作流。
+代码事实优先级：当前 Uni-Lab OS 编译器 > 用户设备包驱动与 package.yaml >
+设备包内已批准的工作流 > 我的自然语言描述。发现冲突时先报告，
+不要自行猜测。
 
-调度器只在节点的所有条件满足时派发：
+阶段 1 只读取证：
+1. 记录 Uni-Lab OS、用户设备包和 启动图 的版本，确认使用的是本次批准配置；
+2. 读取 package.yaml、指定 启动图、相关 device.py、资源模板和已批准的相似工作流；
+3. 输出“需求步骤 → 设备动作 → 参数/返回类型 → 定义位置”的表；
+4. 列出仍需我确认的设备 ID、站点、物料、单位、安全阈值、动作模式和并行假设。
 
-- 前置节点完成；
-- 设备在线且可派发；
-- 所需设备、物料和站点没有被其他任务占用；
-- 材料来源唯一且位置匹配；
-- 试剂数量已成功预留；
-- 人工确认或干预已经完成。
+阶段 2 生成草稿：
+1. 仅在 workflow_drafts/<流程名>.py 写一个新定义，不改现有工作流，不改 package.yaml；
+2. 使用现代 @workflow、绝对 import、带类型的关键字专用输入和真实设备类；
+3. 每个动作、物料来源和持久控制结构使用唯一且稳定的 UUID 字面量；动作只用命名参数；
+4. 输出只引用输入、物料来源或动作结果；不得发明 action、返回字段、资源或 Python DSL marker；
+5. 条件、循环、并行、资源、物料和子工作流严格遵守当前编译器约束；
+6. 物理搬运优先使用驱动已提供的原子动作，不拆成独立 pick/place/库存记账；
+7. 没有现场证据时保留 presence、gripper payload 等驱动安全检查的默认值；
+8. 不运行 python <流程名>.py，不发布工作流，不创建 Task，不连接或操作真实设备。
 
-锁与预留用于阻止逻辑冲突，但不能代替现场联锁。不要通过手工改库位、删除库存或强制释放来消除正常等待。
+阶段 3 验证与交付：
+1. 展示完整草稿、代码证据表、假设和人工复核项；
+2. 只运行静态/只读检查，报告原始命令与结果；
+3. 若诊断失败，只修复诊断明确指出的问题，不用删掉安全合同来换取通过；
+4. 此阶段只证明草稿可交给产品导入，不宣称它已经通过 Uni-Lab 编译；
+5. 导入、package inspect、发布、预检和运行都等待我确认。
+```
 
-## 物理动作与逻辑事实
+如果 AI 在阶段 1 就发现需求缺少关键现场值，先回答它的问题。高质量生成的标志不是代码长，而是每个动作和资源选择都能追溯到当前仓库中的事实。
 
-请始终区分三类事实：
+## 5. 审查 AI 草稿
 
-1. **计划事实**：工作流希望物料到达哪里、设备执行什么动作。
-2. **软件事实**：Job、feedback、返回值、锁和库存台账记录了什么。
-3. **现场事实**：物体实际位置、夹爪负载、容器盖状态、液位、秤读数和设备运动状态。
+导入前先逐项确认：
 
-正常情况下三者应一致。发生超时、断线、重启或人工介入时，必须先确认现场事实，再用转移结算、UNKNOWN 解决或干预入口让软件事实收敛。不要用计划事实猜测现场。
+- 工作流 UUID、每个节点 UUID 都是唯一的固定字符串，修改代码时不会重新生成；
+- 函数名和包内源码路径没有被当作排版随意改变；需要迁移身份时已同步检查 `package.yaml` 和引用方；
+- 文件只包含允许的 import、设备声明、可选输出 `TypedDict` 和一个工作流函数；
+- 所有设备类型、设备业务 ID、动作名、参数和结果字段都能定位到当前代码；
+- 输入有类型、单位、范围和合理默认值，危险参数没有宽松默认值；
+- 条件分支、循环上限和并行边界符合实验语义；
+- `group` 没被误当成锁，`parallel` 没被误写成“保证物理同时”；
+- 物料模板、来源、保管策略、站点与数量单位经过现场负责人确认；
+- 没有硬编码从别的 用户设备包 流程复制来的物料实例 UUID 或 site UUID；
+- 原子物理动作与唯一库存提交没有被 AI 拆成可分别调度的步骤；
+- 普通值的 fan-out 与 `ResourceSlot` 的物理线性已经区分；无序分样由真实 split/aliquot Action 产生新身份；
+- `check_source_presence`、`check_target_presence`、`check_gripper_payload` 等安全见证保持驱动默认值；任何关闭都有明确现场依据和审批人；
+- 没有 `manual_confirm()` 之类不存在的 Python 语法；需要人工确认时，把该动作设计为实验操作，并在实验操作画布包装已绑定的真实设备动作；
+- AI 没有顺手修改驱动、启动图、运行模式或无关文件。
 
-## 机械臂未知结果
+需要改动时，把编译 diagnostic 原文连同行列号交回 AI，例如：
 
-用户设备包 机械臂网关会先持久化命令再下发，并按 `command_id` 精确重放。跨重启仍处于 in-flight 的命令会进入 `UNKNOWN`，系统不会自动再次运动。UNKNOWN 还会阻止新的机械臂运动，直到操作员完成只读对账并提交带原因的解决决定。
+```text
+只修复下面的 Uni-Lab 编译诊断，保留已经确认的实验语义、节点 UUID、
+输入输出合同和安全约束。先解释根因与代码证据，再给最小 diff。
+不要通过删除物料要求、缩短流程或改成未知动作来绕过错误。
 
-这种 fail-closed 行为是为了避免“原动作已经完成，但网络没有返回”时重复取放或倒液。
+<粘贴 diagnostic>
+```
 
-## 安全停机与排空
+## 6. 用产品导入并验证
 
-管理员需要维护或升级运行时，应先让 Uni-Lab OS 进入排空状态：
+### 新工作流
 
-1. 停止派发新的设备 Job；
-2. 等待已在途 Job 在限定时间内结束；
-3. 核对没有未处理的 manual confirmation、UNKNOWN 或物料结算；
-4. 再停止 Uni-Lab OS；
-5. 启动后先检查 Readiness、设备数量和库存，再恢复派发。
+在 Uni-Lab OS 的“工作流”页点击“导入 Python”，选择 `workflow_drafts/<流程名>.py`。产品会静态解析文件；完整候选通过后，才把规范源码写入设备包的 `workflows/`（实验操作写入对应目录）并向 `package.yaml` 追加登记。上传文件不会被 Python import 或执行。
 
-当前 用户设备包 Kubernetes 清单的终止流程最多等待约 60 秒进入持久恢复，Pod 终止宽限为 90 秒。不要以旧文档中的 600/660 秒作为当前事实。
+导入要求当前 Workspace 恰好有一个可编辑的设备包源码目标。若返回 `source_target_unavailable`，先通过 `GET /api/v1/workspace/package-mounts` 检查 package mount 的 `editable` 状态，不要让 AI 猜测应写入哪个包。
 
-## 日志、Trace 与审计
+导入成功后回到终端检查产品实际落盘结果：
 
-- 任务详情是用户第一入口；
-- Trace 关联 Uni-Lab OS 内部的调度与设备执行过程；
-- 用户设备包 动作日志记录 START/SUCCESS/FAIL、耗时和关键阶段，并对 password、token、authorization、access key 等字段脱敏；
-- 库存历史记录试剂和物料变化；
-- 恢复操作必须保留原因、期望修订或唯一 resolution ID。
+```bash
+cd "$LAB_ROOT/user-device-package"
+git status --short
+git diff -- package.yaml example_device_package/workflows
+python -m unilabos.app.main package inspect --path .
+./scripts/check-package.sh
+```
 
-Trace 系统采用 fail-open：可观测性服务故障不应直接阻止工艺执行。因此“没有 Trace”不等于“任务没有运行”，需要结合任务和设备状态判断。
+同时在工作流详情确认：拓扑、输入输出合同、设备绑定、物料要求和 diagnostics 与需求一致。AI 草稿只是输入，产品保存的规范源码和编译图才是待发布候选。
 
-## 公网与权限
+涉及并行、组合流程、物料链或画布断边时，还要把产品生成的规范 Python 再次编译，并确认第二张图与第一张图语义等价。若出现 round-trip diagnostic，应保留原草稿，只让 AI 根据诊断做最小修复；不要使用 magic comment、空 `pass` 或伪 Fork/Join 绕过。
 
-面向生产公网部署 Uni-Lab OS 时，应：
+### 修改已有工作流
 
-- 只公开受控的文档和 Uni-Lab OS 页面入口；
-- 在反向代理或 Ingress 层启用 HTTPS 和身份认证；
-- 限制写 API、Swagger、管理和恢复接口；
-- 保持 PLC、内部调度接口、可观测性、数据库和设备控制通道在集群内；
-- 使用短期、可撤销凭证并记录访问审计。
+不要重复导入相同 UUID。先取得现有 authoring 修订和源码，让 AI 生成最小 diff，再通过 Local Authoring 的 draft → candidate → apply 链路提交；该链路使用 draft hash、工作流 revision 和 candidate hash 防止覆盖并发修改。应用后仍要重新运行本节的检查。
 
-公开文档不会改变 Uni-Lab OS、设备或 PLC 仿真器的网络策略。
+## 7. 人工批准发布和运行
 
-完成安全边界检查后，按[Kubernetes 部署与上线](deployment.md)准备镜像、Workspace、启动图（Graph JSON）、Secret、持久卷、业务 Readiness、入口和回滚。
+只有下列条件全部满足后才发布：
+
+1. AI 的动作证据表已经由人复核；
+2. 编译 diagnostics 没有 error；
+3. `package inspect` 和用户设备包检查通过；
+4. 工作流详情中的图、合同和材料依赖正确；
+5. 发布的是刚刚审查过的 revision。
+
+发布后按[管理与运行工作流](workflows.md)执行零写入预检。第一次运行固定使用 `dry-run`；预检为 `runnable_now` 后，再由人创建 Task，并按[用户设备包 手写教程](first-workflow.md)的方法检查每个 Job、回执和正式输出。
+
+`dry-run` 不构造设备驱动，因此只能证明编译、合同、调度和结果投影链路。需要验证仿真驱动时，下一阶段应明确选择隔离的模拟 启动图，并让 Uni-Lab OS 以真实动作模式构造仿真 Driver；它与真机 启动图 必须物理隔离。仿真 Driver 通过仍不证明真机联锁和运动安全。
+
+真机运行是另一项验收。必须重新核对连接、急停、联锁、点位、夹具、载荷、库存、人员和恢复方案，不能因为 AI 生成成功或 dry-run 通过就自动切换到 `normal`。
+
+## 可选：给 AI 接入 Workspace MCP
+
+如果使用的 AI 客户端支持 MCP，可在已安装的源码环境中增加可选依赖：
+
+```bash
+cd "$LAB_ROOT/Uni-Lab OS"
+python -m pip install -e ".[mcp]"
+unilab-mcp --workspace "$LAB_ROOT/user-device-package"
+```
+
+在 AI 客户端中把命令配置为 `unilab-mcp`，参数使用 `--workspace` 和 用户设备包 绝对路径。具体配置文件格式由 AI 客户端决定。它是由本地 MCP Client 拉起的命令型 Server，不是 Uni-Lab 自带的公网 MCP 服务；不要暴露 Workspace Host 端口或本地 token。
+
+MCP 适合让 AI 调用 `workspace_status`、`list_workflows`、`inspect_workflow`、`inspect_task` 和 `watch_task` 获取产品事实。开始时只授予读取和观察任务所需的能力。
+
+`wait_authoring` 只适合等待工作流 revision 增长或非空诊断。同一 revision 下产生无诊断的有效 candidate 时，它可能超时；这时应读取 `/api/v1/workflows/{uuid}/authoring` 的最新状态。当前尤其要遵守六条边界：
+
+- MCP 没有工作流源码生成、写入、导入、发布或运行前预检工具，生成仍由代码助手完成，写入仍走产品 Authoring/导入链路；
+- `run_workflow` 会直接创建 Task，而且不能提交完整的库存绑定和优先级字段；涉及物料绑定时使用 Uni-Lab OS 页面或 HTTP API。它只能在人工明确批准且产品预检通过后调用；
+- `run_workflow` 的 `operation_id` 只是关联元数据，不是创建 Task 的幂等键；响应不确定时先查询已有 Task，不能盲目重试；
+- 不使用 `debug_workflow`，它仍指向已退役、固定返回 HTTP 410 的旧 Debug API；调试请创建标准 step Task。
+- 不使用 `switch_workspace_authority`；该名字虽然仍被注册，当前 Workspace Host 会以 `backend_mode_removed` 拒绝；
+- 真机环境不要用 MCP 的单组件 stop 代替 `unilab workspace stop`，后者才执行 Uni-Lab OS 的完整排空与停止顺序。
+
+## 推荐的团队交付物
+
+每个由 AI 辅助创作的工作流至少保留：
+
+- 需求卡；
+- AI 使用的参考文件清单；
+- 动作/资源证据表；
+- 工作流源码和 `package.yaml` diff；
+- 编译与包检查结果；
+- 发布 revision；
+- 预检结果、dry-run Task UUID 和验收结论；
+- 真机验收是否完成的独立状态。
+
+这样后续维护者可以分清“AI 建议了什么”“产品验证了什么”“人批准了什么”和“设备实际执行了什么”。
+
+## 后续日常使用
+
+- 每次生成前让 AI 重新扫描当前 Catalog、驱动和相似流程，不复用过期动作记忆；
+- 用[工作流编排特性](workflow-features.md)作为提示词约束与代码审查手册；
+- 用[管理与运行工作流](workflows.md)完成发布、预检、Task 和修订管理。
 
 ---
 
@@ -6239,9 +6434,9 @@ Pod 为 `Running`、网页可以打开或单个内部组件健康，都不能替
 
 ---
 
-Source: /scenario-guide.md
+Source: /runtime-safety.md
 
-# 设备包验收
+# 运行模式、安全与恢复
 
 :::{admonition} 阅读角色
 - **业务负责人**：确认可运行范围、审批条件、结果要求和异常处置责任。
@@ -6249,84 +6444,189 @@ Source: /scenario-guide.md
 - **验收人员**：验证资源冲突、超时、取消、未知结果、安全停机和追溯记录。
 :::
 
-本页说明如何验证用户自行准备的设备包。验收目标不是“页面能打开”，而是确认设备、物料、工作流和现场约束在同一个配置版本下能够正确配合。
+## 开发模式与产品模式
 
-开始前先用[能力检查表](capability-matrix.md)确认设备包已经达到“已定义、已加载、已连接、已联调”中的哪一层；验收完成后，按[版本与验收记录](evidence.md)保存系统版本、设备包版本、启动图（Graph JSON）和结果证据。
+| 模式 | 用途 | 调度行为 | 可用控制 |
+| --- | --- | --- | --- |
+| `develop` | 新流程逐步验证 | 同一时间只接受一个开发任务 | 普通/step、暂停、选择下一节点、继续、取消 |
+| `product` | 已发布流程连续运行与并行调度 | 允许多个任务并存，按资源约束仲裁 | 普通运行；不提供单步调试 |
 
-## 先确认验收范围
+使用前应从 Workspace 状态确认实际运行模式。模式切换只影响之后创建的任务，不迁移已有任务。系统会在有活动任务、未满足条件或其他阻塞项时拒绝切换。
 
-设备包负责人应提供：设备包版本、启动图、运行模式、工作流清单、所需物料、可用设备、风险说明和预期结果。安装人员通过 `unilab package inspect` 与 `unilab workspace status` 核对实际加载内容，不能使用记忆中的数量或旧截图判断。
+:::{note}
+“产品模式”描述调度行为，不代表部署自动获得生产安全、鉴权、TLS 或真机验收。当前公网演示环境仍应按授权测试系统对待。
+:::
 
-## 分阶段验收
+## 任务为何能恢复
 
-| 阶段 | 目的 | 建议场景 |
+创建任务时，系统会冻结工作流修订、执行图、节点参数和设备绑定，并为任务维护持久状态。恢复依赖以下机制：
+
+- 幂等任务/命令身份，防止网络重试重复创建物理动作；
+- 设备、物料和工位执行锁；
+- 试剂数量预留和消耗台账；
+- Uni-Lab OS 的持久快照与日志；
+- 设备连接恢复、命令反馈和未知结果解决；
+- 人工确认、干预、转移结算和强制解锁的审计原因。
+
+浏览器页面不是运行权威。关闭或刷新 Uni-Lab OS 页面不会取消任务；重新打开后应从系统读取最新状态。
+
+## 资源锁与库存预留
+
+调度器只在节点的所有条件满足时派发：
+
+- 前置节点完成；
+- 设备在线且可派发；
+- 所需设备、物料和站点没有被其他任务占用；
+- 材料来源唯一且位置匹配；
+- 试剂数量已成功预留；
+- 人工确认或干预已经完成。
+
+锁与预留用于阻止逻辑冲突，但不能代替现场联锁。不要通过手工改库位、删除库存或强制释放来消除正常等待。
+
+## 物理动作与逻辑事实
+
+请始终区分三类事实：
+
+1. **计划事实**：工作流希望物料到达哪里、设备执行什么动作。
+2. **软件事实**：Job、feedback、返回值、锁和库存台账记录了什么。
+3. **现场事实**：物体实际位置、夹爪负载、容器盖状态、液位、秤读数和设备运动状态。
+
+正常情况下三者应一致。发生超时、断线、重启或人工介入时，必须先确认现场事实，再用转移结算、UNKNOWN 解决或干预入口让软件事实收敛。不要用计划事实猜测现场。
+
+## 机械臂未知结果
+
+用户设备包 机械臂网关会先持久化命令再下发，并按 `command_id` 精确重放。跨重启仍处于 in-flight 的命令会进入 `UNKNOWN`，系统不会自动再次运动。UNKNOWN 还会阻止新的机械臂运动，直到操作员完成只读对账并提交带原因的解决决定。
+
+这种 fail-closed 行为是为了避免“原动作已经完成，但网络没有返回”时重复取放或倒液。
+
+## 安全停机与排空
+
+管理员需要维护或升级运行时，应先让 Uni-Lab OS 进入排空状态：
+
+1. 停止派发新的设备 Job；
+2. 等待已在途 Job 在限定时间内结束；
+3. 核对没有未处理的 manual confirmation、UNKNOWN 或物料结算；
+4. 再停止 Uni-Lab OS；
+5. 启动后先检查 Readiness、设备数量和库存，再恢复派发。
+
+当前 用户设备包 Kubernetes 清单的终止流程最多等待约 60 秒进入持久恢复，Pod 终止宽限为 90 秒。不要以旧文档中的 600/660 秒作为当前事实。
+
+## 日志、Trace 与审计
+
+- 任务详情是用户第一入口；
+- Trace 关联 Uni-Lab OS 内部的调度与设备执行过程；
+- 用户设备包 动作日志记录 START/SUCCESS/FAIL、耗时和关键阶段，并对 password、token、authorization、access key 等字段脱敏；
+- 库存历史记录试剂和物料变化；
+- 恢复操作必须保留原因、期望修订或唯一 resolution ID。
+
+Trace 系统采用 fail-open：可观测性服务故障不应直接阻止工艺执行。因此“没有 Trace”不等于“任务没有运行”，需要结合任务和设备状态判断。
+
+## 公网与权限
+
+面向生产公网部署 Uni-Lab OS 时，应：
+
+- 只公开受控的文档和 Uni-Lab OS 页面入口；
+- 在反向代理或 Ingress 层启用 HTTPS 和身份认证；
+- 限制写 API、Swagger、管理和恢复接口；
+- 保持 PLC、内部调度接口、可观测性、数据库和设备控制通道在集群内；
+- 使用短期、可撤销凭证并记录访问审计。
+
+公开文档不会改变 Uni-Lab OS、设备或 PLC 仿真器的网络策略。
+
+完成安全边界检查后，按[Kubernetes 部署与上线](deployment.md)准备镜像、Workspace、启动图（Graph JSON）、Secret、持久卷、业务 Readiness、入口和回滚。
+
+---
+
+Source: /workflows.md
+
+# 工作流发布与任务运行
+
+:::{admonition} 阅读角色
+- **业务负责人**：确认实验目的、输入输出、参数单位、成功标准和失败处理。
+- **开发人员**：编写或编排节点、物料流、控制结构、设备绑定和正式合同。
+- **验收人员**：执行静态检查、预检、模拟运行、异常路径和受控真机验收。
+:::
+
+工作流面向一次完整实验目标。用户从已发布修订准备输入，先执行零写入预检，再创建普通或单步任务。
+
+本页解释已经进入产品目录的工作流怎样发布、预检和运行。第一次创作应先完成[工作流基础](workflow-concepts.md)、[用户设备包 手写教程](first-workflow.md)和[编排特性](workflow-features.md)，之后日常创作推荐使用[AI 辅助方式](ai-workflow-authoring.md)。
+
+开始实际运行前，还应准备[物料](materials.md)与[试剂](reagents.md)，发布被引用的[实验操作（子工作流）](experiment-operations.md)，并理解[运行模式、安全与恢复](runtime-safety.md)。
+
+## 两种创作入口
+
+- **AI 辅助创作（推荐）**：AI 先读取当前 Catalog、驱动、资源与 用户设备包 已跟踪流程，生成静态 Python DSL 草稿；人审查后通过“导入 Python”创建，再检查、发布和运行。
+- **人工创作**：作者直接编写静态 Python DSL，适合学习最小语法、修复诊断和审查 AI 结果。
+- **可复用实验操作**：在“实验室操作”画布创建或导入 `experiment_operation`，发布后插入上层流程。
+
+当前“新建工作流”按钮只是入口占位，不能从空白画布创建普通工作流；Uni-Lab OS 页面也没有通用的一键 AI 生成入口。AI 的推荐接入方式与安全边界见[用 AI 编写工作流](ai-workflow-authoring.md)，完整语法和约束见[工作流编排特性](workflow-features.md)。
+
+## 查找和理解工作流
+
+进入“工作流”页后：
+
+1. 按名称或关键词搜索。
+2. 打开详情，查看类型、当前修订和发布状态。
+3. 在“拓扑”中查看节点和依赖。
+4. 在“合同”中查看公开输入、输出和资源要求。
+5. 在“诊断”中处理定义错误或未绑定项。
+6. 在“源码”中只读查看或复制定义。
+
+工作流可以从 Python 或 JSON 导入。Python 文件只进入静态 AST 编译器，不会作为普通程序执行；导入用于创建新身份，不覆盖已经存在的工作流 UUID。
+
+## 发布修订
+
+产品模式只运行已发布内容。发布前应确认：
+
+- 节点与连线完整；
+- 每个设备动作绑定到有效实例；
+- 必填参数有来源；
+- 输入输出类型兼容；
+- 子工作流引用已发布合同；
+- 材料来源和站点选择不冲突。
+
+发布形成不可变修订。已经创建的任务持有自己的冻结执行图和源码快照，之后编辑或发布新版本不会改变它。
+
+## 准备一次运行
+
+打开“运行准备”，完成以下内容：
+
+1. 选择已发布修订。
+2. 填写公开输入。
+3. 为每个 `ResourceSlot` 选择具体物料或来源站点。
+4. 如果工作流暴露站点参数，保证同类来源没有选择同一占用位。
+5. 选择运行方式：普通或单步。
+6. 选择普通/高优先级并填写描述。
+7. 核对页面推导出的材料依赖和试剂数量要求。
+
+优先级只影响可调度节点之间的选择，不会绕过设备锁、工位锁、库存预留或安全条件。
+
+## 运行前检查
+
+预检可能给出三类结果：
+
+| 结果 | 含义 | 下一步 |
 | --- | --- | --- |
-| 静态检查 | 发现缺文件、重复 ID 和参数错误 | 检查设备包与 启动图，不启动设备 |
-| 模拟联调 | 验证动作合同、状态转换和失败路径 | 全模拟设备或协议仿真器 |
-| 单设备测试 | 验证一台真实设备的连接和基础动作 | 只加载获准测试的设备 |
-| 多设备联调 | 验证搬运、共享资源和步骤依赖 | 小批量、无危险材料的测试流程 |
-| 生产验收 | 验证正式 启动图、权限和安全规程 | 审批后的完整流程 |
+| `runnable_now` | 当前快照下满足运行条件。 | 可以提交；提交时仍会复检。 |
+| `temporarily_unavailable` | 定义有效，但设备、资源或库存暂时不可用。 | 查看阻塞明细，处理后重检。 |
+| `invalid` | 输入、定义、绑定或资源合同不成立。 | 修正配置或重新发布。 |
 
-前一阶段没有通过时，不进入下一阶段。
+预检是零写入操作：不会创建 Task、Job、执行锁或库存预留。任务提交会重新检查并原子地建立需要的运行状态，因此“刚才预检通过”不保证此刻一定立即运行。
 
-## 工作流覆盖建议
+## 普通运行与单步运行
 
-设备包至少应准备以下类型的验收工作流：
+- **普通运行**按依赖和资源条件持续调度，适合已验证流程。
+- **单步运行**创建标准 step Task，初始或切换后由操作员选择下一个可执行节点，适合开发模式验证。
 
-- 只读状态检查：不产生设备动作，用于确认实例和连接；
-- 单动作冒烟测试：用安全参数验证每类设备的一个核心动作；
-- 物料约束测试：验证物料类型、单位、容量、库位和占用规则；
-- 多设备串联测试：验证上一步输出能否正确传给下一台设备；
-- 共享资源测试：两个任务竞争同一设备或库位时应等待，而不是同时占用；
-- 故障测试：设备离线、参数越界、超时和人工取消都要有清楚结果。
+旧的 `/api/v1/debug/*` 断点调试接口已经固定返回 HTTP 410。不要使用旧 CLI、MCP 或 Workbench 中仍指向该接口的“debug launch/breakpoint”；当前正确路径是标准 step Task。
 
-## 创建任务前的业务核对
+## 组合工作流
 
-1. 工作流名称、用途和风险与本次验收一致。
-2. 输入参数标明单位、允许范围和默认值，默认值不会触发危险动作。
-3. 所有设备在线，且实例 ID 与 启动图 一致。
-4. 物料类型正确，数量、容量、状态和当前位置满足要求。
-5. 来源和目标库位存在、空闲且允许放置该物料。
-6. 模拟与真实设备没有混用，生产地址没有进入测试 启动图。
-7. 急停、互锁、人员防护和现场清场已经按管理制度确认。
+工作流可以引用已发布实验操作。调度器在运行计划中原子展开组合调用，同时保留合同版本、参数、设备绑定和物料依赖。不要依赖“子操作最新版本”这种隐式行为；每次修改后应重新检查并发布上层工作流。
 
-## 通用端到端示例
+## 提交后的去向
 
-下面是一条与具体行业无关的样品处理流程，用于说明验收思路：
-
-1. 从原料区取得容器并确认容器类型。
-2. 由加料设备按目标量加入物料。
-3. 将容器移动到混合设备，按规定时间和速度处理。
-4. 将样品送到检测设备并记录结果。
-5. 将容器送回指定库位，提交最终物料位置和状态。
-
-验收时为每一步记录：调用的设备实例、输入参数、开始/结束时间、输出、物料位置变化和异常。示例中的设备名称必须替换为用户设备包实际定义的实例，不能照抄为生产配置。
-
-## 如何判断等待与故障
-
-共享设备、机械臂或唯一库位被占用时，任务可以进入等待。应在任务详情中看到具体等待对象；资源释放后任务继续。以下情况应判为故障并处理，而不是无限等待：设备持续离线、目标库位不存在、输入不合法、互锁未满足、动作超过规定超时。
-
-## 结果验收
-
-| 结果 | 需要确认 |
-| --- | --- |
-| 任务成功 | 所有必要步骤成功，且没有被忽略的设备告警 |
-| 设备输出 | 数值有单位和合理范围，文件或检测结果确实存在 |
-| 物料变化 | 数量、状态和位置与实际现场一致 |
-| 调度记录 | 共享资源没有被重复占用，等待和释放顺序可解释 |
-| 失败结果 | 明确指出失败步骤、设备和原因，不把超时当成功 |
-
-设备发出的“目标值”不一定等于传感器实测值。设备包应为两类字段使用不同名称，并在页面说明其业务含义。
-
-## 验收完成的判据
-
-- 使用的 Uni-Lab OS、设备包和 启动图 版本均有记录；
-- 关键工作流在规定模式下通过；
-- 参数越界、设备离线和超时能够安全失败；
-- 物料账面位置与现场一致；
-- 生产所需的人工步骤、权限和恢复办法已写入交付记录。
-
-未满足任一项时，应记录问题并回到相应的设备、物料或部署章节修正。
+创建成功后转到“任务”页。任务会经历等待资源、运行、暂停、需要人工处理、成功、失败或取消等状态。继续按[任务运行、并行调度与异常处理](tasks.md)查看节点、理解等待、处理人工确认并核对结果。
 
 ---
 
@@ -6346,7 +6646,7 @@ Source: /troubleshooting.md
 
 ### `unilab` 命令不存在
 
-先执行 `mamba activate unilabos`，再检查 `python -m pip show unilabos`。源码教程还应确认 `python scripts/dev_install.py --use-pip` 已成功结束。不要在系统 Python 和 Conda Python 之间混装。
+先激活安装 Uni-Lab OS 的 Conda 环境，再检查 `python -m pip show unilabos`。源码安装还应确认 `pip install -e .` 和 `uv pip install -r unilabos/utils/requirements.txt` 已成功结束。不要在系统 Python 和 Conda Python 之间混装。
 
 ### `import rclpy` 失败
 

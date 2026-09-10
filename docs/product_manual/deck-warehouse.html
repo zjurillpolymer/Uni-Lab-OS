@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="光电堆栈与旋转堆栈：物料 + 设备" href="stack.html"><link rel="prev" title="2. 物料定义模板" href="material-template.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>工作站台面与仓库 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>工作站台面与仓库<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>工作站台面与仓库<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -369,7 +371,7 @@
 <p>业务人员能用现场标签找到每个位置；页面显示的排列方向与实物一致；每个位置只接受经过验证的物料；系统重启后仍能恢复相同的位置名称和层级关系。</p>
 </div>
 <section id="id2">
-<h2>1. 先画出现场地图<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>1. 先画出现场地图<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>开始写代码前先形成一张经现场确认的表：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -413,17 +415,17 @@
 </div>
 </section>
 <section id="id3">
-<h2>2. 使用仓库工厂生成固定位置<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>2. 使用仓库工厂生成固定位置<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>当前代码提供 <code class="docutils literal notranslate"><span class="pre">warehouse_factory</span></code>，适合规则排列的仓库：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">resource</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.resources.warehouse</span><span class="w"> </span><span class="kn">import</span> <span class="n">warehouse_factory</span>
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_warehouse_4x4"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"warehouse"</span><span class="p">],</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"四行四列板库"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"用于存放标准微孔板载架。"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_warehouse_4x4&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;warehouse&quot;</span><span class="p">],</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;四行四列板库&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;用于存放标准微孔板载架。&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">my_lab_warehouse_4x4</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">warehouse_factory</span><span class="p">(</span>
@@ -440,7 +442,7 @@
         <span class="n">resource_size_x</span><span class="o">=</span><span class="mf">127.0</span><span class="p">,</span>
         <span class="n">resource_size_y</span><span class="o">=</span><span class="mf">86.0</span><span class="p">,</span>
         <span class="n">resource_size_z</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
-        <span class="n">layout</span><span class="o">=</span><span class="s2">"row-major"</span><span class="p">,</span>
+        <span class="n">layout</span><span class="o">=</span><span class="s2">&quot;row-major&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -487,7 +489,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">row-major</span></code> 表示先按行编号，<code class="docutils literal notranslate"><span class="pre">col-major</span></code> 表示先按列编号，<code class="docutils literal notranslate"><span class="pre">vertical-col-major</span></code> 用于竖向仓库并反转 Y 方向。必须选用与现场标签和设备协议一致的一种。</p>
 </section>
 <section id="id4">
-<h2>3. 不规则层列用载架登记，仍算仓库<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>3. 不规则层列用载架登记，仍算仓库<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>行列工厂适合规整网格。层数、列距不规则时，用 <code class="docutils literal notranslate"><span class="pre">BottleCarrier</span> <span class="pre">+</span> <span class="pre">ResourceHolder</span></code>（容器/小瓶）或 <code class="docutils literal notranslate"><span class="pre">PlateCarrier</span> <span class="pre">+</span> <span class="pre">PlateHolder</span></code>（微孔板）列出每个放置位。它们仍然是仓库/载架，不是设备：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coordinate</span><span class="p">,</span> <span class="n">ResourceHolder</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">resource</span>
@@ -495,19 +497,19 @@
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_vial_stack"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"My Lab 样品瓶堆栈"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"my_lab"</span><span class="p">,</span> <span class="s2">"warehouse"</span><span class="p">,</span> <span class="s2">"stack"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"2 层 × 3 列；每个放置位最多放一只 50 mL 样品瓶。"</span><span class="p">,</span>
-    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">"site_count"</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_vial_stack&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;My Lab 样品瓶堆栈&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_lab&quot;</span><span class="p">,</span> <span class="s2">&quot;warehouse&quot;</span><span class="p">,</span> <span class="s2">&quot;stack&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;2 层 × 3 列；每个放置位最多放一只 50 mL 样品瓶。&quot;</span><span class="p">,</span>
+    <span class="n">metadata</span><span class="o">=</span><span class="p">{</span><span class="s2">&quot;site_count&quot;</span><span class="p">:</span> <span class="mi">6</span><span class="p">},</span>
 <span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">make_vial_stack</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"my-lab-vial-stack"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BottleCarrier</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">make_vial_stack</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;my-lab-vial-stack&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">BottleCarrier</span><span class="p">:</span>
     <span class="n">sites</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">layer</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">):</span>
         <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">3</span><span class="p">):</span>
-            <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">"L</span><span class="si">{</span><span class="n">layer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">C</span><span class="si">{</span><span class="n">column</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">"</span>
+            <span class="n">label</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;L</span><span class="si">{</span><span class="n">layer</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">C</span><span class="si">{</span><span class="n">column</span><span class="w"> </span><span class="o">+</span><span class="w"> </span><span class="mi">1</span><span class="si">}</span><span class="s2">&quot;</span>
             <span class="n">holder</span> <span class="o">=</span> <span class="n">ResourceHolder</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">_</span><span class="si">{</span><span class="n">label</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="n">size_x</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
                 <span class="n">size_y</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
                 <span class="n">size_z</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>
@@ -518,7 +520,7 @@
                 <span class="n">z</span><span class="o">=</span><span class="mf">20.0</span> <span class="o">+</span> <span class="n">layer</span> <span class="o">*</span> <span class="mf">100.0</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">holder</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span>
-                <span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">],</span>
+                <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">],</span>
             <span class="p">}</span>
             <span class="n">sites</span><span class="p">[</span><span class="n">label</span><span class="p">]</span> <span class="o">=</span> <span class="n">holder</span>
 
@@ -528,7 +530,7 @@
         <span class="n">size_y</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>
         <span class="n">size_z</span><span class="o">=</span><span class="mf">220.0</span><span class="p">,</span>
         <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-        <span class="n">category</span><span class="o">=</span><span class="s2">"vial_stack"</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="s2">&quot;vial_stack&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
@@ -536,21 +538,21 @@
 <p>若这排槽位还要读光电或由电机转到交互位，必须在同一复合实例中保留物料树，并增加设备动作和状态，见<a class="reference internal" href="stack.html"><span class="std std-doc">光电堆栈与旋转堆栈：物料 + 设备</span></a>。</p>
 </section>
 <section id="deck">
-<h2>4. 在 Deck 中组装多个仓库<a class="headerlink" href="#deck" title="Link to this heading">¶</a></h2>
+<h2>4. 在 Deck 中组装多个仓库<a class="headerlink" href="#deck" title="链接到此标题。">¶</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coordinate</span><span class="p">,</span> <span class="n">Deck</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">resource</span>
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_station_deck"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"deck"</span><span class="p">],</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"装配工作站台面"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"包含左右两个板库。"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_station_deck&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;deck&quot;</span><span class="p">],</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;装配工作站台面&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;包含左右两个板库。&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MyLabStationDeck</span><span class="p">(</span><span class="n">Deck</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"my_lab_station_deck"</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;my_lab_station_deck&quot;</span><span class="p">,</span>
         <span class="n">size_x</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">2700.0</span><span class="p">,</span>
         <span class="n">size_y</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1080.0</span><span class="p">,</span>
         <span class="n">size_z</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1500.0</span><span class="p">,</span>
@@ -562,8 +564,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="n">left</span> <span class="o">=</span> <span class="n">my_lab_warehouse_4x4</span><span class="p">(</span><span class="s2">"left_store"</span><span class="p">)</span>
-        <span class="n">right</span> <span class="o">=</span> <span class="n">my_lab_warehouse_4x4</span><span class="p">(</span><span class="s2">"right_store"</span><span class="p">)</span>
+        <span class="n">left</span> <span class="o">=</span> <span class="n">my_lab_warehouse_4x4</span><span class="p">(</span><span class="s2">&quot;left_store&quot;</span><span class="p">)</span>
+        <span class="n">right</span> <span class="o">=</span> <span class="n">my_lab_warehouse_4x4</span><span class="p">(</span><span class="s2">&quot;right_store&quot;</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assign_child_resource</span><span class="p">(</span><span class="n">left</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">Coordinate</span><span class="p">(</span><span class="o">-</span><span class="mf">200.0</span><span class="p">,</span> <span class="mf">400.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assign_child_resource</span><span class="p">(</span><span class="n">right</span><span class="p">,</span> <span class="n">location</span><span class="o">=</span><span class="n">Coordinate</span><span class="p">(</span><span class="mf">2350.0</span><span class="p">,</span> <span class="mf">400.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">))</span>
 </pre></div>
@@ -571,27 +573,27 @@
 <p><code class="docutils literal notranslate"><span class="pre">setup=False</span></code> 必须保留。启动图（Graph JSON）中填写 <code class="docutils literal notranslate"><span class="pre">setup:</span> <span class="pre">true</span></code> 时才组装默认台面，避免系统只是读取模板时就重复创建子物料。构造函数还应接受反序列化时可能传回的字段，通常通过明确参数和 <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> 兼容。</p>
 </section>
 <section id="available-sites">
-<h2>5. 不规则位置使用 <code class="docutils literal notranslate"><span class="pre">available_sites</span></code><a class="headerlink" href="#available-sites" title="Link to this heading">¶</a></h2>
+<h2>5. 不规则位置使用 <code class="docutils literal notranslate"><span class="pre">available_sites</span></code><a class="headerlink" href="#available-sites" title="链接到此标题。">¶</a></h2>
 <p>设备上的固定位置不规则时，不要强行套用行列工厂。可以直接登记位置清单：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="n">AVAILABLE_SITES</span> <span class="o">=</span> <span class="p">[{</span>
-    <span class="s2">"index"</span><span class="p">:</span> <span class="s2">"T1"</span><span class="p">,</span>
-    <span class="s2">"label"</span><span class="p">:</span> <span class="s2">"T1"</span><span class="p">,</span>
-    <span class="s2">"visible"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
-    <span class="s2">"position_x"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="s2">"position_y"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="s2">"position_z"</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
-    <span class="s2">"width"</span><span class="p">:</span> <span class="mf">128.0</span><span class="p">,</span>
-    <span class="s2">"length"</span><span class="p">:</span> <span class="mf">86.0</span><span class="p">,</span>
-    <span class="s2">"depth"</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
-    <span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_96_well_plate"</span><span class="p">],</span>
-    <span class="s2">"description"</span><span class="p">:</span> <span class="s2">"台面左前方板位"</span><span class="p">,</span>
+    <span class="s2">&quot;index&quot;</span><span class="p">:</span> <span class="s2">&quot;T1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;label&quot;</span><span class="p">:</span> <span class="s2">&quot;T1&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;visible&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span>
+    <span class="s2">&quot;position_x&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;position_y&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;position_z&quot;</span><span class="p">:</span> <span class="mf">0.0</span><span class="p">,</span>
+    <span class="s2">&quot;width&quot;</span><span class="p">:</span> <span class="mf">128.0</span><span class="p">,</span>
+    <span class="s2">&quot;length&quot;</span><span class="p">:</span> <span class="mf">86.0</span><span class="p">,</span>
+    <span class="s2">&quot;depth&quot;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+    <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_96_well_plate&quot;</span><span class="p">],</span>
+    <span class="s2">&quot;description&quot;</span><span class="p">:</span> <span class="s2">&quot;台面左前方板位&quot;</span><span class="p">,</span>
 <span class="p">}]</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">index</span></code> 是系统内部稳定索引，<code class="docutils literal notranslate"><span class="pre">label</span></code> 是页面和现场共同使用的位置名称。两者在同一模板中都不能重复。<code class="docutils literal notranslate"><span class="pre">visible=false</span></code> 只表示页面不显示，不能用来绕过库存和安全检查。</p>
 </section>
 <section id="id5">
-<h2>6. 交付前必须检查<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>6. 交付前必须检查<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>用一件标准物料逐个核对所有启用位置；</p></li>
 <li><p>页面上的上下、左右和层级方向与实物一致；</p></li>
@@ -679,10 +681,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

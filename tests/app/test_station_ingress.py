@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import uuid4
@@ -12,6 +13,11 @@ from fastapi.testclient import TestClient
 
 from unilabos.app.scheduler.inventory.api import create_app
 from unilabos.app.scheduler.inventory.backend_contract import BackendResourceService
+from unilabos.app.scheduler.inventory.dispatch_admission import (
+    DispatchAdmissionDecision,
+    DispatchAdmissionRequest,
+    DispatchResource,
+)
 from unilabos.app.scheduler.inventory.ingress import (
     IngressReservationError,
     StationIngressAuthority,
@@ -141,6 +147,47 @@ def _reserve(
     )
 
 
+def _claim_resources(
+    store: InventoryStore,
+    resources: tuple[DispatchResource, ...],
+) -> str:
+    """创建一个活动库存 Claim，返回其稳定身份。"""
+
+    decision = _admit_resources(store, resources)
+    assert decision.acquired
+    return decision.claim_uuid
+
+
+def _admit_resources(
+    store: InventoryStore,
+    resources: tuple[DispatchResource, ...],
+) -> DispatchAdmissionDecision:
+    """尝试创建库存 Claim，供测试同时断言取得与等待结果。"""
+
+    return InventoryService(store).station_resources.acquire_dispatch_permit(
+        DispatchAdmissionRequest(
+            effect_uuid=str(uuid4()),
+            task_uuid=str(uuid4()),
+            job_uuid=str(uuid4()),
+            attempt=1,
+            parameter_hash="sha256:station-ingress-claim",
+            expected_change_set={"kind": "no_inventory_change"},
+            resources=resources,
+        )
+    )
+
+
+def _site_resource(identities: dict[str, Any], site_uuid: str) -> DispatchResource:
+    """构造入口架下一个库位的规范派发资源。"""
+
+    return DispatchResource(
+        lock_key=f"material/{identities['rack']}/site/{site_uuid}/exclusive",
+        scope="material_site",
+        material_uuid=identities["rack"],
+        site_uuid=site_uuid,
+    )
+
+
 def test_ingress_selects_first_available_site_and_replays_idempotently(
     ingress_inventory,
 ) -> None:
@@ -163,6 +210,212 @@ def test_ingress_selects_first_available_site_and_replays_idempotently(
             candidate_site_uuids=identities["sites"],
             ttl_seconds=30,
         )
+
+
+def test_ingress_reservation_keeps_carrier_exclusive_across_other_sites(
+    ingress_inventory,
+) -> None:
+    """同一载体已分配给入口运输后，不能再预留到另一个空库位。"""
+
+    _store, _clock, authority, identities = ingress_inventory
+    first = _reserve(authority, identities)
+    other_site = next(
+        site_uuid
+        for site_uuid in identities["sites"]
+        if site_uuid != first["site_uuid"]
+    )
+
+    with pytest.raises(IngressReservationError, match="没有可接收") as raised:
+        authority.reserve(
+            idempotency_key="same-carrier-other-site",
+            carrier_material_uuid=first["carrier_material_uuid"],
+            candidate_site_uuids=[other_site],
+            ttl_seconds=30,
+        )
+
+    assert raised.value.code == "ingress_capacity_unavailable"
+
+
+def test_inventory_reopen_backfills_active_ingress_resource_locks(
+    ingress_inventory,
+) -> None:
+    """旧库升级时必须为仍活动的入口预留补齐持续资源锁。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    reserved = _reserve(authority, identities)
+    with store.transaction() as connection:
+        connection.execute(
+            "DELETE FROM station_ingress_reservation_resource "
+            "WHERE reservation_uuid=?",
+            (reserved["uuid"],),
+        )
+    path = store.path
+    store.close()
+
+    reopened = InventoryStore(path)
+    try:
+        rows = reopened.query_all(
+            "SELECT lock_key FROM station_ingress_reservation_resource "
+            "WHERE reservation_uuid=? AND active=1 ORDER BY lock_key",
+            (reserved["uuid"],),
+        )
+        assert len(rows) == 4
+    finally:
+        reopened.close()
+
+
+def test_ingress_refuses_transport_when_persistent_resource_set_is_corrupt(
+    ingress_inventory,
+) -> None:
+    """活动资源键缺失时不能进入物理运输边界。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    reserved = _reserve(authority, identities)
+    with store.transaction() as connection:
+        connection.execute(
+            "DELETE FROM station_ingress_reservation_resource "
+            "WHERE reservation_uuid=? AND lock_key=?",
+            (
+                reserved["uuid"],
+                f"material/{reserved['carrier_material_uuid']}/exclusive",
+            ),
+        )
+
+    with pytest.raises(IngressReservationError, match="持续资源集合不完整") as raised:
+        authority.mark_in_transit(reserved["uuid"])
+
+    assert raised.value.code == "ingress_reservation_corrupt"
+    assert store.query_one(
+        "SELECT state FROM station_ingress_reservation WHERE uuid=?",
+        (reserved["uuid"],),
+    ) == {"state": "reserved"}
+
+
+def test_legacy_relation_write_cannot_bypass_ingress_reservation(
+    ingress_inventory,
+) -> None:
+    """旧 relation 写入口不能把入口已预留的载体提前落入目标库位。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    reserved = _reserve(authority, identities)
+    site = store.query_one(
+        "SELECT name FROM site WHERE uuid=?",
+        (reserved["site_uuid"],),
+    )
+
+    with pytest.raises(sqlite3.IntegrityError, match="active claim"):
+        with store.transaction() as connection:
+            connection.execute(
+                "INSERT INTO resource_relation(parent_uuid,slot_id,child_uuid,version) "
+                "VALUES (?,?,?,1)",
+                (
+                    identities["rack"],
+                    site["name"],
+                    reserved["carrier_material_uuid"],
+                ),
+            )
+
+    assert authority.get(reserved["uuid"])["state"] == "reserved"
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (reserved["site_uuid"],),
+    ) == {"occupied_material_uuid": None}
+
+
+def test_legacy_relation_write_cannot_bypass_dispatch_claim(
+    ingress_inventory,
+) -> None:
+    """旧 relation 写入口不能移动正由动作 Claim 持有的物料。"""
+
+    store, _clock, _authority, identities = ingress_inventory
+    carrier_uuid = identities["carriers"][0]
+    _claim_resources(
+        store,
+        (
+            DispatchResource(
+                lock_key=f"material/{carrier_uuid}/exclusive",
+                scope="material",
+                material_uuid=carrier_uuid,
+            ),
+        ),
+    )
+    target_site_uuid = identities["sites"][0]
+    site = store.query_one("SELECT name FROM site WHERE uuid=?", (target_site_uuid,))
+
+    with pytest.raises(sqlite3.IntegrityError, match="active claim"):
+        with store.transaction() as connection:
+            connection.execute(
+                "INSERT INTO resource_relation(parent_uuid,slot_id,child_uuid,version) "
+                "VALUES (?,?,?,1)",
+                (identities["rack"], site["name"], carrier_uuid),
+            )
+
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (target_site_uuid,),
+    ) == {"occupied_material_uuid": None}
+
+
+def test_ingress_reserve_skips_site_held_by_active_dispatch_claim(
+    ingress_inventory,
+) -> None:
+    """入口预留跳过被作业 Claim 占用的首选 Site，并保持稳定候选排序。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    preferred_site = identities["sites"][1]
+    fallback_site = identities["sites"][0]
+    _claim_resources(store, (_site_resource(identities, preferred_site),))
+
+    reserved = _reserve(authority, identities)
+
+    assert reserved["site_uuid"] == fallback_site
+
+
+def test_ingress_reserve_reports_capacity_when_all_sites_have_active_claims(
+    ingress_inventory,
+) -> None:
+    """全部候选 Site 被活动 Claim 占用时返回稳定容量错误且不创建预留。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    _claim_resources(
+        store,
+        tuple(_site_resource(identities, site_uuid) for site_uuid in identities["sites"]),
+    )
+
+    with pytest.raises(IngressReservationError, match="没有可接收") as raised:
+        _reserve(authority, identities)
+
+    assert raised.value.code == "ingress_capacity_unavailable"
+    assert store.query_all("SELECT * FROM station_ingress_reservation") == []
+
+
+def test_ingress_reserve_reports_capacity_while_owner_device_is_claimed(
+    ingress_inventory,
+) -> None:
+    """入口架的设备 Claim 会保护其全部入口 Site，不能被预留流程绕过。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    with store.transaction() as connection:
+        connection.execute(
+            "UPDATE material SET type='device' WHERE uuid=?",
+            (identities["rack"],),
+        )
+    _claim_resources(
+        store,
+        (
+            DispatchResource(
+                lock_key=f"/devices/{identities['rack']}",
+                scope="device",
+                material_uuid=identities["rack"],
+            ),
+        ),
+    )
+
+    with pytest.raises(IngressReservationError, match="没有可接收") as raised:
+        _reserve(authority, identities)
+
+    assert raised.value.code == "ingress_capacity_unavailable"
+    assert store.query_all("SELECT * FROM station_ingress_reservation") == []
 
 
 def test_reserved_ingress_expires_and_releases_site(ingress_inventory) -> None:
@@ -245,6 +498,37 @@ def test_in_transit_never_expires_and_receive_commits_site_occupancy(
     assert received["state"] == "received"
     assert site == {"occupied_material_uuid": identities["carriers"][0]}
     assert carrier == {"parent_uuid": identities["rack"]}
+
+
+@pytest.mark.parametrize("claimed_resource", ["target_site", "carrier_material"])
+def test_ingress_blocks_claim_from_reservation_until_receive(
+    ingress_inventory,
+    claimed_resource: str,
+) -> None:
+    """预留和运输中都持续保护目标 Site/载体，接收完成后才释放。"""
+
+    store, _clock, authority, identities = ingress_inventory
+    reserved = _reserve(authority, identities)
+    if claimed_resource == "target_site":
+        resource = _site_resource(identities, reserved["site_uuid"])
+    else:
+        carrier_uuid = reserved["carrier_material_uuid"]
+        resource = DispatchResource(
+            lock_key=f"material/{carrier_uuid}/exclusive",
+            scope="material",
+            material_uuid=carrier_uuid,
+        )
+    before_transport = _admit_resources(store, (resource,))
+    authority.mark_in_transit(reserved["uuid"])
+    during_transport = _admit_resources(store, (resource,))
+    authority.receive(reserved["uuid"])
+    after_receive = _admit_resources(store, (resource,))
+
+    assert not before_transport.acquired
+    assert before_transport.wait_code == "station_ingress_reserved"
+    assert not during_transport.acquired
+    assert during_transport.wait_code == "station_ingress_reserved"
+    assert after_receive.acquired
 
 
 def test_in_transit_requires_manual_cancel_reason(ingress_inventory) -> None:

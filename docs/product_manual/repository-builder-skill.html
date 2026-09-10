@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="repository-builder-skill.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="设备包验收" href="scenario-guide.html"><link rel="prev" title="AI 编写工作流（推荐）" href="ai-workflow-authoring.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>使用 AI 设备包生成器（实验性） - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
-<ul>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
+<ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,181 +355,289 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="ai">
-<h1>使用 AI 设备包生成器（实验性）<a class="headerlink" href="#ai" title="Link to this heading">¶</a></h1>
+<h1>使用 AI 设备包生成器（实验性）<a class="headerlink" href="#ai" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
-<p class="admonition-title">阅读角色</p>
+<p class="admonition-title">这页适合谁</p>
 <ul class="simple">
-<li><p><strong>业务负责人</strong>：确认设备包范围、现场对象、业务名称和交付目标。</p></li>
-<li><p><strong>开发人员</strong>：建立目录、登记清单、依赖、启动图和测试。</p></li>
-<li><p><strong>验收人员</strong>：确认设备包能够被检查、加载、模拟启动并留下版本记录。</p></li>
+<li><p><strong>业务负责人</strong>：说明设备、动作、单位、现场限制和交付目标，不需要编写代码。</p></li>
+<li><p><strong>开发人员</strong>：让 Coding Agent 在明确边界内创建或修改设备包，并运行当前仓库支持的检查。</p></li>
+<li><p><strong>验收人员</strong>：区分静态检查、构建、模拟加载和真机验收，不把较低等级的证据写成生产通过。</p></li>
 </ul>
 </div>
-<p><code class="docutils literal notranslate"><span class="pre">unilab-domain-repo-builder</span></code> 是本地 UniLab Workbench 随附的 Coding Agent Skill。它帮助新手把实验室事实整理成可维护的设备包，也可以迁移旧 Driver，或诊断 Package、Registry、Catalog、工作流往返和运行加载问题。</p>
-<p>这是安装主路径之外的可选开发分支。没有 Workbench 或 Agent 时，Uni-Lab OS 页面、CLI 和工作流运行仍然可用；用户可以直接按<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>手写同一份设备包合同。</p>
+<p>当前 <code class="docutils literal notranslate"><span class="pre">Uni-Lab-OS</span></code> 仓库已经提供 <code class="docutils literal notranslate"><span class="pre">unilab-domain-repo-builder</span></code> Skill。它可以协助新建设备包、迁移旧代码或分层诊断设备包问题，但不会自动知道实验室现场事实，也不能代替人工审查和产品验收。</p>
 <div class="admonition warning">
 <p class="admonition-title">警告</p>
-<p>这是辅助开发能力，不是一键生成器，也不代表生产就绪。AI 生成的代码必须经过人工审查和产品验收。Uni-Lab OS 业务页面没有 Agent 入口；本页操作只适用于安装在开发机上的本地 Workbench。</p>
+<p>这不是一键生成器。地址、单位、超时、联锁、物料位置、工作流 UUID 和凭证必须来自用户确认的资料。资料缺失时，AI 应停止猜测并列出待确认项。</p>
 </div>
 <section id="id1">
-<h2>它负责什么<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>当前仓库中可以使用的内容<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
+<p>先将本机的 Uni-Lab OS 源码目录填写为通用变量：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">UNILAB_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/Uni-Lab-OS&quot;</span>
+</pre></div>
+</div>
+<p>在该源码仓库中可以核对到：</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>路径</p></th>
+<th class="head"><p>用途</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">$UNILAB_ROOT/</span></code></p></td>
+<td><p>Uni-Lab OS 源码、CLI、设备包合同和产品手册</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/SKILL.md</span></code></p></td>
+<td><p>新建、迁移、诊断和验证设备包的 Coding Agent 指南</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">$UNILAB_ROOT/.cursor/skills/unilab-domain-repo-builder/references/</span></code></p></td>
+<td><p>包模板、装饰器和 Workflow Python 合同</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">$UNILAB_ROOT/.cursor/skills/add-device/SKILL.md</span></code></p></td>
+<td><p>编写单个设备驱动时的补充参考</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">PLC-Sim/</span></code></p></td>
+<td><p>可选的 PLC、OPC UA 和 Modbus 联调工具；仅在设备包明确需要时使用</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>先在终端执行只读检查：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$UNILAB_ROOT</span><span class="s2">/setup.py&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$UNILAB_ROOT</span><span class="s2">/unilabos/package_manager/cli.py&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$UNILAB_ROOT</span><span class="s2">/.cursor/skills/unilab-domain-repo-builder/SKILL.md&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$UNILAB_ROOT</span><span class="s2">/.cursor/skills/add-device/SKILL.md&quot;</span>
+</pre></div>
+</div>
+<p>四条命令都不输出错误，才说明本页引用的 Uni-Lab OS 文件在当前仓库中存在。<code class="docutils literal notranslate"><span class="pre">PLC-Sim</span></code> 是可选工具，不是设备包开发或 Uni-Lab OS 启动的必需条件。</p>
+</section>
+<section id="id2">
+<h2>AI 能做什么<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
 <tr class="row-odd"><th class="head"><p>场景</p></th>
 <th class="head"><p>可以请 AI 完成</p></th>
-<th class="head"><p>它不负责</p></th>
+<th class="head"><p>必须由人确认</p></th>
 </tr>
 </thead>
 <tbody>
 <tr class="row-even"><td><p>新建设备包</p></td>
-<td><p>建立包身份、目录、设备、资源、启动图（Graph JSON）、工作流和测试骨架</p></td>
-<td><p>猜测真实地址、单位、联锁或物料事实</p></td>
+<td><p>创建包结构、清单、设备和工作流骨架，补充测试</p></td>
+<td><p>业务名称、设备型号、动作含义、单位和交付范围</p></td>
 </tr>
 <tr class="row-odd"><td><p>迁移设备包</p></td>
-<td><p>盘点旧代码，逐步迁移装饰器、清单、模拟器和验证链路</p></td>
-<td><p>静默删除兼容代码或改写现场协议</p></td>
+<td><p>盘点旧代码，逐步迁移装饰器、清单、模拟器和测试</p></td>
+<td><p>兼容范围、现场协议和允许删除的旧能力</p></td>
 </tr>
-<tr class="row-even"><td><p>诊断设备包</p></td>
-<td><p>按 Package → Registry → Catalog → Authoring → Runtime 分层定位失败</p></td>
-<td><p>用后层绕过前层错误，或把仿真成功写成真机通过</p></td>
+<tr class="row-even"><td><p>修改设备</p></td>
+<td><p>找到同类实现，小范围修改 Driver、模拟器、启动图和测试</p></td>
+<td><p>地址表、参数、超时、安全联锁和恢复方式</p></td>
+</tr>
+<tr class="row-odd"><td><p>排查失败</p></td>
+<td><p>按 Package、Registry、Catalog、Authoring、Runtime 分层定位</p></td>
+<td><p>现场连接、硬件故障和真机验收结论</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>完整的设备包加载合同仍以<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>为准。Skill 负责读取事实、生成或修改代码和执行检查，不取代 Uni-Lab OS 的编译器、任务调度、库存权威或安全联锁。</p>
-</section>
-<section id="id2">
-<h2>前置条件<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
-<p>开始前应准备：</p>
-<ul class="simple">
-<li><p>已按<a class="reference internal" href="interfaces.html#id2"><span class="std std-ref">开发工具与接口</span></a>中的说明启动本地 UniLab Workbench；</p></li>
-<li><p>AionUi <code class="docutils literal notranslate"><span class="pre">2.1.52+</span></code> 的本地 Agent 载荷；非默认位置用 <code class="docutils literal notranslate"><span class="pre">UNILAB_AIONUI_APP</span></code> 指定，且不要设置 <code class="docutils literal notranslate"><span class="pre">UNILAB_AGENT_ENABLED=0</span></code>；</p></li>
-<li><p>一个已经存在、可写且至少含 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code> 的 Workspace 目录；</p></li>
-<li><p>该 Workspace 实际使用的 Uni-Lab OS Python 环境；</p></li>
-<li><p>设备协议、地址表、参数单位、资源与放置位（Site）、目标工作流和仿真范围；</p></li>
-<li><p>Git 状态或其他可回退副本，且真实凭证没有写入需求卡。</p></li>
-</ul>
-<p>新建设备包不能直接从完全空的目录启动；桌面 Workbench 欢迎页会拒绝不含 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code> 的目录。先按下一节创建最小启动壳，再把设备包根目录选为 Workspace。</p>
-<p>不要让 Agent 在错误的父目录、另一个设备包或无法回退的共享目录中工作。</p>
+<p>AI 不应连接真机、启动实验、发布包、写入凭证或更改生产配置，除非业务负责人对本次任务明确授权。</p>
 </section>
 <section id="id3">
-<h2>为新设备包创建启动壳<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
-<p>先建立下面两个目录层级；文件必须位于目标设备包根目录之下，而不是放在它的父目录：</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>new-lab/
-└── deployment/
-    └── local_config.py
+<h2>第一步：确认目标设备包<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
+<p>设备包是用户自己的项目，不由本手册虚构名称。先取得它的绝对路径，并确认至少包含以下文件：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/user-device-package&quot;</span>
+
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/pyproject.toml&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/package.yaml&quot;</span>
+<span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/deployment/local_config.py&quot;</span>
 </pre></div>
 </div>
-<p>把以下最小配置写入 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code>：</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BasicConfig</span><span class="p">:</span>
-    <span class="n">ak</span> <span class="o">=</span> <span class="s2">""</span>
-    <span class="n">sk</span> <span class="o">=</span> <span class="s2">""</span>
-    <span class="n">disable_browser</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">no_update_feedback</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">log_level</span> <span class="o">=</span> <span class="s2">"INFO"</span>
-</pre></div>
-</div>
-<p>这一步只让 Workbench 能识别并打开该 Workspace，以便独立启动的 Agent 继续建立 Package。此时默认 启动图 和包结构尚不存在，Uni-Lab OS 启动失败是预期现象；它不代表设备包已可安装或能启动设备。不要在文件中填写真实密钥。</p>
-</section>
-<section id="workbench-agent-skill">
-<h2>在 Workbench 中确认 Agent 和 Skill<a class="headerlink" href="#workbench-agent-skill" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>在 Workbench 中选择目标 Editable Package，确认标题或环境管理器中的 <code class="docutils literal notranslate"><span class="pre">Workdir</span></code> 指向目标 Workspace。</p></li>
-<li><p>打开“环境管理”，等待 Agent 卡片显示“工作区 Agent 已就绪”；未启动时点击“启动 Agent”。</p></li>
-<li><p>点击 Activity Bar 中的“Agent”，确认右侧面板显示当前 Workspace 名称。</p></li>
-<li><p>在 Workbench 终端中执行下面的只读检查：</p></li>
-</ol>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">test</span><span class="w"> </span>-f<span class="w"> </span>.agents/skills/unilab-domain-repo-builder/SKILL.md<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="o">&amp;&amp;</span><span class="w"> </span><span class="nb">echo</span><span class="w"> </span><span class="s2">"repository builder ready"</span>
-</pre></div>
-</div>
-<p>Workbench 启动所选 Workspace 的 Agent 时，会先把随应用打包的托管 Skill 播种到 <code class="docutils literal notranslate"><span class="pre">&lt;workspace&gt;/.agents/skills/</span></code>，再以该 Workspace 为 Agent 工作目录。Skill 不存在时，不要让 Agent 假装已经读取；先按<a class="reference internal" href="#id9">失败与回退</a>处理。</p>
-<p>托管 Skill 采用内容摘要管理。未改动的旧副本可以随 Workbench 更新；预先存在或由用户修改过的目录会被播种逻辑保留，不会被新版载荷静默覆盖。需要升级定制版本时，应先比较差异并人工合并。</p>
+<p>如果文件缺失，不要从其他项目复制现场数据。新项目应先按<a class="reference internal" href="workspace-init.html"><span class="std std-doc">手工初始化工作区</span></a>创建空骨架，再填写自己的包身份和配置。</p>
 </section>
 <section id="id4">
-<h2>先填写新手需求卡<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
-<p>把未知项明确写成“待确认”，不要让 AI 用合理猜测填充实验室事实。</p>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>任务类型：新建 / 迁移 / 诊断
+<h2>第二步：填写需求卡<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
+<p>把下面内容复制到任务中。不会填写的项目写“待确认”。</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>任务类型：新建 / 迁移 / 修改 / 只读排查
 目标设备包绝对路径：
-distribution 名称与 import package：
-设备：名称、协议、动作、参数单位、结果、状态：
-地址表或供应商资料位置：
-资源与 放置位：模板、实例、父子关系、可用位置：
-目标工作流：输入、输出、顺序、并行、失败条件：
-模拟器：类型、端点、已覆盖的握手行为：
-禁止事项：真机连接、发布、运行、凭证写入等：
-完成标准：本次允许执行到哪一道验证门：
+业务目标：完成后用户能够做什么
+
+发布名称与 Python 包名：
+设备名称和型号：
+通信协议：串口 / Modbus / OPC UA / HTTP / 其他
+协议资料或地址表：文件路径、版本和负责人
+动作：名称、输入、单位、输出、超时和失败表现
+状态：需要展示或记录的状态、单位和更新频率
+
+资源与放置位：容器、载架、父子关系和允许位置
+目标工作流：输入、输出、顺序、并行和失败条件
+模拟范围：可以模拟什么，哪些项目必须真机确认
+
+允许 AI 执行：只读 / 修改代码 / 运行测试 / 构建 / dry-run
+禁止 AI 执行：连接真机 / 启动任务 / 发布 / 写入凭证 / 其他
+完成标准：本次允许执行到哪一道验证门
 </pre></div>
 </div>
-<p>地址、单位、超时、联锁和现场恢复规则缺失时，AI 应停在接口骨架或模拟层，并列出待确认项。它不应从 用户设备包 示例复制设备实例 ID、NodeId、Workflow UUID 或物理布局。</p>
+<p>业务负责人至少确认业务目标、动作含义、单位、失败表现、现场限制和完成标准。技术字段可以由开发人员补充，但必须注明资料来源。</p>
 </section>
-<section id="id5">
-<h2>可复制提示词<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
-<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>请使用 unilab-domain-repo-builder Skill 处理下面的设备包任务。
+<section id="coding-agent">
+<h2>第三步：把任务交给 Coding Agent<a class="headerlink" href="#coding-agent" title="链接到此标题。">¶</a></h2>
+<p>将下面提示词中的路径替换为实际设备包路径，然后连同填写好的需求卡一起提交：</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>请使用以下本地 Skill 处理 Uni-Lab OS 设备包任务：
+&lt;Uni-Lab-OS 源码绝对路径&gt;/.cursor/skills/unilab-domain-repo-builder/SKILL.md
 
-先读取设备包内的 AGENTS.md、pyproject.toml、package.yaml、目标 启动图、
-地址表和现有测试，再确认 Git 状态。使用将实际运行该设备包的 Python，
-输出 sys.executable、unilabos.__file__ 和 pip show unilabos；不要根据
-相邻目录猜测 OS 版本或装饰器合同。
+如需修改单个设备驱动，再读取：
+&lt;Uni-Lab-OS 源码绝对路径&gt;/.cursor/skills/add-device/SKILL.md
 
-按“包与导入 → 资源和 放置位 → 设备与模拟器 → Typed Actions → 最小叶子
-Workflow → 组合 Workflow → 产品验收”的依赖顺序工作。真实 Driver 与
-模拟器保持相同动作、参数、结果和 topic 合同，只替换传输层。
+目标设备包：/absolute/path/to/user-device-package
 
-先列出已知事实、未知项、拟修改文件和验证计划。不要发明设备、动作、
-单位、PLC 地址、资源、API 或 UUID；不要连接真机、发布或运行任务，除非
-我在需求卡中明确授权。保留已有修改，不覆盖无关工作。
+开始前先读取目标设备包内实际存在的 AGENTS.md、pyproject.toml、package.yaml、
+README、目标启动图和相关测试，并报告 Git 状态。使用实际运行该设备包的 Python，
+输出 sys.executable、unilabos.__file__ 和 pip show unilabos。不要根据相邻目录、
+旧文档或其他设备包猜测版本和现场事实。
 
-完成后按产品手册的 Package inspect、Registry check、package build 和
-dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩余风险和人工
-待办；任何一道门失败都不要声称设备包已经可用。
+先列出已知事实、待确认项、拟修改文件和验证计划。每次只完成一个可验证的小闭环。
+不要发明设备、动作、单位、地址、NodeId、资源关系、UUID、超时、联锁或凭证；
+保留已有修改，不覆盖无关工作。未经需求卡明确授权，不连接真机、不启动实验、
+不发布、不写入密钥。
+
+修改后按产品手册的依赖与 Python 包、package inspect、package build 和 dry-run
+验证门逐项检查。报告每条命令、退出状态、运行模式、关键结果、剩余风险和人工待办。
+任何一道门失败，都不要声称设备包已经可用。
 
 需求卡：
 &lt;粘贴填写后的需求卡&gt;
 </pre></div>
 </div>
-<p>如果只想诊断，不想修改，请在首句追加：“本轮只读诊断，不修改文件、安装依赖、启动设备或运行任务。”</p>
+<p>如果本轮只需要诊断，在提示词第一行补充：</p>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>本轮只做只读排查，不修改文件、不安装依赖、不启动服务、模拟器或设备。
+</pre></div>
+</div>
+</section>
+<section id="id5">
+<h2>第四步：人工审查修改<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
+<p>运行服务前，先由开发人员检查改动。下面命令中的路径必须是已经确认的设备包路径：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span>status<span class="w"> </span>--short
+git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span>diff
+</pre></div>
+</div>
+<p>至少确认：</p>
+<ul class="simple">
+<li><p>修改只发生在目标设备包，没有覆盖其他人的工作；</p></li>
+<li><p>没有密钥、令牌、生产地址或个人信息；</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、Python 包目录和 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 使用同一包身份；</p></li>
+<li><p>动作名称、参数、类型、单位、返回值和状态符合需求卡；</p></li>
+<li><p>真实驱动与模拟器使用相同的动作合同；</p></li>
+<li><p>启动图中的实例和连接配置有明确来源；</p></li>
+<li><p>工作流没有复制其他项目的现场 UUID、地址或物理布局。</p></li>
+</ul>
+<p>有任何现场事实无法确认时，停止验收，回到需求卡补充。</p>
 </section>
 <section id="id6">
-<h2>AI 应按什么顺序工作<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
-<ol class="arabic simple">
-<li><p>读取设备包规则、Git/依赖状态、清单、启动图、地址表和测试，列出已知与未知事实。</p></li>
-<li><p>从实际 Python 解释器解析 <code class="docutils literal notranslate"><span class="pre">unilabos</span></code> 位置和版本，再核对当前装饰器与工作流合同。</p></li>
-<li><p>先让 packaging、imports 和清单可检查，再登记稳定的资源模板、物理资源与 放置位。</p></li>
-<li><p>每次只增加一个设备垂直切片：Driver、启动图 实例、模拟 transport、Typed Action 和最小叶子 Workflow。</p></li>
-<li><p>叶子 Workflow 通过后再添加组合 Workflow；先加载子流程，再验证父流程达到稳定固定点。</p></li>
-<li><p>验证 Python → AST → 启动图 → Python → 启动图 的语义固定点，不用魔法注释、空 <code class="docutils literal notranslate"><span class="pre">pass</span></code> 或无效 Fork/Join 保存拓扑。</p></li>
-<li><p>最后运行允许范围内的模拟器和 Workbench 验收；真机证据必须单独记录。</p></li>
-</ol>
-<p>这一顺序避免在包身份、资源或动作合同尚未稳定时先堆叠复杂流程。AI 若建议修改 Uni-Lab OS 或共享页面，应先说明为何问题不属于设备包，并把系统修改作为独立决策。</p>
+<h2>第五步：按验证门检查<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
+<p>先激活当前安装使用的环境，并确认 Python 来源：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>mamba<span class="w"> </span>activate<span class="w"> </span>unilab
+<span class="nb">export</span><span class="w"> </span><span class="nv">UNILAB_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/Uni-Lab-OS&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/user-device-package&quot;</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span>
+
+python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import sys, unilabos; print(sys.executable); print(unilabos.__file__)&#39;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>show<span class="w"> </span>unilabos
+</pre></div>
+</div>
+<section id="python">
+<h3>验证门一：依赖和 Python 包<a class="headerlink" href="#python" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
+python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w"> </span>&lt;实际的_Python_包目录&gt;
+</pre></div>
+</div>
+<p>尖括号中的内容必须替换为 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 中登记并实际存在的 Python 包目录。不要直接复制占位符执行。</p>
 </section>
 <section id="id7">
-<h2>人工审查生成结果<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
-<p>在接受修改前，至少核对以下内容：</p>
-<ul class="simple">
-<li><p>Git diff 只包含目标设备包文件，没有删除用户改动、写入密钥或夹带构建产物；</p></li>
-<li><p>distribution、import package、<code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 和 <code class="docutils literal notranslate"><span class="pre">community.*</span></code> 身份一致；</p></li>
-<li><p>启动图 中的实例、端点、父子关系和配置来自用户设备包事实；</p></li>
-<li><p>Action 参数名、类型、单位、默认值、超时和结果与 Driver 一致；</p></li>
-<li><p>real/simulator 的动作与 topic 合同一致，差异只在传输和配置；</p></li>
-<li><p>Workflow 使用 启动图 实例 ID，节点 UUID 稳定，物料身份和输入绑定没有被复制或猜测；</p></li>
-<li><p>dry-run、模拟器和真机证据被明确分开，失败与未知结果有恢复说明。</p></li>
-</ul>
-<p>AI 生成的 README、注释和测试也可能复述错误假设。审查时应回到当前代码、供应商协议、地址表、活动 启动图 和现场验收记录，而不是用生成文本证明生成文本正确。</p>
+<h3>验证门二：设备包目录与合同<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/inspect&quot;</span>
+</pre></div>
+</div>
+<p>报告中不能有语法错误、重复 ID、重复 UUID、缺失源文件或无法解析的类型。</p>
 </section>
 <section id="id8">
-<h2>继续走产品验收门<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
-<p>生成完成后，按设备包教程中的<a class="reference internal" href="workspace.html#id6"><span class="std std-ref">四道验证门</span></a>继续验收：</p>
-<ol class="arabic simple">
-<li><p><a class="reference internal" href="workspace.html#python"><span class="std std-ref">验证门一：依赖与 Python 包</span></a>，确认依赖、导入包和 Python 语法。</p></li>
-<li><p><a class="reference internal" href="workspace.html#id7"><span class="std std-ref">验证门二：设备包目录与合同</span></a>，确认包身份、设备、物料和工作流清单。</p></li>
-<li><p><a class="reference internal" href="workspace.html#id8"><span class="std std-ref">验证门三：构建交付物</span></a>，防止本地可用但发布包缺少文件。</p></li>
-<li><p><a class="reference internal" href="workspace.html#id9"><span class="std std-ref">验证门四：安全加载工作区</span></a>，只用 <code class="docutils literal notranslate"><span class="pre">dry-run</span> <span class="pre">+</span> <span class="pre">develop</span></code> 核对 Uni-Lab OS 整体状态、设备连接与工作流。</p></li>
-</ol>
-<p>四道门全部通过，也只证明设备包可被安全模式发现、编译和加载。连接隔离模拟器、PLC-Sim 或真机前，继续执行同页的运行边界，并分别记录模拟器与物理见证证据。</p>
+<h3>验证门三：构建交付物<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/build&quot;</span>
+</pre></div>
+</div>
+<p>检查 wheel、Catalog 和设备包需要的配置、模型及图片是否都进入交付物。构建成功不代表设备已连接。</p>
 </section>
 <section id="id9">
-<h2>失败与回退<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h3>验证门四：安全加载<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
+<p>只有需求卡明确允许启动本地组件时才执行，并将启动图替换为设备包中真实存在的模拟或隔离测试文件：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/&lt;实际的测试启动图&gt;.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--runtime-mode<span class="w"> </span>dry-run<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--startup-mode<span class="w"> </span>develop<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wait<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--json
+
+unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--json
+
+unilab<span class="w"> </span>workspace<span class="w"> </span>stop<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wait<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--json
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 只证明 Uni-Lab OS 能在安全模式发现和加载设备包，不能证明通信、联锁、急停或物理动作正确。</p>
+</section>
+</section>
+<section id="id10">
+<h2>如何写验收结论<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>已取得的证据</p></th>
+<th class="head"><p>可以得出的结论</p></th>
+<th class="head"><p>不能得出的结论</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>Python 编译成功</p></td>
+<td><p>源码可解析</p></td>
+<td><p>设备包合同正确</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">package</span> <span class="pre">inspect</span></code> 成功</p></td>
+<td><p>包结构和静态合同可检查</p></td>
+<td><p>运行时或真机正常</p></td>
+</tr>
+<tr class="row-even"><td><p>测试及 <code class="docutils literal notranslate"><span class="pre">package</span> <span class="pre">build</span></code> 成功</p></td>
+<td><p>已覆盖测试通过，交付物可生成</p></td>
+<td><p>所有现场场景都已覆盖</p></td>
+</tr>
+<tr class="row-odd"><td><p>Workspace <code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 成功</p></td>
+<td><p>产品可安全发现并加载设备包</p></td>
+<td><p>模拟器或真机已经通过</p></td>
+</tr>
+<tr class="row-even"><td><p>隔离模拟器通过</p></td>
+<td><p>指定的模拟行为通过</p></td>
+<td><p>真实硬件和联锁正确</p></td>
+</tr>
+<tr class="row-odd"><td><p>受控真机验收通过</p></td>
+<td><p>记录中覆盖的硬件场景通过</p></td>
+<td><p>未验收的型号或工况也通过</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>推荐写法是：“已通过 Package 检查、构建和 dry-run，真机未验收。”不要只写“设备包已完成”。</p>
+</section>
+<section id="id11">
+<h2>常见失败<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -536,41 +646,25 @@ dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩
 </tr>
 </thead>
 <tbody>
-<tr class="row-even"><td><p>Workbench 没有 Agent 入口</p></td>
-<td><p>确认使用本地 Theia Workbench，而不是 Uni-Lab OS 业务页面；改按手工设备包教程继续</p></td>
+<tr class="row-even"><td><p>找不到 Skill</p></td>
+<td><p>确认 <code class="docutils literal notranslate"><span class="pre">$UNILAB_ROOT</span></code> 指向当前 Uni-Lab OS 源码仓库，再检查上文列出的实际文件路径</p></td>
 </tr>
-<tr class="row-odd"><td><p>Agent 显示启动失败</p></td>
-<td><p>在环境管理器查看 Agent 日志，核对本地 Agent 载荷与 Workspace 可写性，再重试</p></td>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">ModuleNotFoundError</span></code></p></td>
+<td><p>核对 <code class="docutils literal notranslate"><span class="pre">sys.executable</span></code> 和 <code class="docutils literal notranslate"><span class="pre">unilabos.__file__</span></code>，切换到实际 Uni-Lab 环境</p></td>
 </tr>
-<tr class="row-even"><td><p>Skill 文件不存在</p></td>
-<td><p>重启所选 Workspace 的 Agent；仍缺失时更新或修复 Workbench，不让 Agent 凭记忆生成</p></td>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">package</span> <span class="pre">inspect</span></code> 失败</p></td>
+<td><p>从第一条错误开始修复包名、清单、源码、UUID 或注册信息</p></td>
 </tr>
-<tr class="row-odd"><td><p>Skill 没有随新版更新</p></td>
-<td><p>检查目标 Skill 目录是否有用户修改；保留定制副本，人工比较新版后合并</p></td>
+<tr class="row-odd"><td><p>构建后缺文件</p></td>
+<td><p>补充 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 的 package data 配置，再重新构建和检查 wheel</p></td>
 </tr>
-<tr class="row-even"><td><p>AI 修改方向错误</p></td>
-<td><p>停止 Agent，检查 Git diff，回退本轮目标文件，再用更完整需求卡重新开始</p></td>
-</tr>
-<tr class="row-odd"><td><p>某道验证门失败</p></td>
-<td><p>保留原始诊断，从最早失败层修复；不要跳到 Workbench 或真机掩盖错误</p></td>
-</tr>
-<tr class="row-even"><td><p>只有仿真通过</p></td>
-<td><p>标记为模拟证据，保持真机未验收，不切换 <code class="docutils literal notranslate"><span class="pre">normal</span></code></p></td>
+<tr class="row-even"><td><p>dry-run 成功、真机失败</p></td>
+<td><p>单独检查协议、地址、超时、联锁和硬件状态，不把 dry-run 当真机证据</p></td>
 </tr>
 </tbody>
 </table>
 </div>
-<p>如果没有可用 Agent，产品主路径不受影响。可以完全按照<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>手工实现，再使用<a class="reference internal" href="ai-workflow-authoring.html"><span class="std std-doc">用 AI 编写工作流</span></a>中的审查提示词辅助后续工作流。</p>
-</section>
-<section id="id10">
-<h2>当前边界<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
-<ul class="simple">
-<li><p>该 Skill 只随本地 Workbench Agent 使用，Uni-Lab OS 业务页面没有对应入口。</p></li>
-<li><p>它是可修改代码的 Coding Agent 指南，不是服务器端建仓 API，也不是无人值守流水线。</p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">evals/evals.json</span></code> 目前只记录场景提示词和期望输出，不是这些场景已经运行或通过的证明。</p></li>
-<li><p>Skill 不提供实验室事实、供应商保证、物理联锁或硬件见证，不能据此声明生产就绪。</p></li>
-<li><p>生成设备包仍必须通过 Package、Registry、Catalog、Authoring、模拟器和所需硬件的分层验收。</p></li>
-</ul>
+<p>设备包每个文件的职责和完整验证要求见<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>；单个设备驱动的业务模板见<a class="reference internal" href="device-template.html"><span class="std std-doc">设备接入模板</span></a>。</p>
 </section>
 </section>
 
@@ -579,8 +673,26 @@ dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="scenario-guide.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">设备包验收</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="ai-workflow-authoring.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+
+                <div class="title">AI 编写工作流（推荐）</div>
+
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -613,17 +725,21 @@ dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">使用 AI 设备包生成器（实验性）</a><ul>
-<li><a class="reference internal" href="#id1">它负责什么</a></li>
-<li><a class="reference internal" href="#id2">前置条件</a></li>
-<li><a class="reference internal" href="#id3">为新设备包创建启动壳</a></li>
-<li><a class="reference internal" href="#workbench-agent-skill">在 Workbench 中确认 Agent 和 Skill</a></li>
-<li><a class="reference internal" href="#id4">先填写新手需求卡</a></li>
-<li><a class="reference internal" href="#id5">可复制提示词</a></li>
-<li><a class="reference internal" href="#id6">AI 应按什么顺序工作</a></li>
-<li><a class="reference internal" href="#id7">人工审查生成结果</a></li>
-<li><a class="reference internal" href="#id8">继续走产品验收门</a></li>
-<li><a class="reference internal" href="#id9">失败与回退</a></li>
-<li><a class="reference internal" href="#id10">当前边界</a></li>
+<li><a class="reference internal" href="#id1">当前仓库中可以使用的内容</a></li>
+<li><a class="reference internal" href="#id2">AI 能做什么</a></li>
+<li><a class="reference internal" href="#id3">第一步：确认目标设备包</a></li>
+<li><a class="reference internal" href="#id4">第二步：填写需求卡</a></li>
+<li><a class="reference internal" href="#coding-agent">第三步：把任务交给 Coding Agent</a></li>
+<li><a class="reference internal" href="#id5">第四步：人工审查修改</a></li>
+<li><a class="reference internal" href="#id6">第五步：按验证门检查</a><ul>
+<li><a class="reference internal" href="#python">验证门一：依赖和 Python 包</a></li>
+<li><a class="reference internal" href="#id7">验证门二：设备包目录与合同</a></li>
+<li><a class="reference internal" href="#id8">验证门三：构建交付物</a></li>
+<li><a class="reference internal" href="#id9">验证门四：安全加载</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id10">如何写验收结论</a></li>
+<li><a class="reference internal" href="#id11">常见失败</a></li>
 </ul>
 </li>
 </ul>
@@ -636,10 +752,10 @@ dry-run 门逐项验证。报告每道门的命令、结果、运行模式、剩
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

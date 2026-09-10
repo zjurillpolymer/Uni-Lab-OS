@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>开发工具与接口 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>开发工具与接口<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>开发工具与接口<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,7 +366,7 @@
 </div>
 <p>本页面向设备包开发、系统集成和技术运维人员，集中说明 Workbench、命令行、MCP 和协议联调工具。业务人员的网页入口、页面导航和第一次安全操作统一见<a class="reference internal" href="console.html"><span class="std std-doc">Uni-Lab OS 快速上手</span></a>。这些工具属于同一个 Uni-Lab OS 产品，不是独立产品。</p>
 <section id="theia-workbench">
-<h2>Theia Workbench<a class="headerlink" href="#theia-workbench" title="Link to this heading">¶</a></h2>
+<h2>Theia Workbench<a class="headerlink" href="#theia-workbench" title="链接到此标题。">¶</a></h2>
 <p>Theia Workbench 是桌面/Workbench 产品，Activity Bar 包含：</p>
 <ul class="simple">
 <li><p>设备；</p></li>
@@ -424,29 +426,29 @@
 </div>
 <p>Local Profile 以 Python 源码/编译结果为权威；Backend Profile 以画布启动图（Graph JSON）为权威。切换 Profile 只影响之后的任务，不迁移已有任务，且未保存修改会阻止切换。</p>
 <section id="id2">
-<h3>本地安装与启动<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h3>
+<h3>本地安装与启动<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h3>
 <p>Workbench 是可选的开发入口，不是运行 Uni-Lab OS 网页或 CLI 的前置。它要求 Node 20/22、pnpm <code class="docutils literal notranslate"><span class="pre">10.13.1</span></code>、有效设备包工作区，以及同时含 Python 与 <code class="docutils literal notranslate"><span class="pre">unilab</span></code> 的环境。</p>
 <p>Workbench 的定位和入口说明见本节；实际安装应以 <code class="docutils literal notranslate"><span class="pre">uni-lab-fe</span></code> 仓库 README 为准。服务器、TLS 和公网入口仍以<a class="reference internal" href="deployment.html"><span class="std std-doc">Kubernetes 部署与上线</span></a>为准。</p>
 </section>
 <section id="agent">
-<h3>Agent 与设备包生成器<a class="headerlink" href="#agent" title="Link to this heading">¶</a></h3>
+<h3>Agent 与设备包生成器<a class="headerlink" href="#agent" title="链接到此标题。">¶</a></h3>
 <p>本地 Workbench 的 Activity Bar 提供“Agent”入口，环境管理器也能启动、停止和查看当前 Workspace Agent。打开所选 Editable Package 并启动 Agent 后，右侧面板会显示当前 Workspace 会话。</p>
 <p>Workbench 随应用打包一组托管 Skill。Agent 启动时会把它们播种到当前 Workspace 的 <code class="docutils literal notranslate"><span class="pre">.agents/skills/</span></code>；其中 <code class="docutils literal notranslate"><span class="pre">unilab-domain-repo-builder</span></code> 可辅助新建、迁移和诊断实验室设备包。用户修改过的 Skill 会保留，不会被更新静默覆盖。</p>
 <p>Agent 和设备包生成器都是可选开发能力；不用它们也能手写仓库并运行产品。它们不在 Uni-Lab OS 业务页面中，也不代表生产验收。使用条件与操作步骤见<a class="reference internal" href="repository-builder-skill.html"><span class="std std-doc">使用 AI 设备包生成器（实验性）</span></a>。</p>
 <p>Workbench 的实验台只读展示逻辑站点占用，不是传感器事实；机器人点位当前不可用；Catalog 的新建、删除、变更日志和状态筛选被隐藏。旧 breakpoint debugger 与当前退役 Debug API 不兼容。</p>
 </section>
 <section id="workbench">
-<h3>Workbench 远程共享<a class="headerlink" href="#workbench" title="Link to this heading">¶</a></h3>
+<h3>Workbench 远程共享<a class="headerlink" href="#workbench" title="链接到此标题。">¶</a></h3>
 <p>桌面环境管理器可以启动一个秘密链接进行远程共享。代码要求非 loopback 监听必须配置 TLS 证书、HTTPS public origin、Host/Origin 校验，并用一次性 token 换取 HttpOnly cookie；默认 capability 有效期为 12 小时，停止或重启会撤销旧 generation。</p>
 <p>同一个远程 Workbench 是共享会话，不支持多人协同编辑协议。不要让两个人同时保存同一文件。</p>
 </section>
 </section>
 <section id="id3">
-<h2>产品口径<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>产品口径<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>操作页面、工作区服务、任务调度和设备运行能力统一称为 <strong>Uni-Lab OS</strong>。文档不再将它们列为不同产品。只有在查看日志、状态 JSON、部署清单或内部 API 时，才可能看到 <code class="docutils literal notranslate"><span class="pre">backend</span></code>、<code class="docutils literal notranslate"><span class="pre">scheduler</span></code>、<code class="docutils literal notranslate"><span class="pre">edge</span></code> 等组件名称；这些名称只用于技术定位。</p>
 </section>
 <section id="id4">
-<h2>命令行<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>命令行<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>安装 Uni-Lab OS 后，代码注册三个主要入口：<code class="docutils literal notranslate"><span class="pre">unilab</span></code>、<code class="docutils literal notranslate"><span class="pre">unilab-supervisor</span></code> 和 <code class="docutils literal notranslate"><span class="pre">unilab-mcp</span></code>。</p>
 <p>常用命令族：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>unilab workspace status|start|stop|restart|reset-local
@@ -463,7 +465,7 @@ unilab doctor net|talker|listener|fake-device
 <p><code class="docutils literal notranslate"><span class="pre">reset-local</span></code> 需要显式确认；<code class="docutils literal notranslate"><span class="pre">whoami</span></code> 只显示凭证来源，不会向服务端验证身份。旧 <code class="docutils literal notranslate"><span class="pre">workflow</span> <span class="pre">debug</span></code> 走退役 API，不应使用。</p>
 </section>
 <section id="mcp-agent">
-<h2>MCP Agent 工具<a class="headerlink" href="#mcp-agent" title="Link to this heading">¶</a></h2>
+<h2>MCP Agent 工具<a class="headerlink" href="#mcp-agent" title="链接到此标题。">¶</a></h2>
 <p>安装可选 <code class="docutils literal notranslate"><span class="pre">mcp</span></code> 依赖后，<code class="docutils literal notranslate"><span class="pre">unilab-mcp</span> <span class="pre">--workspace</span> <span class="pre">&lt;设备包工作区绝对路径&gt;</span></code> 暴露：</p>
 <ul class="simple">
 <li><p>Workspace 状态、单组件启停、日志和重置；</p></li>
@@ -479,7 +481,7 @@ unilab doctor net|talker|listener|fake-device
 <p>已注册的 <code class="docutils literal notranslate"><span class="pre">switch_workspace_authority</span></code> 当前会被 Workspace Host 以 <code class="docutils literal notranslate"><span class="pre">backend_mode_removed</span></code> 拒绝，不能当作可用能力。真机环境也不要用单组件 MCP stop 代替 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">stop</span></code> 的完整排空流程。</p>
 </section>
 <section id="plc-sim-modbus-sim">
-<h2>PLC-Sim 与 Modbus-Sim<a class="headerlink" href="#plc-sim-modbus-sim" title="Link to this heading">¶</a></h2>
+<h2>PLC-Sim 与 Modbus-Sim<a class="headerlink" href="#plc-sim-modbus-sim" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab-Sim 仓库提供：</p>
 <ul class="simple">
 <li><p>PLC/OPC UA 仿真器：用于模拟动作、传感器、握手、超时和故障；只有用户设备包明确需要并提供配置时才部署，完整步骤见<a class="reference internal" href="plc-sim.html"><span class="std std-doc">PLC / OPC UA 仿真器</span></a>；</p></li>
@@ -488,7 +490,7 @@ unilab doctor net|talker|listener|fake-device
 <p>两者是设备/工业协议联调工具，不承担 Uni-Lab OS 的任务调度、库存权威或运动安全。默认 GUI 面向本机/可信实验室网络，没有公网用户鉴权。</p>
 </section>
 <section id="id5">
-<h2>不应作为正式入口的代码<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>不应作为正式入口的代码<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p><code class="docutils literal notranslate"><span class="pre">unilab-os-task-console-prototype</span></code> 是历史任务台原型，多个按钮是占位，所谓 SSE 实际为 15 秒轮询。</p></li>
 <li><p><code class="docutils literal notranslate"><span class="pre">kernel-web</span></code> 中有设备广场等实验页面，但没有挂到正式 Theia Activity Bar。</p></li>
@@ -501,10 +503,10 @@ unilab doctor net|talker|listener|fake-device
         </article>
       </div>
       <footer>
-
+        
         <div class="related-pages">
-
-
+          
+          
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -560,10 +562,10 @@ unilab doctor net|talker|listener|fake-device
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

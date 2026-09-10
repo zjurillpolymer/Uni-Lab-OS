@@ -13,7 +13,11 @@ from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
 
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import (
+    InventoryStore,
+    SiteOccupancyConflict,
+    set_site_occupancy,
+)
 from unilabos.registry.local_template_identity import (
     synchronize_local_template_identities,
 )
@@ -690,9 +694,11 @@ def _commit_projection(
                 )
             for site in projection["sites"]:
                 if site["occupied_material_uuid"] is not None:
-                    connection.execute(
-                        "UPDATE site SET occupied_material_uuid=? WHERE uuid=?",
-                        (site["occupied_material_uuid"], site["uuid"]),
+                    set_site_occupancy(
+                        connection,
+                        site_uuid=str(site["uuid"]),
+                        material_uuid=str(site["occupied_material_uuid"]),
+                        update_time=now,
                     )
             connection.executemany(
                 "INSERT INTO lab_meta(meta_key,meta_value) VALUES (?,?)",
@@ -704,6 +710,10 @@ def _commit_projection(
             )
     except ResourceGraphBootstrapError:
         raise
+    except SiteOccupancyConflict as error:
+        raise ResourceGraphBootstrapError(
+            f"资源图 SiteOccupancy 冲突：{error}"
+        ) from error
     except sqlite3.IntegrityError as error:
         raise ResourceGraphBootstrapError("资源图投影违反库存唯一性或外键") from error
     except sqlite3.Error as error:

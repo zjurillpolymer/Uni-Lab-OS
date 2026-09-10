@@ -7,14 +7,17 @@ from uuid import UUID, uuid5
 
 import pytest
 
+from unilabos.workflow.authoring_identity import expanded_node_uuid
 from unilabos.workflow.composite_contract_refresh import (
     CompositeContractRefreshPending,
     refresh_published_composite_invocations,
 )
 from unilabos.workflow.composite_invocation import (
     CompositeInvocationInvalid,
+    compile_composite_invocation,
     expand_composite_invocation,
 )
+from unilabos.workflow.resource_lock_plan import compile_template_resource_plan
 
 # 下面的固定 UUID 分别代表子定义、父定义、调用根、上游节点、发布合同和边界连线；
 # 固定身份使测试能够直接证明自动替换前后的节点、连接点（Handle）和边 UUID
@@ -138,7 +141,7 @@ def _parent_graph(contract: dict, *, param: dict | None = None) -> dict:
         ],
         "edges": [],
     }
-    nodes, edges = expand_composite_invocation(
+    expansion = compile_composite_invocation(
         parent_graph=base,
         contract=contract,
         invocation_uuid=INVOCATION_UUID,
@@ -148,9 +151,13 @@ def _parent_graph(contract: dict, *, param: dict | None = None) -> dict:
     )
     return {
         **base,
-        "nodes": [*base["nodes"], *nodes],
+        "workflow": {
+            **base["workflow"],
+            "meta_data": expansion.workflow_meta_data,
+        },
+        "nodes": [*base["nodes"], *expansion.nodes],
         "edges": [
-            *edges,
+            *expansion.edges,
             {
                 "uuid": EDGE_UUID,
                 "source_node_uuid": PROVIDER_UUID,
@@ -197,6 +204,189 @@ def test_composite_invocation_rejects_unknown_input_before_expansion() -> None:
 
     with pytest.raises(CompositeInvocationInvalid, match="未知输入参数"):
         _parent_graph(contract, param={"sample": "manual", "extra": "ignored"})
+
+
+def _three_step_resource_scope_contract() -> tuple[dict, tuple[str, str]]:
+    """构造来源旋转、目标旋转、机械臂搬运的连续预留合同。"""
+
+    contract = _contract(
+        identity=OLD_CONTRACT_UUID,
+        template_uuid=OLD_TEMPLATE_UUID,
+        revision=1,
+        inputs=[_input("sample", required=True)],
+    )
+    target_rotation_uuid = "10000000-0000-4000-8000-000000000015"
+    robot_transfer_uuid = "10000000-0000-4000-8000-000000000016"
+    for node_uuid, name in (
+        (target_rotation_uuid, "目标位旋转"),
+        (robot_transfer_uuid, "机械臂搬运"),
+    ):
+        node = deepcopy(contract["graph_snapshot"]["nodes"][0])
+        node.update({"uuid": node_uuid, "name": name})
+        contract["graph_snapshot"]["nodes"].append(node)
+    contract["graph_snapshot"]["edges"] = [
+        {
+            "uuid": "10000000-0000-4000-8000-000000000017",
+            "source_node_uuid": CHILD_NODE_UUID,
+            "source_handle_uuid": "10000000-0000-4000-8000-000000000018",
+            "target_node_uuid": target_rotation_uuid,
+            "target_handle_uuid": "10000000-0000-4000-8000-000000000019",
+        },
+        {
+            "uuid": "10000000-0000-4000-8000-000000000020",
+            "source_node_uuid": target_rotation_uuid,
+            "source_handle_uuid": "10000000-0000-4000-8000-000000000021",
+            "target_node_uuid": robot_transfer_uuid,
+            "target_handle_uuid": "10000000-0000-4000-8000-000000000022",
+        },
+    ]
+    contract["graph_snapshot"]["workflow"]["meta_data"] = {
+        "unilab": {
+            "resource_scopes": [
+                {
+                    "scope_id": "child-operation",
+                    "kind": "with",
+                    "resources": ["robot", "source-turntable", "target-turntable"],
+                    "parent_scope_id": None,
+                    "entry_node_uuid": CHILD_NODE_UUID,
+                    "exit_node_uuid": robot_transfer_uuid,
+                    "node_uuids": [
+                        CHILD_NODE_UUID,
+                        target_rotation_uuid,
+                        robot_transfer_uuid,
+                    ],
+                    "hard_boundary": True,
+                    "source": "authoring.with.resources",
+                }
+            ]
+        }
+    }
+    return contract, (target_rotation_uuid, robot_transfer_uuid)
+
+
+def test_composite_invocation_compiles_resource_scope_graph_patch() -> None:
+    """冻结合同展开必须返回可与父图一起原子提交的资源作用域补丁。"""
+
+    contract, (target_rotation_uuid, robot_transfer_uuid) = (
+        _three_step_resource_scope_contract()
+    )
+    parent_graph = {
+        "workflow": {
+            "uuid": PARENT_UUID,
+            "revision": 2,
+            "meta_data": {},
+        },
+        "nodes": [],
+        "edges": [],
+    }
+
+    expansion = compile_composite_invocation(
+        parent_graph=parent_graph,
+        contract=contract,
+        invocation_uuid=INVOCATION_UUID,
+        pose={"x": 300, "y": 100},
+        param={"sample": "manual"},
+        device_bindings={},
+    )
+
+    expanded_child_uuids = [
+        expanded_node_uuid(INVOCATION_UUID, source_uuid)
+        for source_uuid in (
+            CHILD_NODE_UUID,
+            target_rotation_uuid,
+            robot_transfer_uuid,
+        )
+    ]
+    (child_scope,) = expansion.resource_scopes
+    assert child_scope["node_uuids"] == expanded_child_uuids
+    assert child_scope["parent_scope_id"] is None
+    assert child_scope["composite_invocation_uuid"] == INVOCATION_UUID
+    assert child_scope["source_scope_id"] == "child-operation"
+    assert child_scope["source_workflow_uuid"] == CHILD_UUID
+    assert expansion.workflow_meta_data["unilab"]["resource_scopes"] == list(
+        expansion.resource_scopes
+    )
+
+    graph = {
+        **parent_graph,
+        "workflow": {
+            **parent_graph["workflow"],
+            "meta_data": expansion.workflow_meta_data,
+        },
+        "nodes": list(expansion.nodes),
+        "edges": list(expansion.edges),
+    }
+    plan = compile_template_resource_plan(graph)
+    for alias in ("robot", "source-turntable", "target-turntable"):
+        resource_id = next(
+            resource.resource_id for resource in plan.resources if resource.alias == alias
+        )
+        intervals = [
+            interval
+            for interval in plan.intervals
+            if interval.resource_id == resource_id
+            and interval.scope_id == child_scope["scope_id"]
+        ]
+        assert len(intervals) == 1
+        assert intervals[0].node_uuids == tuple(expanded_child_uuids)
+        assert intervals[0].explicit_boundary is True
+
+
+def test_covering_parent_scope_does_not_create_resource_cycle() -> None:
+    """覆盖组合调用的父作用域不应与三设备子预留形成取得环。"""
+
+    contract, _node_uuids = _three_step_resource_scope_contract()
+    parent_graph = {
+        "workflow": {
+            "uuid": PARENT_UUID,
+            "revision": 2,
+            "meta_data": {
+                "unilab": {
+                    "resource_scopes": [
+                        {
+                            "scope_id": "parent-operation",
+                            "kind": "with",
+                            "resources": ["parent-lock"],
+                            "parent_scope_id": None,
+                            "entry_node_uuid": INVOCATION_UUID,
+                            "exit_node_uuid": INVOCATION_UUID,
+                            "node_uuids": [INVOCATION_UUID],
+                            "hard_boundary": True,
+                            "source": "authoring.with.resources",
+                        }
+                    ]
+                }
+            },
+        },
+        "nodes": [],
+        "edges": [],
+    }
+    expansion = compile_composite_invocation(
+        parent_graph=parent_graph,
+        contract=contract,
+        invocation_uuid=INVOCATION_UUID,
+        pose={"x": 300, "y": 100},
+        param={"sample": "manual"},
+        device_bindings={},
+    )
+    graph = {
+        **parent_graph,
+        "workflow": {
+            **parent_graph["workflow"],
+            "meta_data": expansion.workflow_meta_data,
+        },
+        "nodes": list(expansion.nodes),
+        "edges": list(expansion.edges),
+    }
+
+    plan = compile_template_resource_plan(graph)
+
+    child_scope = next(
+        scope
+        for scope in plan.scopes
+        if scope.parent_scope_id == "parent-operation"
+    )
+    assert child_scope.parent_scope_id == "parent-operation"
 
 
 def test_composite_invocation_remaps_control_region_references() -> None:
@@ -363,6 +553,72 @@ def test_refresh_preserves_invocation_and_remaps_boundary_by_parameter_name() ->
     )
     assert boundary["target_handle_uuid"] == _handle_uuid(NEW_TEMPLATE_UUID, "sample")
     assert boundary["uuid"] != EDGE_UUID
+
+
+def test_refresh_replaces_persisted_composite_resource_scopes() -> None:
+    """合同刷新必须删除旧子作用域，并把新作用域与图一起返回。"""
+
+    previous = _contract(
+        identity=OLD_CONTRACT_UUID,
+        template_uuid=OLD_TEMPLATE_UUID,
+        revision=1,
+        inputs=[_input("sample", required=True)],
+    )
+    current = _contract(
+        identity=NEW_CONTRACT_UUID,
+        template_uuid=NEW_TEMPLATE_UUID,
+        revision=2,
+        inputs=[_input("sample", required=True)],
+    )
+    for contract, resource in ((previous, "old-device"), (current, "new-device")):
+        contract["graph_snapshot"]["workflow"]["meta_data"] = {
+            "unilab": {
+                "resource_scopes": [
+                    {
+                        "scope_id": "child-operation",
+                        "kind": "with",
+                        "resources": [resource],
+                        "parent_scope_id": None,
+                        "entry_node_uuid": CHILD_NODE_UUID,
+                        "exit_node_uuid": CHILD_NODE_UUID,
+                        "node_uuids": [CHILD_NODE_UUID],
+                        "hard_boundary": True,
+                        "source": "authoring.with.resources",
+                    }
+                ]
+            }
+        }
+
+    parent_graph = _parent_graph(previous)
+    stale_nested_scope = deepcopy(
+        parent_graph["workflow"]["meta_data"]["unilab"]["resource_scopes"][0]
+    )
+    stale_nested_scope.update(
+        {
+            "scope_id": "stale-nested-scope",
+            "parent_scope_id": None,
+            "composite_invocation_uuid": expanded_node_uuid(
+                INVOCATION_UUID,
+                CHILD_NODE_UUID,
+            ),
+        }
+    )
+    parent_graph["workflow"]["meta_data"]["unilab"]["resource_scopes"].append(
+        stale_nested_scope
+    )
+    refreshed = refresh_published_composite_invocations(
+        parent_graph=parent_graph,
+        current_contract=current,
+        load_contract=lambda _identity: previous,
+        validate_bindings=lambda _requirements, _bindings: True,
+    )
+
+    scopes = refreshed.graph["workflow"]["meta_data"]["unilab"][
+        "resource_scopes"
+    ]
+    assert len(scopes) == 1
+    assert scopes[0]["resources"] == ["new-device"]
+    assert scopes[0]["composite_invocation_uuid"] == INVOCATION_UUID
 
 
 def test_refresh_rejects_new_required_input_without_mutating_parent() -> None:

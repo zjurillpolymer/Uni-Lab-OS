@@ -56,6 +56,17 @@ export interface TaskNodeWaitReason {
   waitingSince?: string
 }
 
+export interface WorkflowIntervention {
+  uuid: string
+  workflowTaskUuid: string
+  workflowNodeJobUuid: string
+  revision: number
+  status: string
+  options: { id: string; action: string; label: string; description?: string }[]
+  metaData: Record<string, unknown>
+  openedAt: string
+}
+
 export interface WorkflowDefinition {
   uuid: string
   name: string
@@ -216,6 +227,68 @@ export interface WorkflowTask {
     url: string
     mode: 'trace' | 'search'
   }
+}
+
+/** 工作流任务详情页的持久执行锁租约；释放资格由 Edge 后端权威判定。 */
+export interface WorkflowTaskExecutionLock {
+  uuid: string
+  workflowTaskUuid: string
+  workflowNodeJobUuid: string
+  lockKey: string
+  scope: string
+  materialUuid?: string
+  siteUuid?: string
+  state: string
+  claimUuid: string
+  fencingToken: number
+  jobStatus: string
+  claimState: string
+  canRelease: boolean
+  releaseBlockReason?: string
+}
+
+export interface WorkflowTaskExecutionLockSnapshot {
+  workflowTaskUuid: string
+  taskStatus: string
+  locks: WorkflowTaskExecutionLock[]
+  activeDeviceTenancyCount: number
+}
+
+export interface WorkflowTaskExecutionLockReleaseRequest {
+  expectedClaimUuid: string
+  expectedFencingToken: number
+  reason: string
+  physicalSettlementConfirmed: boolean
+}
+
+export interface WorkflowTaskExecutionLockReleaseResult {
+  status: 'released' | 'already_released' | string
+  releasedLockUuids: string[]
+  action?: {
+    uuid?: string
+    result?: string
+    reason?: string
+    createTime?: string
+  }
+}
+
+/** 失败物料转运等待人工核验的权威上下文。 */
+export interface FailedMaterialTransferSettlementContext {
+  jobUuid: string
+  materialUuid: string
+  sourceSiteUuid: string
+  targetSiteUuid: string
+}
+
+/** 操作员确认的物料转运实际位置。 */
+export interface FailedMaterialTransferSettlementRequest {
+  actualChangeSet: {
+    kind: 'material_transfer'
+    material_uuid: string
+    target_owner_material_uuid: string
+    target_site_uuid: string
+  }
+  reason: string
 }
 
 export interface MaterialTaskReference {

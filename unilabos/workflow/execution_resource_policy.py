@@ -12,6 +12,7 @@ from unilabos.registry.action_resource_contract import (
     ActionResourceContractError,
     normalize_action_resource_contract,
 )
+from unilabos.workflow.resource_lock_key import device_lock_key
 
 
 class ExecutionResourcePolicyError(ValueError):
@@ -25,6 +26,19 @@ class ResolvedExecutionResourcePolicy:
     device_lock_keys: tuple[str, ...]
     target_site_uuids: tuple[str, ...]
     device_tenancy: dict[str, str] | None
+
+
+def action_device_resource_params(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    """把明确声明为参数的设备角色统一为运行时设备需求。"""
+    names = list(contract.get("required_device_params", ()))
+    names.extend(
+        str(item["param"])
+        for item in contract.get("resource_params", ())
+        if item.get("role") in {"device", "motion", "tool"}
+    )
+    # 转运的 motion/tool 列表可以是站点别名；只有 resource_params 或旧字段
+    # 明确声明为动作参数时，才从最终 Goal 中读取身份。
+    return tuple(dict.fromkeys(names))
 
 
 def merge_action_resource_policy(
@@ -53,14 +67,11 @@ def merge_action_resource_policy(
         "required_device_params",
         "device_tenancy",
     } & set(raw_workflow_policy):
-        raise ExecutionResourcePolicyError(
-            "工作流不得覆盖 AST 动作资源合同中的设备或托管语义"
-        )
+        raise ExecutionResourcePolicyError("工作流不得覆盖 AST 动作资源合同中的设备或托管语义")
     combined = dict(raw_workflow_policy)
-    if normalized_contract.get("required_device_params") is not None:
-        combined["required_device_params"] = list(
-            normalized_contract["required_device_params"]
-        )
+    device_params = action_device_resource_params(normalized_contract)
+    if device_params or normalized_contract.get("required_device_params") is not None:
+        combined["required_device_params"] = list(device_params)
     if normalized_contract.get("device_tenancy") is not None:
         combined["device_tenancy"] = dict(normalized_contract["device_tenancy"])
     return normalize_execution_resource_policy(combined)
@@ -323,7 +334,7 @@ def _optional_resource_uuid(params: Mapping[str, Any], name: str) -> str:
 def _device_lock_key(material_uuid: str) -> str:
     """把设备物料身份转换为规范设备执行占用键。"""
 
-    return f"/devices/{material_uuid}"
+    return device_lock_key(material_uuid)
 
 
 __all__ = [

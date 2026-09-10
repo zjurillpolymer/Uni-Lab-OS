@@ -80,6 +80,13 @@ def _apply_action_execution_metadata(entry: Dict[str, Any], action_args: Dict[st
     """把创作节点类型与受控执行器提示规范化到动作注册条目。"""
 
     entry.update(normalize_action_execution_metadata(action_args))
+    for key, default in (
+        ("exception_handling", True),
+        ("timeout", None),
+        ("execution_timeout", None),
+        ("default_on_user_timeout", "abort"),
+    ):
+        entry[key] = action_args.get(key, default)
 
 
 _module_hash_cache: Dict[str, Optional[str]] = {}
@@ -110,6 +117,10 @@ def _normalize_action_extensions(config: Optional[Dict[str, Any]]) -> Dict[str, 
         )
     normalized.setdefault("estimate_duration_fixed", _DEFAULT_ACTION_DURATION_SECONDS)
     normalized.setdefault("estimate_duration_express", "")
+    normalized.setdefault("exception_handling", True)
+    normalized.setdefault("timeout", None)
+    normalized.setdefault("execution_timeout", None)
+    normalized.setdefault("default_on_user_timeout", "abort")
     return normalized
 
 
@@ -1277,6 +1288,13 @@ class Registry:
                 action_entry["always_free"] = True
             _fb_iv = action_args.get("feedback_interval", method_info.get("feedback_interval", 1.0))
             action_entry["feedback_interval"] = _fb_iv
+            for key in (
+                "exception_handling",
+                "timeout",
+                "execution_timeout",
+                "default_on_user_timeout",
+            ):
+                action_entry[key] = action_args.get(key)
             if action_args.get("error_policy"):
                 action_entry["error_policy"] = action_args["error_policy"]
             _apply_action_execution_metadata(action_entry, action_args)
@@ -2242,6 +2260,7 @@ class Registry:
                                 "estimate_duration_express"
                             ],
                         }
+                        _apply_action_execution_metadata(entry, old_cfg)
                         if v.get("always_free"):
                             entry["always_free"] = True
                         old_node_type = old_cfg.get("node_type")

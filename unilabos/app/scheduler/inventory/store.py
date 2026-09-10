@@ -25,12 +25,184 @@ from unilabos.app.scheduler.inventory.reagent_store import migrate_reagent_schem
 from unilabos.registry.runtime_device_catalog import RuntimeDeviceTemplateCatalog
 
 # v8 已由生产分支用于物料来源绑定；试剂和容器内容依次占用后续版本。
-# v11 把物料模板引用改为由 SQLite 物料模板与内存设备目录共同校验。
-SCHEMA_VERSION = 13
+# v11 把物料模板引用改为由 SQLite 物料模板与内存设备目录共同校验；v14
+# 原地放宽派发 Lease 的 scope CHECK；v15/v16 依次关闭旧 relation 写入口的
+# 占用覆盖与活动资源绕过。
+SCHEMA_VERSION = 16
 
 
 class InvalidCursorAdvance(ValueError):
     """ACK cursor 试图回退、跳批或基于过期发送窗口推进."""
+
+
+class SiteOccupancyConflict(ValueError):
+    """原子 SiteOccupancy 修改违反目标占用或单一位置不变量。"""
+
+    def __init__(
+        self,
+        code: str,
+        message: str,
+        *,
+        site_uuid: str = "",
+        material_uuid: str = "",
+        occupied_material_uuid: str = "",
+    ) -> None:
+        """保存稳定错误码与冲突身份，供各公共适配层映射自身错误。"""
+
+        super().__init__(message)
+        self.code = code
+        self.site_uuid = site_uuid
+        self.material_uuid = material_uuid
+        self.occupied_material_uuid = occupied_material_uuid
+
+
+def set_site_occupancy(
+    connection: sqlite3.Connection,
+    *,
+    site_uuid: str,
+    material_uuid: str,
+    update_time: str | None = None,
+) -> str:
+    """在调用方事务内原子移动物料并占用目标 Site。
+
+    目标为空时占用；目标已由同一物料占用时幂等返回；目标属于其他物料时拒绝。
+    成功前会解除该物料的旧 Site，并由唯一索引兜底“一个 Material 至多一个
+    Site”。返回原 Site UUID；原本不在任何 Site 时返回空字符串。
+    """
+
+    normalized_site = str(site_uuid or "").strip()
+    normalized_material = str(material_uuid or "").strip()
+    if not normalized_site or not normalized_material:
+        raise SiteOccupancyConflict(
+            "site_occupancy_identity_missing",
+            "SiteOccupancy 需要非空 Site 和 Material 身份",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        )
+    target = connection.execute(
+        "SELECT material_uuid,occupied_material_uuid FROM site "
+        "WHERE uuid=? AND deleted_at IS NULL",
+        (normalized_site,),
+    ).fetchone()
+    if target is None:
+        raise SiteOccupancyConflict(
+            "site_not_found",
+            f"目标 Site 不存在：{normalized_site}",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        )
+    if str(target["material_uuid"]) == normalized_material:
+        raise SiteOccupancyConflict(
+            "site_occupancy_cycle",
+            "Material 不能占用自身 Site",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        )
+    occupied = str(target["occupied_material_uuid"] or "")
+    if occupied and occupied != normalized_material:
+        raise SiteOccupancyConflict(
+            "site_occupied",
+            f"目标 Site 已被其他 Material 占用：{occupied}",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+            occupied_material_uuid=occupied,
+        )
+
+    locations = connection.execute(
+        "SELECT uuid FROM site WHERE occupied_material_uuid=? "
+        "AND deleted_at IS NULL ORDER BY uuid",
+        (normalized_material,),
+    ).fetchall()
+    if len(locations) > 1:
+        raise SiteOccupancyConflict(
+            "material_multiple_sites",
+            f"Material 同时占用多个 Site：{normalized_material}",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        )
+    previous_site = str(locations[0]["uuid"]) if locations else ""
+    if previous_site == normalized_site:
+        return previous_site
+
+    timestamp = update_time or str(
+        connection.execute(
+            "SELECT strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
+        ).fetchone()[0]
+    )
+    if previous_site:
+        connection.execute(
+            "UPDATE site SET occupied_material_uuid=NULL,update_time=? "
+            "WHERE uuid=? AND occupied_material_uuid=? AND deleted_at IS NULL",
+            (timestamp, previous_site, normalized_material),
+        )
+    try:
+        changed = connection.execute(
+            "UPDATE site SET occupied_material_uuid=?,update_time=? "
+            "WHERE uuid=? AND deleted_at IS NULL "
+            "AND (occupied_material_uuid IS NULL OR occupied_material_uuid=?)",
+            (
+                normalized_material,
+                timestamp,
+                normalized_site,
+                normalized_material,
+            ),
+        ).rowcount
+    except sqlite3.IntegrityError as error:
+        raise SiteOccupancyConflict(
+            "material_already_occupies_site",
+            f"Material 已占用其他 Site：{normalized_material}",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        ) from error
+    if changed != 1:
+        raise SiteOccupancyConflict(
+            "site_occupied",
+            f"目标 Site 已被其他 Material 占用：{normalized_site}",
+            site_uuid=normalized_site,
+            material_uuid=normalized_material,
+        )
+    return previous_site
+
+
+def clear_site_occupancy(
+    connection: sqlite3.Connection,
+    *,
+    material_uuid: str,
+    update_time: str | None = None,
+) -> str:
+    """在调用方事务内幂等解除一个 Material 的唯一 SiteOccupancy。"""
+
+    normalized_material = str(material_uuid or "").strip()
+    if not normalized_material:
+        raise SiteOccupancyConflict(
+            "site_occupancy_identity_missing",
+            "SiteOccupancy 需要非空 Material 身份",
+        )
+    locations = connection.execute(
+        "SELECT uuid FROM site WHERE occupied_material_uuid=? "
+        "AND deleted_at IS NULL ORDER BY uuid",
+        (normalized_material,),
+    ).fetchall()
+    if len(locations) > 1:
+        raise SiteOccupancyConflict(
+            "material_multiple_sites",
+            f"Material 同时占用多个 Site：{normalized_material}",
+            material_uuid=normalized_material,
+        )
+    if not locations:
+        return ""
+    previous_site = str(locations[0]["uuid"])
+    timestamp = update_time or str(
+        connection.execute(
+            "SELECT strftime('%Y-%m-%dT%H:%M:%fZ', 'now')"
+        ).fetchone()[0]
+    )
+    connection.execute(
+        "UPDATE site SET occupied_material_uuid=NULL,update_time=? "
+        "WHERE uuid=? AND occupied_material_uuid=? AND deleted_at IS NULL",
+        (timestamp, previous_site, normalized_material),
+    )
+    return previous_site
 
 
 _SCHEMA = """
@@ -960,6 +1132,195 @@ CREATE INDEX idx_material_parent_active
     WHERE deleted_at IS NULL AND parent_uuid IS NOT NULL;
 """
 
+# v16：旧 ``resource_relation`` 视图仍是受支持的兼容写入口，但它必须与公共
+# 库存写 API 服从同一占用与活动资源门禁。守卫直接并入主 INSERT/DELETE
+# trigger，避免多个同事件 INSTEAD OF trigger 的执行顺序影响正确性。
+_SCHEMA_V16_RELATION_WRITE_GUARD = """
+DROP TRIGGER IF EXISTS resource_relation_occupancy_guard;
+DROP TRIGGER IF EXISTS resource_relation_insert;
+DROP TRIGGER IF EXISTS resource_relation_delete;
+
+CREATE TRIGGER resource_relation_insert
+INSTEAD OF INSERT ON resource_relation
+BEGIN
+    SELECT RAISE(ABORT, 'target site is occupied by another material')
+    WHERE NEW.slot_id <> '' AND EXISTS (
+        SELECT 1 FROM site
+        WHERE material_uuid = NEW.parent_uuid
+          AND LOWER(name) = LOWER(NEW.slot_id)
+          AND deleted_at IS NULL
+          AND occupied_material_uuid IS NOT NULL
+          AND occupied_material_uuid <> NEW.child_uuid
+    );
+    SELECT RAISE(ABORT, 'resource relation conflicts with an active claim')
+    WHERE EXISTS (
+        WITH requested(lock_key, material_uuid, whole_material) AS (
+            VALUES
+                ('material/' || NEW.child_uuid || '/exclusive', NEW.child_uuid, 1),
+                ('/devices/' || NEW.child_uuid, NULL, 0),
+                ('material/' || NEW.parent_uuid || '/exclusive', NEW.parent_uuid, 1),
+                ('/devices/' || NEW.parent_uuid, NULL, 0)
+            UNION
+            SELECT
+                'material/' || NEW.parent_uuid || '/site/' || site.uuid || '/exclusive',
+                NEW.parent_uuid,
+                0
+            FROM site
+            WHERE site.material_uuid = NEW.parent_uuid
+              AND LOWER(site.name) = LOWER(NEW.slot_id)
+              AND site.deleted_at IS NULL
+            UNION
+            SELECT
+                'material/' || source.material_uuid || '/exclusive',
+                source.material_uuid,
+                1
+            FROM site AS source
+            WHERE source.occupied_material_uuid = NEW.child_uuid
+              AND source.deleted_at IS NULL
+            UNION
+            SELECT '/devices/' || source.material_uuid, NULL, 0
+            FROM site AS source
+            WHERE source.occupied_material_uuid = NEW.child_uuid
+              AND source.deleted_at IS NULL
+            UNION
+            SELECT
+                'material/' || source.material_uuid || '/site/' || source.uuid || '/exclusive',
+                source.material_uuid,
+                0
+            FROM site AS source
+            WHERE source.occupied_material_uuid = NEW.child_uuid
+              AND source.deleted_at IS NULL
+        )
+        SELECT 1
+        FROM (
+            SELECT lock_key
+            FROM station_execution_lock_lease
+            WHERE state IN ('prepared', 'reserved', 'running', 'uncertain')
+            UNION ALL
+            SELECT lock_key
+            FROM station_ingress_reservation_resource
+            WHERE active = 1
+        ) AS active
+        JOIN requested
+          ON active.lock_key = requested.lock_key
+          OR (
+              requested.whole_material = 1
+              AND active.lock_key GLOB (
+                  'material/' || requested.material_uuid || '/site/*/exclusive'
+              )
+          )
+        LIMIT 1
+    );
+    INSERT OR IGNORE INTO resource_template (
+        uuid, create_time, update_time, deleted_at, description, meta_data,
+        name, display_name, resource_type, model, tags, data_schema,
+        config_schema, pose, config_info, scene, device_params, ui_overlay
+    ) VALUES (
+        '__edge_unknown_resource_template__',
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        'Edge legacy placeholder; hidden from the shared Backend Interface',
+        '{"unilab_edge_placeholder":true}',
+        '__edge_unknown_resource_template__', 'Unknown Edge resource',
+        'resource', '{}', '[]', '{}', '{}', '{}', '[]', '[]', '{}', '{}'
+    );
+    INSERT OR IGNORE INTO resource_template_inventory(
+        resource_template_uuid, aggregate_version
+    ) VALUES ('__edge_unknown_resource_template__', 1);
+    INSERT OR IGNORE INTO material (
+        uuid, create_time, update_time, deleted_at, description, meta_data,
+        resource_template_uuid, parent_uuid, class, barcode, name, config, data
+    ) VALUES (
+        NEW.parent_uuid,
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        NULL,
+        'Edge legacy parent placeholder',
+        '{"unilab_edge_placeholder":true}',
+        '__edge_unknown_resource_template__', NULL, 'resource', '',
+        '__edge_placeholder__:' || NEW.parent_uuid, '{}', '{}'
+    );
+    INSERT OR IGNORE INTO material_inventory(
+        material_uuid, legacy_template_id, inventory_status, aggregate_version
+    ) VALUES (NEW.parent_uuid, '', 'warehouse', 1);
+    UPDATE material
+    SET parent_uuid = NULLIF(NEW.parent_uuid, ''),
+        update_time = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE uuid = NEW.child_uuid AND deleted_at IS NULL;
+    UPDATE site
+    SET occupied_material_uuid = NULL,
+        update_time = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE occupied_material_uuid = NEW.child_uuid AND deleted_at IS NULL;
+    INSERT OR IGNORE INTO site (
+        create_time, update_time, deleted_at, description, meta_data,
+        material_uuid, name, sort_order, allowed_resource_template_uuids,
+        occupied_material_uuid, position_x, position_y, position_z,
+        depth, length, width
+    )
+    SELECT
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        strftime('%Y-%m-%dT%H:%M:%fZ', 'now'),
+        NULL, NULL, '{}', NEW.parent_uuid, NEW.slot_id, 0, '[]',
+        NEW.child_uuid, 0, 0, 0, 0, 0, 0
+    WHERE NEW.slot_id <> '';
+    UPDATE site
+    SET occupied_material_uuid = NEW.child_uuid,
+        update_time = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE material_uuid = NEW.parent_uuid
+      AND LOWER(name) = LOWER(NEW.slot_id)
+      AND deleted_at IS NULL
+      AND NEW.slot_id <> '';
+END;
+
+CREATE TRIGGER resource_relation_delete
+INSTEAD OF DELETE ON resource_relation
+BEGIN
+    SELECT RAISE(ABORT, 'resource relation conflicts with an active claim')
+    WHERE EXISTS (
+        WITH requested(lock_key, material_uuid, whole_material) AS (
+            VALUES
+                ('material/' || OLD.child_uuid || '/exclusive', OLD.child_uuid, 1),
+                ('/devices/' || OLD.child_uuid, NULL, 0),
+                ('material/' || OLD.parent_uuid || '/exclusive', OLD.parent_uuid, 1),
+                ('/devices/' || OLD.parent_uuid, NULL, 0)
+            UNION
+            SELECT
+                'material/' || OLD.parent_uuid || '/site/' || site.uuid || '/exclusive',
+                OLD.parent_uuid,
+                0
+            FROM site
+            WHERE site.material_uuid = OLD.parent_uuid
+              AND LOWER(site.name) = LOWER(OLD.slot_id)
+              AND site.deleted_at IS NULL
+        )
+        SELECT 1
+        FROM (
+            SELECT lock_key
+            FROM station_execution_lock_lease
+            WHERE state IN ('prepared', 'reserved', 'running', 'uncertain')
+            UNION ALL
+            SELECT lock_key
+            FROM station_ingress_reservation_resource
+            WHERE active = 1
+        ) AS active
+        JOIN requested
+          ON active.lock_key = requested.lock_key
+          OR (
+              requested.whole_material = 1
+              AND active.lock_key GLOB (
+                  'material/' || requested.material_uuid || '/site/*/exclusive'
+              )
+          )
+        LIMIT 1
+    );
+    UPDATE site
+    SET occupied_material_uuid = NULL,
+        update_time = strftime('%Y-%m-%dT%H:%M:%fZ', 'now')
+    WHERE occupied_material_uuid = OLD.child_uuid AND deleted_at IS NULL;
+END;
+"""
+
 # v8：物料来源（MaterialSource）在任务准入时冻结具体物料绑定。任务全程独占
 # 仍由 inventory_reservation 持有；共享来源只写本表，动作执行期互斥由调度器的
 # 物料执行锁/声明负责。selector_json 用于幂等重放时拒绝同一任务尝试偷换选择器。
@@ -1147,9 +1508,18 @@ class InventoryStore:
             # v12 增加 Backend AGV 调用的目标 Edge 入口预留状态机。结构迁移保持
             # 幂等，修复开发数据库被手工提高版本但缺少业务表的情况。
             migrate_ingress_schema(self._conn)
-            # v13 把门禁 7 的条件复验、完整 Claim 和 Fence 收敛到库存写事务。
+            # v13 把门禁 7 的条件复验、完整 Claim 和 Fence 收敛到库存写事务；
+            # v14 在同一幂等入口原地放宽 Lease scope，加入通用命名资源。
             # 工作流库只保存同一 Permit 的审计投影，不再成为资源竞争权威。
             migrate_dispatch_admission_schema(self._conn)
+            # v16 重建旧 relation 写触发器，把占用与活动资源守卫并入同一主
+            # trigger；始终幂等执行以修复曾提前写高版本的开发数据库。仅含单表
+            # 的旧版迁移夹具没有兼容视图，也没有可被绕过的 relation 写入口。
+            relation_object = self._conn.execute(
+                "SELECT type FROM sqlite_master WHERE name='resource_relation'"
+            ).fetchone()
+            if relation_object is not None:
+                self._conn.executescript(_SCHEMA_V16_RELATION_WRITE_GUARD)
             if current >= 5:
                 # A development build may have added the v6 column before the
                 # deterministic backfill was introduced; keep this idempotent.

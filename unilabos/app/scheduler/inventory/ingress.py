@@ -9,7 +9,20 @@ from datetime import datetime, timedelta, timezone
 from typing import Any
 from uuid import NAMESPACE_URL, UUID, uuid4, uuid5
 
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.dispatch_admission import (
+    InventoryMutationConflict,
+    assert_resource_keys_unclaimed,
+)
+from unilabos.app.scheduler.inventory.store import (
+    InventoryStore,
+    SiteOccupancyConflict,
+    set_site_occupancy,
+)
+from unilabos.app.scheduler.resource_lock import (
+    device_lock_key,
+    material_lock_key,
+    site_lock_key,
+)
 
 
 class IngressReservationError(ValueError):
@@ -112,7 +125,7 @@ class StationIngressAuthority:
                 )
             placeholders = ",".join("?" for _ in candidates)
             rows = connection.execute(
-                "SELECT site.uuid,site.sort_order,site.create_time "
+                "SELECT site.uuid,site.material_uuid,site.sort_order,site.create_time "
                 "FROM site LEFT JOIN station_ingress_reservation_site AS ingress "
                 "ON ingress.site_uuid=site.uuid AND ingress.active=1 "
                 f"WHERE site.uuid IN ({placeholders}) AND site.deleted_at IS NULL "
@@ -121,6 +134,21 @@ class StationIngressAuthority:
                 "ORDER BY site.sort_order,site.create_time,site.uuid",
                 tuple(candidates),
             ).fetchall()
+            available_rows = []
+            for row in rows:
+                try:
+                    assert_resource_keys_unclaimed(
+                        connection,
+                        lock_keys=self._ingress_resource_keys(
+                            owner_material_uuid=str(row["material_uuid"]),
+                            site_uuid=str(row["uuid"]),
+                            carrier_material_uuid=carrier_uuid,
+                        ),
+                        allow_ingress_device_sharing=True,
+                    )
+                except InventoryMutationConflict:
+                    continue
+                available_rows.append(row)
             found = {
                 str(row["uuid"])
                 for row in connection.execute(
@@ -135,13 +163,13 @@ class StationIngressAuthority:
                     "ingress_site_not_found",
                     "逻辑入口引用不存在的库位：" + ",".join(missing),
                 )
-            if not rows:
+            if not available_rows:
                 raise IngressReservationError(
                     "ingress_capacity_unavailable",
                     "逻辑入口当前没有可接收载体的库位",
                 )
             reservation_uuid = str(uuid4())
-            selected_site_uuid = str(rows[0]["uuid"])
+            selected_site_uuid = str(available_rows[0]["uuid"])
             timestamp = self._format(now)
             expires_at = self._format(now + timedelta(seconds=ttl_seconds))
             connection.execute(
@@ -169,6 +197,17 @@ class StationIngressAuthority:
                 "reservation_uuid,site_uuid,active) VALUES (?,?,1)",
                 (reservation_uuid, selected_site_uuid),
             )
+            selected = available_rows[0]
+            for lock_key in self._ingress_resource_keys(
+                owner_material_uuid=str(selected["material_uuid"]),
+                site_uuid=selected_site_uuid,
+                carrier_material_uuid=carrier_uuid,
+            ):
+                connection.execute(
+                    "INSERT INTO station_ingress_reservation_resource("
+                    "reservation_uuid,lock_key,active) VALUES (?,?,1)",
+                    (reservation_uuid, lock_key),
+                )
             self._emit(
                 connection,
                 reservation_uuid=reservation_uuid,
@@ -199,6 +238,7 @@ class StationIngressAuthority:
                     "invalid_ingress_transition",
                     f"入口预留 {current['state']} 状态不能进入运输中",
                 )
+            self._assert_active_resources(connection, current)
             revision = int(current["revision"]) + 1
             timestamp = self._format(now)
             connection.execute(
@@ -236,6 +276,7 @@ class StationIngressAuthority:
                     "invalid_ingress_transition",
                     f"入口预留 {current['state']} 状态不能完成接收",
                 )
+            self._assert_active_resources(connection, current)
             site_uuid = self._site_uuid(connection, identity)
             site = connection.execute(
                 "SELECT material_uuid,occupied_material_uuid FROM site "
@@ -258,12 +299,41 @@ class StationIngressAuthority:
                     "carrier_location_conflict",
                     "可搬运载体已占用另一个工站内库位",
                 )
+            try:
+                assert_resource_keys_unclaimed(
+                    connection,
+                    lock_keys=self._ingress_resource_keys(
+                        owner_material_uuid=str(site["material_uuid"]),
+                        site_uuid=site_uuid,
+                        carrier_material_uuid=carrier_uuid,
+                    ),
+                    ignore_ingress_reservation_uuid=identity,
+                    allow_ingress_device_sharing=True,
+                )
+            except InventoryMutationConflict as error:
+                raise IngressReservationError(
+                    "ingress_resource_claimed",
+                    f"入口接收命中活动 Claim：{error}",
+                ) from error
             timestamp = self._format(now)
             revision = int(current["revision"]) + 1
-            connection.execute(
-                "UPDATE site SET occupied_material_uuid=?,update_time=? WHERE uuid=?",
-                (carrier_uuid, timestamp, site_uuid),
-            )
+            try:
+                set_site_occupancy(
+                    connection,
+                    site_uuid=site_uuid,
+                    material_uuid=carrier_uuid,
+                    update_time=timestamp,
+                )
+            except SiteOccupancyConflict as error:
+                code = (
+                    "carrier_location_conflict"
+                    if error.code in {
+                        "material_already_occupies_site",
+                        "material_multiple_sites",
+                    }
+                    else "ingress_site_changed"
+                )
+                raise IngressReservationError(code, str(error)) from error
             connection.execute(
                 "UPDATE material SET parent_uuid=?,update_time=? WHERE uuid=?",
                 (str(site["material_uuid"]), timestamp, carrier_uuid),
@@ -278,6 +348,7 @@ class StationIngressAuthority:
                 "WHERE reservation_uuid=?",
                 (identity,),
             )
+            self._release_resources(connection, identity)
             self._emit(
                 connection,
                 reservation_uuid=identity,
@@ -287,6 +358,27 @@ class StationIngressAuthority:
                 occurred_at=now,
             )
             return self._read(connection, identity)
+
+    @staticmethod
+    def _ingress_resource_keys(
+        *,
+        owner_material_uuid: str,
+        site_uuid: str,
+        carrier_material_uuid: str,
+    ) -> tuple[str, ...]:
+        """返回入口预留或结算真正相关的精确物理资源键。
+
+        目标 Site 键自然与其 owner 的整物料锁形成层级冲突；owner 自身未被写入，
+        因此不额外申请整物料键，保留同一 owner 下无关 Site 的并行能力。设备键则
+        继续保护 owner 与载体被作为可执行设备使用时的活动作业。
+        """
+
+        return (
+            site_lock_key(owner_material_uuid, site_uuid),
+            device_lock_key(owner_material_uuid),
+            material_lock_key(carrier_material_uuid),
+            device_lock_key(carrier_material_uuid),
+        )
 
     def cancel(self, reservation_uuid: str, *, reason: str) -> dict[str, Any]:
         """由人工明确取消未完成的入口预留。
@@ -326,6 +418,7 @@ class StationIngressAuthority:
                 "WHERE reservation_uuid=?",
                 (identity,),
             )
+            self._release_resources(connection, identity)
             site_uuid = self._site_uuid(connection, identity)
             self._emit(
                 connection,
@@ -380,6 +473,7 @@ class StationIngressAuthority:
                 "WHERE reservation_uuid=?",
                 (identity,),
             )
+            self._release_resources(connection, identity)
             self._emit(
                 connection,
                 reservation_uuid=identity,
@@ -389,6 +483,16 @@ class StationIngressAuthority:
                 occurred_at=now,
             )
         return len(rows)
+
+    @staticmethod
+    def _release_resources(connection: Any, reservation_uuid: str) -> None:
+        """在入口预留终态转换的同一事务释放全部持续资源占用。"""
+
+        connection.execute(
+            "UPDATE station_ingress_reservation_resource SET active=0 "
+            "WHERE reservation_uuid=? AND active=1",
+            (reservation_uuid,),
+        )
 
     @staticmethod
     def _row(connection: Any, reservation_uuid: str) -> Any:
@@ -409,6 +513,8 @@ class StationIngressAuthority:
         """返回不泄漏内部请求哈希的入口预留公共投影。"""
 
         row = self._row(connection, reservation_uuid)
+        if str(row["state"]) in {"reserved", "in_transit"}:
+            self._assert_active_resources(connection, row)
         return {
             "uuid": str(row["uuid"]),
             "idempotency_key": str(row["idempotency_key"]),
@@ -426,6 +532,41 @@ class StationIngressAuthority:
             "create_time": str(row["create_time"]),
             "update_time": str(row["update_time"]),
         }
+
+    def _assert_active_resources(self, connection: Any, reservation: Any) -> None:
+        """证明活动入口预留仍完整持有创建时冻结的四个资源键。"""
+
+        reservation_uuid = str(reservation["uuid"])
+        site_uuid = self._site_uuid(connection, reservation_uuid)
+        site = connection.execute(
+            "SELECT material_uuid FROM site WHERE uuid=? AND deleted_at IS NULL",
+            (site_uuid,),
+        ).fetchone()
+        if site is None:
+            raise IngressReservationError(
+                "ingress_reservation_corrupt",
+                "活动入口预留的目标库位不存在",
+            )
+        expected = set(
+            self._ingress_resource_keys(
+                owner_material_uuid=str(site["material_uuid"]),
+                site_uuid=site_uuid,
+                carrier_material_uuid=str(reservation["carrier_material_uuid"]),
+            )
+        )
+        actual = {
+            str(row["lock_key"])
+            for row in connection.execute(
+                "SELECT lock_key FROM station_ingress_reservation_resource "
+                "WHERE reservation_uuid=? AND active=1",
+                (reservation_uuid,),
+            ).fetchall()
+        }
+        if actual != expected:
+            raise IngressReservationError(
+                "ingress_reservation_corrupt",
+                "活动入口预留的持续资源集合不完整",
+            )
 
     @staticmethod
     def _site_uuid(connection: Any, reservation_uuid: str) -> str:

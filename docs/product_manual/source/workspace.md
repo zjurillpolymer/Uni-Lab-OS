@@ -10,12 +10,6 @@
 
 设备包由用户自行准备。Uni-Lab OS 不会从任意目录猜测要加载哪些文件；启动时必须通过 `--workspace` 指向一个明确的设备包根目录。
 
-```{toctree}
-:maxdepth: 1
-
-workspace-init
-```
-
 ## Uni-Lab OS 如何读取设备包
 
 ```text

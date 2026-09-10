@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="孔板与吸头盒（Plate／Tiprack）" href="plate-tiprack.html"><link rel="prev" title="工作站台面与仓库" href="deck-warehouse.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>光电堆栈与旋转堆栈：物料 + 设备 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3 current current-page"><a class="current reference internal" href="#">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>光电堆栈与旋转堆栈：物料 + 设备<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>光电堆栈与旋转堆栈：物料 + 设备<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="warning admonition">
 <p class="admonition-title">必须同时定义物料面和设备面</p>
 <p>光电堆栈和旋转堆栈都是<strong>物料资源 + 设备能力</strong>组成的复合对象，不能只登记其中一面：物料面登记整机、纵向 Stack、层位 Site、交互位和库存；设备面登记连接、动作、传感器状态、故障和生命周期。</p>
@@ -402,7 +404,7 @@
 <p>静止料架并入<a class="reference internal" href="deck-warehouse.html"><span class="std std-doc">工作站台面与仓库</span></a>。光电堆栈必须交付物料树，并把设备能力标为未规范；旋转堆栈必须同时交付设备定义和挂在该设备节点下的物料树。工作流只调用已登记动作和 Site，设备成功后才更新库存。</p>
 </div>
 <section id="id2">
-<h2>1. 设备 + 物料的强制定义规范<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>1. 设备 + 物料的强制定义规范<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>同一台光电或旋转堆栈必须包含下面四项交付物：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -457,7 +459,7 @@
 </ul>
 </section>
 <section id="id3">
-<h2>2. 光电堆栈：物料面必须定义，设备面尚无统一规范<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>2. 光电堆栈：物料面必须定义，设备面尚无统一规范<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>带光电传感器的堆栈看起来像架子，实际上是一台要轮询状态的设备。典型能力包括：某层/某列是否有料、交互位是否到位、门是否关闭、故障或遮挡。</p>
 <p>物料面仍按第 1 节定义整机 Material 身份、各纵向 Stack、逐层 Site 和交互位。<strong>只有设备面到此为止。</strong> Uni-Lab OS 核心仓库没有光电堆栈的标准设备类、标准动作名或示例驱动。下面几条只是将来补齐设备规范时仍应遵守的通用原则，<strong>不是</strong>现在可以照着实现并验收通过的设备清单：</p>
 <ul class="simple">
@@ -469,7 +471,7 @@
 <p>在设备规范发布前：新项目可以交付光电堆栈的物料模板与资源树，但不要自封“官方光电堆栈设备模板”；不要把“页面上能画出一排槽位”理解成“光电堆栈已经可驱动”。需要接入光电能力时，先作为项目缺口登记，再按<a class="reference internal" href="generic-device.html"><span class="std std-doc">通用设备规范</span></a>另开设备类，并在验收记录里写明：这是项目私有实现，不是产品设备规范。</p>
 </section>
 <section id="id4">
-<h2>3. 旋转堆栈：物料树 + 标准设备类<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>3. 旋转堆栈：物料树 + 标准设备类<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>可驱动的旋转堆栈是复合对象。整机设备节点同时拥有 Material 身份；纵向 Stack、库位 Site 和交互位作为它的子资源，旋转、选层、出库、入库走设备动作。只有载架循环而没有 <code class="docutils literal notranslate"><span class="pre">&#64;device</span></code> 动作，或只有驱动而没有物料树，都不能称为已经接入旋转堆栈。</p>
 <p>必须同时交付三件事：</p>
 <div class="table-wrapper colwidths-auto docutils container">
@@ -498,7 +500,7 @@
 </div>
 <p>工作流只调用业务动作 <code class="docutils literal notranslate"><span class="pre">outbound</span></code> / <code class="docutils literal notranslate"><span class="pre">inbound</span></code>，参数只用已标定的 Stack 编号和层号。驱动在内部映射到控制器协议。工作流不得出现品牌命令名、寄存器地址或画布 <code class="docutils literal notranslate"><span class="pre">x/y/z</span></code>。</p>
 <section id="id5">
-<h3>3.1 业务能力怎样落到动作<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<h3>3.1 业务能力怎样落到动作<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
 <p>现场常说的“旋转、回零、选层/列、报告在位”，按本规范这样落地，不要再发明一套平行接口：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -531,7 +533,7 @@
 <p>某型号若另外提供回零或槽位光电，作为<strong>该型号扩展</strong>登记，不改变本大类必选动作。扩展动作仍须遵守<a class="reference internal" href="generic-device.html"><span class="std std-doc">通用设备规范</span></a>：有协议映射、有成功/失败语义、未知结果不得写成成功。</p>
 </section>
 <section id="stack">
-<h3>3.2 建模原则：先声明每个纵向 Stack，再组装整机<a class="headerlink" href="#stack" title="Link to this heading">¶</a></h3>
+<h3>3.2 建模原则：先声明每个纵向 Stack，再组装整机<a class="headerlink" href="#stack" title="链接到此标题。">¶</a></h3>
 <p>旋转堆栈不能直接定义成一张扁平的“行 × 列”库位表。一个完整设备必须按实物结构拆成以下资源树：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>cytomat_01（整机设备节点 / Material 身份）
 ├── stack_01（纵向 Stack 1）
@@ -582,7 +584,7 @@
 <p>下面用仓库已有 Cytomat 串口原型中的命令作为贯穿示例。它展示完整的定义和生命周期，但<strong>不是某个 Cytomat 型号的出厂参数</strong>；Stack 数量、每 Stack 层数、层间距、应答成功码、门和联锁必须用项目所装设备的手册与现场验收记录替换。</p>
 </section>
 <section id="cytomat-stack">
-<h3>3.3 Cytomat 资源定义：纵向 Stack 与整机组装<a class="headerlink" href="#cytomat-stack" title="Link to this heading">¶</a></h3>
+<h3>3.3 Cytomat 资源定义：纵向 Stack 与整机组装<a class="headerlink" href="#cytomat-stack" title="链接到此标题。">¶</a></h3>
 <p>先定义“一个纵向 Stack”。同类 Stack 可以复用同一工厂，但必须逐个创建独立实例，不能让多个 Stack 共享 <code class="docutils literal notranslate"><span class="pre">sites</span></code> 或 Site 对象。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">math</span><span class="w"> </span><span class="kn">import</span> <span class="n">cos</span><span class="p">,</span> <span class="n">radians</span><span class="p">,</span> <span class="n">sin</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span>
@@ -598,14 +600,14 @@
     <span class="n">levels</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span>
     <span class="n">pitch_mm</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">PlateCarrier</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">"""声明一个纵向 Stack；构造期间只创建资源，不连接或驱动设备。"""</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;声明一个纵向 Stack；构造期间只创建资源，不连接或驱动设备。&quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">stacker</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">levels</span> <span class="o">&lt;=</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">pitch_mm</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"stacker、levels 和 pitch_mm 必须大于 0"</span><span class="p">)</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;stacker、levels 和 pitch_mm 必须大于 0&quot;</span><span class="p">)</span>
 
     <span class="n">sites</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="n">PlateHolder</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
     <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">levels</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
         <span class="n">site</span> <span class="o">=</span> <span class="n">PlateHolder</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"S</span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">-L</span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;S</span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">-L</span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
             <span class="n">size_x</span><span class="o">=</span><span class="mf">128.0</span><span class="p">,</span>
             <span class="n">size_y</span><span class="o">=</span><span class="mf">86.0</span><span class="p">,</span>
             <span class="n">size_z</span><span class="o">=</span><span class="n">pitch_mm</span><span class="p">,</span>
@@ -613,8 +615,8 @@
         <span class="p">)</span>
         <span class="n">site</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">Coordinate</span><span class="p">(</span><span class="mf">0.0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">,</span> <span class="p">(</span><span class="n">level</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="n">pitch_mm</span><span class="p">)</span>
         <span class="n">site</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span>
-            <span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_sbs_plate"</span><span class="p">],</span>
-            <span class="s2">"controller_address"</span><span class="p">:</span> <span class="p">{</span><span class="s2">"stacker"</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">"level"</span><span class="p">:</span> <span class="n">level</span><span class="p">},</span>
+            <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_sbs_plate&quot;</span><span class="p">],</span>
+            <span class="s2">&quot;controller_address&quot;</span><span class="p">:</span> <span class="p">{</span><span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">level</span><span class="p">},</span>
         <span class="p">}</span>
         <span class="n">sites</span><span class="p">[</span><span class="n">level</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">site</span>
 
@@ -624,26 +626,26 @@
         <span class="n">size_y</span><span class="o">=</span><span class="mf">100.0</span><span class="p">,</span>
         <span class="n">size_z</span><span class="o">=</span><span class="n">levels</span> <span class="o">*</span> <span class="n">pitch_mm</span><span class="p">,</span>
         <span class="n">sites</span><span class="o">=</span><span class="n">sites</span><span class="p">,</span>
-        <span class="n">category</span><span class="o">=</span><span class="s2">"cytomat_vertical_stack"</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="s2">&quot;cytomat_vertical_stack&quot;</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">stack</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span>
-        <span class="s2">"stacker"</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span>
-        <span class="s2">"levels"</span><span class="p">:</span> <span class="n">levels</span><span class="p">,</span>
-        <span class="s2">"pitch_mm"</span><span class="p">:</span> <span class="n">pitch_mm</span><span class="p">,</span>
+        <span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span>
+        <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="n">levels</span><span class="p">,</span>
+        <span class="s2">&quot;pitch_mm&quot;</span><span class="p">:</span> <span class="n">pitch_mm</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="k">return</span> <span class="n">stack</span>
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_cytomat_carousel"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"warehouse"</span><span class="p">,</span> <span class="s2">"plate_storage"</span><span class="p">,</span> <span class="s2">"rotating_stack"</span><span class="p">,</span> <span class="s2">"cytomat"</span><span class="p">],</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"Cytomat 旋转堆栈总成"</span><span class="p">,</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"由多个独立纵向 Stack 和一个 TFS1 交互位组装。"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_cytomat_carousel&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;warehouse&quot;</span><span class="p">,</span> <span class="s2">&quot;plate_storage&quot;</span><span class="p">,</span> <span class="s2">&quot;rotating_stack&quot;</span><span class="p">,</span> <span class="s2">&quot;cytomat&quot;</span><span class="p">],</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;Cytomat 旋转堆栈总成&quot;</span><span class="p">,</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;由多个独立纵向 Stack 和一个 TFS1 交互位组装。&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MyLabCytomatCarousel</span><span class="p">(</span><span class="n">Resource</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
-        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"cytomat_carousel"</span><span class="p">,</span>
+        <span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;cytomat_carousel&quot;</span><span class="p">,</span>
         <span class="n">setup</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
@@ -652,7 +654,7 @@
             <span class="n">size_x</span><span class="o">=</span><span class="mf">1200.0</span><span class="p">,</span>
             <span class="n">size_y</span><span class="o">=</span><span class="mf">1200.0</span><span class="p">,</span>
             <span class="n">size_z</span><span class="o">=</span><span class="mf">900.0</span><span class="p">,</span>
-            <span class="n">category</span><span class="o">=</span><span class="s2">"rotating_stack"</span><span class="p">,</span>
+            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;rotating_stack&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="k">if</span> <span class="n">setup</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">setup</span><span class="p">()</span>
@@ -660,17 +662,17 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">setup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="c1"># 每项都代表一根实物纵向 Stack。示例值必须替换为本机验收表。</span>
         <span class="n">stack_specs</span> <span class="o">=</span> <span class="p">[</span>
-            <span class="p">{</span><span class="s2">"stacker"</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="s2">"pitch_mm"</span><span class="p">:</span> <span class="mf">25.0</span><span class="p">},</span>
-            <span class="p">{</span><span class="s2">"stacker"</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="s2">"pitch_mm"</span><span class="p">:</span> <span class="mf">25.0</span><span class="p">},</span>
-            <span class="p">{</span><span class="s2">"stacker"</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">"pitch_mm"</span><span class="p">:</span> <span class="mf">35.0</span><span class="p">},</span>
-            <span class="p">{</span><span class="s2">"stacker"</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">"levels"</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">"pitch_mm"</span><span class="p">:</span> <span class="mf">35.0</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="s2">&quot;pitch_mm&quot;</span><span class="p">:</span> <span class="mf">25.0</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="mi">2</span><span class="p">,</span> <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="s2">&quot;pitch_mm&quot;</span><span class="p">:</span> <span class="mf">25.0</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="mi">3</span><span class="p">,</span> <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;pitch_mm&quot;</span><span class="p">:</span> <span class="mf">35.0</span><span class="p">},</span>
+            <span class="p">{</span><span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;levels&quot;</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="s2">&quot;pitch_mm&quot;</span><span class="p">:</span> <span class="mf">35.0</span><span class="p">},</span>
         <span class="p">]</span>
         <span class="n">radius_mm</span> <span class="o">=</span> <span class="mf">430.0</span>
 
         <span class="k">for</span> <span class="n">index</span><span class="p">,</span> <span class="n">spec</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">stack_specs</span><span class="p">):</span>
-            <span class="n">stacker</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="s2">"stacker"</span><span class="p">]</span>
+            <span class="n">stacker</span> <span class="o">=</span> <span class="n">spec</span><span class="p">[</span><span class="s2">&quot;stacker&quot;</span><span class="p">]</span>
             <span class="n">stack</span> <span class="o">=</span> <span class="n">make_cytomat_vertical_stack</span><span class="p">(</span>
-                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">"stack_</span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="sa">f</span><span class="s2">&quot;stack_</span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">,</span>
                 <span class="o">**</span><span class="n">spec</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">angle</span> <span class="o">=</span> <span class="n">index</span> <span class="o">*</span> <span class="mf">360.0</span> <span class="o">/</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack_specs</span><span class="p">)</span>
@@ -684,21 +686,21 @@
             <span class="p">)</span>
 
         <span class="n">tfs_site</span> <span class="o">=</span> <span class="n">PlateHolder</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">"TFS1"</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;TFS1&quot;</span><span class="p">,</span>
             <span class="n">size_x</span><span class="o">=</span><span class="mf">128.0</span><span class="p">,</span>
             <span class="n">size_y</span><span class="o">=</span><span class="mf">86.0</span><span class="p">,</span>
             <span class="n">size_z</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
             <span class="n">pedestal_size_z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">tfs_site</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">Coordinate</span><span class="o">.</span><span class="n">zero</span><span class="p">()</span>
-        <span class="n">tfs_site</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_sbs_plate"</span><span class="p">]}</span>
+        <span class="n">tfs_site</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_sbs_plate&quot;</span><span class="p">]}</span>
         <span class="n">transfer_station</span> <span class="o">=</span> <span class="n">PlateCarrier</span><span class="p">(</span>
-            <span class="n">name</span><span class="o">=</span><span class="s2">"transfer_station"</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="s2">&quot;transfer_station&quot;</span><span class="p">,</span>
             <span class="n">size_x</span><span class="o">=</span><span class="mf">160.0</span><span class="p">,</span>
             <span class="n">size_y</span><span class="o">=</span><span class="mf">120.0</span><span class="p">,</span>
             <span class="n">size_z</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>
             <span class="n">sites</span><span class="o">=</span><span class="p">{</span><span class="mi">0</span><span class="p">:</span> <span class="n">tfs_site</span><span class="p">},</span>
-            <span class="n">category</span><span class="o">=</span><span class="s2">"plate_transfer_station"</span><span class="p">,</span>
+            <span class="n">category</span><span class="o">=</span><span class="s2">&quot;plate_transfer_station&quot;</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">assign_child_resource</span><span class="p">(</span>
             <span class="n">transfer_station</span><span class="p">,</span>
@@ -710,7 +712,7 @@
 <p>示例中的尺寸和四根 Stack 只是演示如何组装，不代表任何 Cytomat 型号。正式交付至少要为每根 Stack 登记：<code class="docutils literal notranslate"><span class="pre">stacker</span></code>、<code class="docutils literal notranslate"><span class="pre">levels</span></code>、<code class="docutils literal notranslate"><span class="pre">pitch_mm</span></code>、启用/停用层，以及每层允许的板型。</p>
 </section>
 <section id="cytomat">
-<h3>3.4 Cytomat 设备定义：地址解析与动作边界<a class="headerlink" href="#cytomat" title="Link to this heading">¶</a></h3>
+<h3>3.4 Cytomat 设备定义：地址解析与动作边界<a class="headerlink" href="#cytomat" title="链接到此标题。">¶</a></h3>
 <p>设备驱动使用同一组 <code class="docutils literal notranslate"><span class="pre">stacker</span></code> / <code class="docutils literal notranslate"><span class="pre">level</span></code> 地址访问上面的 Site。仓库现有原型使用 <code class="docutils literal notranslate"><span class="pre">ll:in</span></code> 初始化、<code class="docutils literal notranslate"><span class="pre">se:cs</span></code> 设置单个 Stack 层间距、<code class="docutils literal notranslate"><span class="pre">mv:st</span></code> 从库位送到 TFS1、<code class="docutils literal notranslate"><span class="pre">mv:ts</span></code> 从 TFS1 收回库位；设备包应把串口对象封装进类中，不能在模块导入时打开端口。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Any</span><span class="p">,</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Optional</span>
 
@@ -718,120 +720,120 @@
 
 
 <span class="nd">@device</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_cytomat"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"plate_storage"</span><span class="p">,</span> <span class="s2">"rotating_stack"</span><span class="p">,</span> <span class="s2">"cytomat"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"Cytomat 参考接口；按独立 Stack 编号和层号存取微孔板。"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"Cytomat 旋转堆栈"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_cytomat&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;plate_storage&quot;</span><span class="p">,</span> <span class="s2">&quot;rotating_stack&quot;</span><span class="p">,</span> <span class="s2">&quot;cytomat&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Cytomat 参考接口；按独立 Stack 编号和层号存取微孔板。&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;Cytomat 旋转堆栈&quot;</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">MyLabCytomat</span><span class="p">:</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">device_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
-        <span class="n">port</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"COM18"</span><span class="p">,</span>
+        <span class="n">port</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;COM18&quot;</span><span class="p">,</span>
         <span class="n">baudrate</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">9600</span><span class="p">,</span>
         <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">15.0</span><span class="p">,</span>
         <span class="n">stack_levels</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">):</span>
         <span class="k">if</span> <span class="n">timeout</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"timeout 必须大于 0 秒"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">device_id</span> <span class="o">=</span> <span class="n">device_id</span> <span class="ow">or</span> <span class="s2">"cytomat_01"</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;timeout 必须大于 0 秒&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">device_id</span> <span class="o">=</span> <span class="n">device_id</span> <span class="ow">or</span> <span class="s2">&quot;cytomat_01&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">port</span> <span class="o">=</span> <span class="n">port</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">baudrate</span> <span class="o">=</span> <span class="n">baudrate</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">stack_levels</span> <span class="o">=</span> <span class="n">stack_levels</span> <span class="ow">or</span> <span class="p">{</span><span class="mi">1</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">2</span><span class="p">:</span> <span class="mi">21</span><span class="p">,</span> <span class="mi">3</span><span class="p">:</span> <span class="mi">15</span><span class="p">,</span> <span class="mi">4</span><span class="p">:</span> <span class="mi">15</span><span class="p">}</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">"status"</span><span class="p">:</span> <span class="s2">"Offline"</span><span class="p">,</span> <span class="s2">"fault"</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;status&quot;</span><span class="p">:</span> <span class="s2">&quot;Offline&quot;</span><span class="p">,</span> <span class="s2">&quot;fault&quot;</span><span class="p">:</span> <span class="kc">False</span><span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_validate_address</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stacker</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stacker</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">stacker</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"stacker 必须是整数"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;stacker 必须是整数&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">bool</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">level</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">"level 必须是整数"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;level 必须是整数&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">stacker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_levels</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"未登记的 Stack: </span><span class="si">{</span><span class="n">stacker</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;未登记的 Stack: </span><span class="si">{</span><span class="n">stacker</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="mi">1</span> <span class="o">&lt;=</span> <span class="n">level</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_levels</span><span class="p">[</span><span class="n">stacker</span><span class="p">]:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">"Stack </span><span class="si">{</span><span class="n">stacker</span><span class="si">}</span><span class="s2"> 没有第 </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> 层"</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Stack </span><span class="si">{</span><span class="n">stacker</span><span class="si">}</span><span class="s2"> 没有第 </span><span class="si">{</span><span class="n">level</span><span class="si">}</span><span class="s2"> 层&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_send_checked</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="p">:</span> <span class="nb">str</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""发送命令，并按本机协议校验应答；失败或未知应答必须抛异常。"""</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"按所装 Cytomat 型号实现串口收发和成功码解析"</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;发送命令，并按本机协议校验应答；失败或未知应答必须抛异常。&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;按所装 Cytomat 型号实现串口收发和成功码解析&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""显式打开串口；模块导入和构造函数中不得连接设备。"""</span>
-        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">"创建 serial.Serial，并保存到 self._serial"</span><span class="p">)</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;显式打开串口；模块导入和构造函数中不得连接设备。&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;创建 serial.Serial，并保存到 self._serial&quot;</span><span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">initialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">pitch_by_stack</span><span class="p">:</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">int</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="s2">"ll:in"</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="s2">&quot;ll:in&quot;</span><span class="p">)</span>
         <span class="k">for</span> <span class="n">stacker</span><span class="p">,</span> <span class="n">pitch_mm</span> <span class="ow">in</span> <span class="n">pitch_by_stack</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">stacker</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">stack_levels</span> <span class="ow">or</span> <span class="n">pitch_mm</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
-                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">"初始化参数与资源定义不一致"</span><span class="p">)</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">"se:cs </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pitch_mm</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">"Idle"</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"Cytomat 初始化完成"</span><span class="p">}</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;初始化参数与资源定义不一致&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;se:cs </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">pitch_mm</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">status</span><span class="o">=</span><span class="s2">&quot;Idle&quot;</span><span class="p">,</span> <span class="n">fault</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;Cytomat 初始化完成&quot;</span><span class="p">}</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"从指定纵向 Stack 的层位送板到 TFS1"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;从指定纵向 Stack 的层位送板到 TFS1&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">outbound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stacker</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_address</span><span class="p">(</span><span class="n">stacker</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mv:st </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"stacker"</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">"level"</span><span class="p">:</span> <span class="n">level</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mv:st </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">level</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">"从 TFS1 收板到指定纵向 Stack 的层位"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="s2">&quot;从 TFS1 收板到指定纵向 Stack 的层位&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">inbound</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stacker</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">Any</span><span class="p">]:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_validate_address</span><span class="p">(</span><span class="n">stacker</span><span class="p">,</span> <span class="n">level</span><span class="p">)</span>
-        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">"mv:ts </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">"</span><span class="p">)</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"stacker"</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">"level"</span><span class="p">:</span> <span class="n">level</span><span class="p">,</span> <span class="s2">"response"</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_send_checked</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;mv:ts </span><span class="si">{</span><span class="n">stacker</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">level</span><span class="si">:</span><span class="s2">02d</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;stacker&quot;</span><span class="p">:</span> <span class="n">stacker</span><span class="p">,</span> <span class="s2">&quot;level&quot;</span><span class="p">:</span> <span class="n">level</span><span class="p">,</span> <span class="s2">&quot;response&quot;</span><span class="p">:</span> <span class="n">response</span><span class="p">}</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""停止轮询并关闭串口；不改写库存归属。"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;停止轮询并关闭串口；不改写库存归属。&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_serial</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">"status"</span><span class="p">]</span> <span class="o">=</span> <span class="s2">"Offline"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s2">&quot;status&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;Offline&quot;</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"status"</span><span class="p">,</span> <span class="s2">"Unknown"</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;status&quot;</span><span class="p">,</span> <span class="s2">&quot;Unknown&quot;</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">()</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">fault</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bool</span><span class="p">:</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">"fault"</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s2">&quot;fault&quot;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>这里将通用动作参数明确为 <code class="docutils literal notranslate"><span class="pre">stacker</span></code> / <code class="docutils literal notranslate"><span class="pre">level</span></code>，因为它们与资源树和 Cytomat 协议一一对应。若上层合同仍使用 <code class="docutils literal notranslate"><span class="pre">row</span></code> / <code class="docutils literal notranslate"><span class="pre">column</span></code>，必须在设备包中固定映射 <code class="docutils literal notranslate"><span class="pre">column</span> <span class="pre">→</span> <span class="pre">stacker</span></code>、<code class="docutils literal notranslate"><span class="pre">row</span> <span class="pre">→</span> <span class="pre">level</span></code>，对外只保留一种叫法，不得让同一 Site 同时存在两套可漂移地址。</p>
 <p>动作至少返回 <code class="docutils literal notranslate"><span class="pre">success:</span> <span class="pre">bool</span></code>。只有 <code class="docutils literal notranslate"><span class="pre">_send_checked</span></code> 已确认设备成功应答时才能返回 <code class="docutils literal notranslate"><span class="pre">success=true</span></code>；超时、断线、设备拒绝、无效响应或结果不确定时必须抛异常或返回明确失败。出库、入库会改变设备姿态和物料位置，不能标记为 <code class="docutils literal notranslate"><span class="pre">always_free</span></code>。</p>
 </section>
 <section id="id6">
-<h3>3.5 启动图：一个设备根节点挂载完整物料总成<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>3.5 启动图：一个设备根节点挂载完整物料总成<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <p>启动图中只使用一个整机根节点：它以 <code class="docutils literal notranslate"><span class="pre">type:</span> <span class="pre">device</span></code> 提供串口连接和动作，同时由实例同步取得 Material 身份。资源总成作为它的子节点，继续承载各 Stack、Site 与库存。设备面和物料面职责分开，但在同一棵树中通过父子关系明确绑定。</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cytomat_01"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Cytomat 01 控制器"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"device"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.my_device_package.MyLabCytomat"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"cytomat_01_storage"</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"port"</span><span class="p">:</span><span class="w"> </span><span class="s2">"COM18"</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"baudrate"</span><span class="p">:</span><span class="w"> </span><span class="mi">9600</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"timeout"</span><span class="p">:</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"stack_levels"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"1"</span><span class="p">:</span><span class="w"> </span><span class="mi">21</span><span class="p">,</span><span class="w"> </span><span class="nt">"2"</span><span class="p">:</span><span class="w"> </span><span class="mi">21</span><span class="p">,</span><span class="w"> </span><span class="nt">"3"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nt">"4"</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">}</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cytomat_01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Cytomat 01 控制器&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;device&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.my_device_package.MyLabCytomat&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;cytomat_01_storage&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;port&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;COM18&quot;</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;baudrate&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">9600</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;timeout&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">15.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;stack_levels&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;1&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">21</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;2&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">21</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;3&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;4&quot;</span><span class="p">:</span><span class="w"> </span><span class="mi">15</span><span class="p">}</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cytomat_01_storage"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"Cytomat 01 库位总成"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.my_device_package.MyLabCytomatCarousel"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">      </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="s2">"cytomat_01"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"setup"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cytomat_01_storage&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;Cytomat 01 库位总成&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warehouse&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.my_device_package.MyLabCytomatCarousel&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;cytomat_01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;setup&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
@@ -840,7 +842,7 @@
 <p>示例省略了由 <code class="docutils literal notranslate"><span class="pre">setup()</span></code> 生成的子树序列化结果；系统加载后必须能从 <code class="docutils literal notranslate"><span class="pre">cytomat_01</span></code> 展开到 <code class="docutils literal notranslate"><span class="pre">cytomat_01_storage</span></code>，再看到 <code class="docutils literal notranslate"><span class="pre">stack_01</span></code> 至 <code class="docutils literal notranslate"><span class="pre">stack_04</span></code>。每个 Stack 下分别出现自己的 Site，以及独立的 <code class="docutils literal notranslate"><span class="pre">transfer_station/TFS1</span></code>。验收时应导出实际资源树，逐项比对设备上的标签，并确认设备注册中的 <code class="docutils literal notranslate"><span class="pre">material_uuid</span></code> 指向这个整机 Material 实例。</p>
 </section>
 <section id="id7">
-<h3>3.6 完整生命周期：定义、启动、出库、入库、恢复、停机<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>3.6 完整生命周期：定义、启动、出库、入库、恢复、停机<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -912,10 +914,10 @@
 <p>工作流绑定启动图里的设备实例 ID，并显式传递资源树中解析出的 Stack 编号和层号：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.workflow.authoring</span><span class="w"> </span><span class="kn">import</span> <span class="n">device</span><span class="p">,</span> <span class="n">workflow</span>
 
-<span class="n">cytomat</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">"cytomat_01"</span><span class="p">)</span>
+<span class="n">cytomat</span> <span class="o">=</span> <span class="n">device</span><span class="p">(</span><span class="s2">&quot;cytomat_01&quot;</span><span class="p">)</span>
 
 
-<span class="nd">@workflow</span><span class="p">(</span><span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">"..."</span><span class="p">,</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">"Cytomat 单板往返验证"</span><span class="p">)</span>
+<span class="nd">@workflow</span><span class="p">(</span><span class="n">workflow_uuid</span><span class="o">=</span><span class="s2">&quot;...&quot;</span><span class="p">,</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;Cytomat 单板往返验证&quot;</span><span class="p">)</span>
 <span class="k">def</span><span class="w"> </span><span class="nf">cytomat_round_trip</span><span class="p">(</span><span class="o">*</span><span class="p">,</span> <span class="n">stacker</span><span class="p">:</span> <span class="nb">int</span><span class="p">,</span> <span class="n">level</span><span class="p">:</span> <span class="nb">int</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
     <span class="n">cytomat</span><span class="o">.</span><span class="n">outbound</span><span class="p">(</span><span class="n">stacker</span><span class="o">=</span><span class="n">stacker</span><span class="p">,</span> <span class="n">level</span><span class="o">=</span><span class="n">level</span><span class="p">)</span>
     <span class="c1"># 设备成功后，由库存转移合同把板从 Sxx-Lyy 更新到 TFS1。</span>
@@ -927,7 +929,7 @@
 </section>
 </section>
 <section id="id8">
-<h2>4. 设备确认成功后再更新库存<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>4. 设备确认成功后再更新库存<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>无论将来接入光电还是现在接入旋转，库存更新顺序相同：</p>
 <ol class="arabic simple">
 <li><p>校验来源放置位有物料、交互位为空且类型兼容；</p></li>
@@ -940,7 +942,7 @@
 <p>动作参数使用稳定放置位或设备层/列；由驱动转换成控制器字段。工作流不要传视觉 <code class="docutils literal notranslate"><span class="pre">x/y/z</span></code>。</p>
 </section>
 <section id="id9">
-<h2>5. 交付前必须检查<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>5. 交付前必须检查<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>静止料架已经在仓库页完成；</p></li>
 <li><p>光电堆栈的物料树已经验收；设备面在没有产品规范时不得因槽位画完就通过；</p></li>
@@ -1040,10 +1042,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

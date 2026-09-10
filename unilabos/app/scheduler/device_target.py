@@ -10,6 +10,7 @@ from uuid import UUID
 from unilabos.app.scheduler.inventory.station_resource import (
     StationResourceInventory,
 )
+from unilabos.workflow.resource_lock_key import device_lock_key
 
 
 class DeviceTargetUnavailable(ValueError):
@@ -159,9 +160,9 @@ def resolve_registered_device_target(
     for candidate in candidates:
         if (
             not {
-                f"/devices/{candidate.local_device_id}",
+                device_lock_key(candidate.local_device_id),
                 f"/devices/{candidate.local_device_id}/{action_name}",
-                f"/devices/{candidate.material_uuid}",
+                device_lock_key(candidate.material_uuid),
             }
             & busy_keys
         ):
@@ -246,9 +247,9 @@ def resolve_registered_fixed_device_target(
         )
     candidate = ResolvedDeviceTarget(resolved_local_device_id, material_uuid)
     if {
-        f"/devices/{resolved_local_device_id}",
+        device_lock_key(resolved_local_device_id),
         f"/devices/{resolved_local_device_id}/{action_name}",
-        f"/devices/{material_uuid}",
+        device_lock_key(material_uuid),
     } & busy_keys:
         raise DeviceTargetUnavailable(
             "device_busy",

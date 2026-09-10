@@ -42,6 +42,12 @@ def _raw_resource(
 class _Logger:
     """提供转换接缝所需的最小日志接口。"""
 
+    def trace(self, *_args: object, **_kwargs: object) -> None:
+        """忽略测试无关的跟踪日志。
+
+        参数说明：位置参数和命名参数承接生产日志调用。返回：无。
+        """
+
     def warning(self, *_args: object, **_kwargs: object) -> None:
         """忽略测试无关的告警。
 
@@ -488,6 +494,66 @@ def test_managed_local_edge_uses_backend_material_projection(
     node.lab_logger = lambda: _Logger()
 
     assert node._convert_resources_sync(material_uuid) == [material]
+
+
+def test_managed_local_native_action_resource_query_uses_backend_projection(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """原生动作读取物料时也必须使用 Backend 权威投影。
+
+    参数说明：``monkeypatch`` 隔离运行角色、资源装配与遗留 ROS 服务。返回：
+    无；断言 Edge Runtime 的公开 ``get_resource`` 接缝不访问同进程 Host 的旧
+    物料服务。异常：生产投影缺失或资源身份未知时保持失败关闭。
+    """
+
+    # ``material_uuid`` 是 Backend 调度参数携带的物料稳定身份。
+    material_uuid = "50000000-0000-4000-8000-000000000117"
+    # ``material`` 是原生 ROS 动作最终应取得的投影实例。
+    material = SimpleNamespace(unilabos_uuid=material_uuid, children=[])
+    direct_rows = [_raw_resource(material_uuid)]
+    install_production_resource_nodes(
+        [
+            {
+                **direct_rows[0],
+                "id": "managed-local-native-sample",
+                "name": "Managed local native sample",
+                "barcode": "UNILAB-GRAPH-managed-local-native-sample",
+                "type": "container",
+                "class": "sample",
+                "config": {},
+                "data": {},
+                "extra": {},
+            }
+        ],
+        {"UNILAB-GRAPH-managed-local-native-sample": material_uuid},
+    )
+    monkeypatch.setattr(base_device_node.BasicConfig, "control_plane", "local")
+    monkeypatch.setattr(base_device_node.BasicConfig, "process_role", "edge_runtime")
+    monkeypatch.setattr(
+        base_device_node.ResourceTreeSet,
+        "from_raw_dict_list",
+        lambda _rows: _tree_set(direct_rows, material),
+    )
+
+    class _ForbiddenClient:
+        """拒绝 Edge Runtime 访问遗留 ROS 物料服务。"""
+
+        def call_async(self, _request: object) -> object:
+            """若公开查询越过 Backend 投影则立即报告测试失败。
+
+            参数：``_request`` 是不应发送的遗留请求。返回：永不返回。
+            异常：始终抛出 ``AssertionError``。
+            """
+
+            raise AssertionError("Edge Runtime must not query legacy ROS material service")
+
+    node = object.__new__(BaseROS2DeviceNode)
+    node._resource_clients = {"c2s_update_resource_tree": _ForbiddenClient()}
+    node.lab_logger = lambda: _Logger()
+
+    result = asyncio.run(node.get_resource([material_uuid]))
+
+    assert result.to_plr_resources() == [material]
 
 
 def test_managed_local_edge_async_action_uses_backend_material_projection(

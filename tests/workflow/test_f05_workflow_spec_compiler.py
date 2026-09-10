@@ -11,33 +11,63 @@ from unilabos.workflow.execution_plan import (
     ExecutionPlanBuilder,
     ExecutionPlanBuildError,
 )
+from unilabos.workflow.inventory_resource_plan import bind_inventory_resource_plan
+from unilabos.workflow.resource_lock_plan import (
+    bind_station_resource_plan,
+    compile_template_resource_plan,
+    deserialize_resource_plan,
+    serialize_resource_plan,
+)
 
 WORKFLOW_UUID = "10000000-0000-4000-8000-000000000001"
 TASK_UUID = "20000000-0000-4000-8000-000000000001"
 SOURCE_NODE_UUID = "30000000-0000-4000-8000-000000000001"
 FIRST_NODE_UUID = "30000000-0000-4000-8000-000000000002"
 SECOND_NODE_UUID = "30000000-0000-4000-8000-000000000003"
+OUTPUT_NODE_UUID = "30000000-0000-4000-8000-000000000004"
 SOURCE_JOB_UUID = "40000000-0000-4000-8000-000000000001"
 FIRST_JOB_UUID = "40000000-0000-4000-8000-000000000002"
 SECOND_JOB_UUID = "40000000-0000-4000-8000-000000000003"
+OUTPUT_JOB_UUID = "40000000-0000-4000-8000-000000000004"
 MATERIAL_UUID = "50000000-0000-4000-8000-000000000001"
 DEVICE_UUID = "60000000-0000-4000-8000-000000000001"
 
 
-def _action_contract_schema() -> dict[str, Any]:
+def _action_contract_schema(*, material_role: bool = False) -> dict[str, Any]:
     """构造工作流规格编译测试使用的完整动作合同（Action Contract）。
 
     参数：无。返回：允许任意 Goal 参数的动作 Schema envelope；本夹具不声明
     额外物料锁标记，短期物料需求仍由物料来源链产生。异常：无。
     """
 
-    return {
+    contract = {
         "type": "object",
         "properties": {
             "goal": {"type": "object", "additionalProperties": True},
         },
         "required": ["goal"],
     }
+    if material_role:
+        contract["properties"]["goal"] = {
+            "type": "object",
+            "properties": {
+                "plate": {
+                    "type": "object",
+                    "properties": {"uuid": {"type": "string"}},
+                    "required": ["uuid"],
+                    "x-unilabos-material-lock": True,
+                }
+            },
+            "required": ["plate"],
+        }
+        contract["x-unilabos-action-contract"] = {
+            "version": 2,
+            "resource_contract": {
+                "version": 2,
+                "resource_params": [{"param": "plate", "role": "material"}],
+            },
+        }
+    return contract
 
 
 def _compiler_contract() -> tuple[type[Any], type[BaseException]]:
@@ -59,6 +89,7 @@ def _task_snapshot(
     disable_first_consumer: bool = False,
     implicit_passthrough: bool = False,
     custody_policy: str | None = "task_exclusive",
+    material_role: bool = False,
 ) -> tuple[dict[str, Any], list[dict[str, Any]]]:
     """构造冻结任务快照与工作流节点作业（WorkflowNodeJob）列表。
 
@@ -187,8 +218,8 @@ def _task_snapshot(
     ]
     # ``first_action_contract``/``second_action_contract`` 分别模拟真实模板投影中
     # Goal 子模式和保留完整合同的双层表示。
-    first_action_contract = _action_contract_schema()
-    second_action_contract = _action_contract_schema()
+    first_action_contract = _action_contract_schema(material_role=material_role)
+    second_action_contract = _action_contract_schema(material_role=material_role)
     graph = {
         "nodes": snapshot_nodes,
         "edges": snapshot_edges,
@@ -261,7 +292,223 @@ def test_fixed_existing_source_compiles_only_physical_consumers() -> None:
 
     assert [node.id for node in spec.nodes] == [FIRST_NODE_UUID, SECOND_NODE_UUID]
     assert SOURCE_NODE_UUID not in {node.id for node in spec.nodes}
+    assert spec.resource_coordinator_node_ids == [SOURCE_NODE_UUID]
     assert spec.material_requirements_by_node() == {}
+
+
+def test_material_resource_role_binds_fixed_resource_slot_to_material_mutex() -> None:
+    """物料角色参数应直接冻结为该 Material UUID 的动作互斥资源。
+
+    参数：无。返回：无；断言合法的 v2 ``material`` 角色不要求调用方再提供重复
+    ``resource_bindings``，且最终资源计划只用真实物料锁键表示该参数。异常：构建
+    失败或物料别名仍未绑定时由测试失败。
+    """
+
+    action_contract = {
+        "type": "object",
+        "properties": {
+            "goal": {
+                "type": "object",
+                "properties": {
+                    "plate": {
+                        "type": "object",
+                        "properties": {"uuid": {"type": "string"}},
+                        "required": ["uuid"],
+                        "x-unilabos-material-lock": True,
+                    }
+                },
+                "required": ["plate"],
+            }
+        },
+        "required": ["goal"],
+        "x-unilabos-action-contract": {
+            "version": 2,
+            "resource_contract": {
+                "version": 2,
+                "resource_params": [{"param": "plate", "role": "material"}],
+            },
+        },
+    }
+    execution_plan, _jobs = ExecutionPlanBuilder().build(
+        {
+            "nodes": [
+                {
+                    "uuid": FIRST_NODE_UUID,
+                    "workflow_node_template_uuid": (
+                        "71000000-0000-4000-8000-000000000002"
+                    ),
+                    "material_uuid": DEVICE_UUID,
+                    "name": "读取孔板",
+                    "type": "ILab",
+                    "action_name": "read_plate",
+                    "action_type": "UniLabJsonCommand",
+                    "param": {"plate": {"uuid": MATERIAL_UUID}},
+                    "meta_data": {
+                        "unilab": {
+                            "executor_binding": {
+                                "mode": "fixed",
+                                "device_id": DEVICE_UUID,
+                            }
+                        }
+                    },
+                }
+            ],
+            "edges": [],
+            "node_templates": [
+                {
+                    "uuid": "71000000-0000-4000-8000-000000000002",
+                    "node_type": "ILab",
+                    "schema": action_contract["properties"]["goal"],
+                    "meta_data": {
+                        "unilab": {
+                            "contract_kind": "typed",
+                            "action_contract_schema": action_contract,
+                        }
+                    },
+                }
+            ],
+            "handle_templates": [],
+        },
+        run_mode="normal",
+        target_node_uuid=None,
+    )
+
+    resources = execution_plan["resource_plan"]["resources"]
+    material_resources = [
+        resource
+        for resource in resources
+        if resource["canonical_key"] == f"material/{MATERIAL_UUID}/exclusive"
+    ]
+    assert len(material_resources) == 1
+    assert material_resources[0]["alias"] == "plate"
+
+
+@pytest.mark.parametrize("custody_policy", ["shared_source", "task_exclusive"])
+def test_automatic_material_source_binds_material_role_after_admission(
+    custody_policy: str,
+) -> None:
+    """自动来源可在准入后把 material 角色绑定为真实物料互斥锁。"""
+
+    task, jobs = _task_snapshot(
+        material_uuid=None,
+        implicit_passthrough=True,
+        custody_policy=custody_policy,
+        material_role=True,
+    )
+    pending = deserialize_resource_plan(task["execution_plan"]["resource_plan"])
+    assert task["execution_plan"]["inventory_resource_binding"] == "pending"
+    assert pending.binding_state == "template"
+
+    source_job = next(
+        job for job in jobs if job["workflow_node_uuid"] == SOURCE_NODE_UUID
+    )
+    source_job["return_info"] = {"material": {"uuid": MATERIAL_UUID}}
+    bound = bind_inventory_resource_plan(task, jobs, inventory=None)
+
+    resource_plan = deserialize_resource_plan(bound["resource_plan"])
+    assert bound["inventory_resource_binding"] == "bound"
+    assert resource_plan.binding_state == "bound"
+    material_resources = [
+        resource
+        for resource in resource_plan.resources
+        if resource.canonical_key == f"material/{MATERIAL_UUID}/exclusive"
+    ]
+    assert len(material_resources) == 1
+    assert material_resources[0].alias == "plate"
+
+
+def test_compiler_does_not_classify_completed_physical_node_as_coordinator() -> None:
+    """已成功的物理节点不能因状态终结而被误归类成省略协调器。"""
+
+    compiler_type, _error_type = _compiler_contract()
+    task_snapshot, jobs = _task_snapshot()
+    jobs[0]["status"] = "succeeded"
+    jobs[1]["status"] = "succeeded"
+
+    spec = compiler_type().compile(task_snapshot, jobs)
+
+    assert spec.resource_coordinator_node_ids == [SOURCE_NODE_UUID]
+
+
+def test_compiler_projects_pending_workflow_output_as_resource_coordinator() -> None:
+    """尚待物理动作产出数据的 workflow_output 仍是非物理资源边界成员。"""
+
+    compiler_type, _error_type = _compiler_contract()
+    task_snapshot, jobs = _task_snapshot()
+    execution_plan = task_snapshot["execution_plan"]
+    execution_plan["nodes"].append(
+        {
+            "uuid": OUTPUT_NODE_UUID,
+            "topological_index": 3,
+            "kind": "workflow_output",
+            "param": {},
+        }
+    )
+    execution_plan["edges"].append(
+        {
+            "uuid": "72000000-0000-4000-8000-000000000003",
+            "source_node_uuid": SECOND_NODE_UUID,
+            "target_node_uuid": OUTPUT_NODE_UUID,
+        }
+    )
+    jobs.append(
+        {
+            "uuid": OUTPUT_JOB_UUID,
+            "workflow_node_uuid": OUTPUT_NODE_UUID,
+            "executor_kind": "workflow_output",
+            "status": "pending",
+            "param": {},
+        }
+    )
+    resource_plan = serialize_resource_plan(
+        bind_station_resource_plan(
+            compile_template_resource_plan(
+                {
+                    "nodes": [
+                        {"uuid": SECOND_NODE_UUID},
+                        {"uuid": OUTPUT_NODE_UUID},
+                    ],
+                    "edges": [
+                        {
+                            "source_node_uuid": SECOND_NODE_UUID,
+                            "target_node_uuid": OUTPUT_NODE_UUID,
+                        }
+                    ],
+                    "resource_scopes": [
+                        {
+                            "scope_id": "action-output",
+                            "kind": "with",
+                            "resources": ["common"],
+                            "node_uuids": [SECOND_NODE_UUID, OUTPUT_NODE_UUID],
+                        }
+                    ],
+                }
+            ),
+            {"common": {"canonical_key": "/devices/common", "kind": "device"}},
+        )
+    )
+    execution_plan["resource_plan"] = resource_plan
+    execution_plan["capabilities"] = list(resource_plan["capabilities"])
+    for node in execution_plan["nodes"]:
+        node_uuid = node["uuid"]
+        node["resource_plan_id"] = resource_plan["plan_id"]
+        node["resource_interval_ids"] = [
+            interval["interval_id"]
+            for interval in resource_plan["intervals"]
+            if node_uuid in interval["node_uuids"]
+        ]
+        node["resource_acquire_set_id"] = next(
+            (
+                acquire_set["acquire_set_id"]
+                for acquire_set in resource_plan["acquire_sets"]
+                if acquire_set["node_uuid"] == node_uuid
+            ),
+            "",
+        )
+
+    spec = compiler_type().compile(task_snapshot, jobs)
+
+    assert spec.resource_coordinator_node_ids == [OUTPUT_NODE_UUID]
 
 
 def test_material_requirement_is_not_duplicated_on_downstream_consumer() -> None:

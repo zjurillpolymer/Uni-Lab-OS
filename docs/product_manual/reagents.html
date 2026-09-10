@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>试剂管理 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>试剂管理<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>试剂管理<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,7 +366,7 @@
 </div>
 <p>试剂管理把“化学身份”和“实际库存容器”分开维护。一个试剂目录项可以对应多瓶库存，每瓶库存关联一个物料容器、数量、单位、浓度、来源和历史。</p>
 <section id="id2">
-<h2>目录与库存<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>目录与库存<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>在“试剂”页切换两个视图：</p>
 <ul class="simple">
 <li><p><strong>目录</strong>回答“这是什么试剂”，包含名称、别名、CAS、分子式、分子量、SMILES、物态和说明。</p></li>
@@ -373,7 +375,7 @@
 <p>目录存在不代表库存中已经有对应容器；录入库存前必须先有目录项和可用空容器。</p>
 </section>
 <section id="id3">
-<h2>新建试剂目录<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>新建试剂目录<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>打开“目录”，点击“新增试剂目录”。</p></li>
 <li><p>填写名称；可以先输入 CAS 号查询化合物信息。</p></li>
@@ -384,7 +386,7 @@
 <p>SMILES 当前是文本字段，不提供结构绘图编辑器。3D 结构读取依赖目录数据和服务配置。</p>
 </section>
 <section id="id4">
-<h2>录入和维护库存<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>录入和维护库存<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>切换到“库存”，点击“录入试剂”。</p></li>
 <li><p>选择试剂目录项。</p></li>
@@ -395,11 +397,11 @@
 <p>可以编辑数量、浓度和说明。更新携带期望修订号，发生冲突时先刷新。删除库存记录前，系统会检查是否存在任务预留；被预留的库存不能删除。被库存引用的目录项也不能直接删除。</p>
 </section>
 <section id="id5">
-<h2>搜索<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>搜索<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>库存视图支持按试剂名称、CAS、容器名称或条码筛选；目录视图支持按名称、别名、CAS 或分子式筛选。清空搜索框恢复完整列表。</p>
 </section>
 <section id="id6">
-<h2>分装试剂<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>分装试剂<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>分装把一个源瓶的试剂原子性地分配到一个或多个空容器：</p>
 <ol class="arabic simple">
 <li><p>在库存列表找到源瓶，点击“分装”。</p></li>
@@ -411,7 +413,7 @@
 <p>系统会校验源瓶修订、目标容器唯一且为空、数量非负和总量守恒。整个命令原子执行：任一目标失败时，不应只扣减源瓶或只创建部分目标记录。</p>
 </section>
 <section id="id7">
-<h2>历史、来源与消耗<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>历史、来源与消耗<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <p>点击库存行的历史入口可以查看：</p>
 <ul class="simple">
 <li><p>当前余量和修订号；</p></li>
@@ -423,11 +425,11 @@
 <p>历史是审计依据，不应用删除后重建的方式“修正”历史。发现数量或身份错误时，先停止依赖该库存的新任务，再按允许的更正操作处理。</p>
 </section>
 <section id="id8">
-<h2>批量导入<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>批量导入<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab OS API 支持目录和库存的批量创建，以及 <code class="docutils literal notranslate"><span class="pre">.json</span></code>、<code class="docutils literal notranslate"><span class="pre">.csv</span></code>、<code class="docutils literal notranslate"><span class="pre">.tsv</span></code>、<code class="docutils literal notranslate"><span class="pre">.xlsx</span></code> 文件导入。单个文件最大 5 MiB、最多 500 行。页面没有批量导入按钮时，应由有权限的管理员通过本次安装的 <code class="docutils literal notranslate"><span class="pre">&lt;BACKEND_URL&gt;/api/docs</span></code> 操作，并先在测试数据上校验字段和原子模式。</p>
 </section>
 <section id="id9">
-<h2>当前边界<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>当前边界<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -526,10 +528,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

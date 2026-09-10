@@ -792,6 +792,10 @@ class WorkflowRun:
                 submitted_at=self.spec.submitted_at,
                 lab_id=self.spec.lab_id,
                 run_mode="normal",
+                resource_plan=deepcopy(self.spec.resource_plan),
+                resource_coordinator_node_ids=list(
+                    self.spec.resource_coordinator_node_ids
+                ),
                 repeat_regions={
                     runtime_by_template[child_template_uuid]: (
                         self._instantiate_nested_repeat_region(
@@ -1212,6 +1216,29 @@ class WorkflowRun:
             return node
         owner = self._round_owner(node_id)
         return owner.node(node_id) if owner is not None else None
+
+    def resource_template_node_uuid(self, runtime_uuid: str) -> str:
+        """把本轮派生节点映射回冻结资源计划中的模板身份。"""
+        for runtime in self._repeat_runtime.values():
+            if runtime_uuid in (runtime.runtime_to_template or {}):
+                return runtime.runtime_to_template[runtime_uuid]
+            if runtime.round_run is not None:
+                result = runtime.round_run.resource_template_node_uuid(runtime_uuid)
+                if result != runtime_uuid:
+                    return result
+        return runtime_uuid
+
+    def resource_runtime_node_uuid(self, template_uuid: str) -> str:
+        """读取当前轮节点身份，用实际完成状态判定资源边界。"""
+        for runtime in self._repeat_runtime.values():
+            for actual, template in (runtime.runtime_to_template or {}).items():
+                if template == template_uuid:
+                    return actual
+            if runtime.round_run is not None:
+                result = runtime.round_run.resource_runtime_node_uuid(template_uuid)
+                if result != template_uuid:
+                    return result
+        return template_uuid
 
     def node_state(self, node_id: str) -> Optional[NodeState]:
         state = self._node_states.get(node_id)

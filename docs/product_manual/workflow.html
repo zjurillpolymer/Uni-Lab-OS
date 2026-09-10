@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="workflow.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="工作流编排特性" href="workflow-features.html"><link rel="prev" title="启动图（Graph JSON）编写指南" href="graph-json.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="先理解工作流" href="workflow-concepts.html"><link rel="prev" title="启动图（Graph JSON）编写指南" href="graph-json.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>4. 工作流 - Uni-Lab OS 产品使用说明书</title>
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>4. 工作流运行 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" checked="" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>4. 工作流<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>4. 工作流运行<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,14 +366,17 @@
 </div>
 <div class="toctree-wrapper compound">
 <ul>
+<li class="toctree-l1"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l1"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l1"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l1"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l1"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l1"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </div>
 <p>工作流把业务人员描述的实验步骤转换成 Uni-Lab OS 能检查、调度和追踪的流程。它只能使用用户设备包中已经登记的设备动作、物料模板和启动图（Graph JSON）实例，不能在工作流里重新实现设备通信。</p>
 <section id="id2">
-<h2>完成本节后你将得到什么<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>完成本节后你将得到什么<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>一个可复用的实验操作；</p></li>
 <li><p>一个调用该操作的完整工作流；</p></li>
@@ -380,7 +385,7 @@
 </ul>
 </section>
 <section id="id3">
-<h2>先分清两个层级<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>先分清两个层级<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -404,10 +409,10 @@
 <p>一个实验操作只解决一个明确问题。完整工作流负责组合顺序、条件、并行、物料流和最终输出。</p>
 </section>
 <section id="id4">
-<h2>统一撰写规范<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>统一撰写规范<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>实验操作和完整工作流使用同一套静态定义规则。建议按“先写业务合同，再写节点，最后登记和验证”的顺序撰写。</p>
 <section id="id5">
-<h3>文件与命名<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<h3>文件与命名<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -443,7 +448,7 @@
 <p><code class="docutils literal notranslate"><span class="pre">description</span></code> 不能只重复名称，应在一句话中说明“处理什么对象、完成什么结果、产生什么重要副作用”。例如：“搬运一件样品容器，并在设备确认成功后提交新的库位归属。”</p>
 </section>
 <section id="id6">
-<h3>输入合同<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>输入合同<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <ul class="simple">
 <li><p>所有公开参数都放在函数参数中的 <code class="docutils literal notranslate"><span class="pre">*</span></code> 之后，调用时必须写参数名；</p></li>
 <li><p>每个参数都声明类型；数值参数同时写业务名称、单位、最小值、最大值和合理默认值；</p></li>
@@ -454,7 +459,7 @@
 </ul>
 </section>
 <section id="id7">
-<h3>节点写法<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>节点写法<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <p>每个设备动作、物料来源、子工作流调用、条件、循环和展示分组都是需要稳定识别的节点。统一按下面的顺序写：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># [可选业务标题]: 说明这一步为什么存在</span>
 <span class="c1"># unilab:node_uuid=&lt;稳定且唯一的 UUID&gt;</span>
@@ -473,12 +478,12 @@
 </ul>
 </section>
 <section id="id8">
-<h3>输出合同<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<h3>输出合同<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
 <p>正式业务输出使用 <code class="docutils literal notranslate"><span class="pre">TypedDict</span></code> 命名，并为每个字段声明类型。输出值只能来自公开输入、物料来源或节点实际结果。不得返回固定的 <code class="docutils literal notranslate"><span class="pre">True</span></code>、固定成功文本或计划位置来冒充设备执行结果。</p>
 <p>对物料有影响的流程必须返回更新后的 <code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code>。目标量、设备回执量和实测量应使用不同字段，例如 <code class="docutils literal notranslate"><span class="pre">target_volume_ml</span></code>、<code class="docutils literal notranslate"><span class="pre">dispensed_volume_ml</span></code>、<code class="docutils literal notranslate"><span class="pre">measured_volume_ml</span></code>。</p>
 </section>
 <section id="id9">
-<h3>审查顺序<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>审查顺序<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <ol class="arabic simple">
 <li><p>业务审查：名称、目的、开始条件、成功标准和失败处理是否清楚；</p></li>
 <li><p>合同审查：输入、输出、单位、范围和资源类型是否完整；</p></li>
@@ -490,7 +495,7 @@
 </section>
 </section>
 <section id="id10">
-<h2>步骤一：业务人员填写需求卡<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>步骤一：业务人员填写需求卡<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <p>不要直接从代码开始。先用业务语言填写：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>流程名称：样品混合与归位
 业务目的：将指定样品送到混合工站处理，完成后放回目标库位
@@ -507,7 +512,7 @@
 <p>每个数值都写单位、允许范围和默认值。目标值与实测值必须使用不同字段名。</p>
 </section>
 <section id="id11">
-<h2>步骤二：把需求映射到设备包<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>步骤二：把需求映射到设备包<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <p>开发人员制作映射表：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -544,7 +549,7 @@
 <p>动作名、参数和返回字段必须从设备源码或 Catalog 复制。若某一项不存在，应先补设备动作，不得在工作流中猜测。</p>
 </section>
 <section id="id12">
-<h2>步骤三：准备目录和身份<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<h2>步骤三：准备目录和身份<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>example_lab/
 ├── experiment_operations/
 │   ├── __init__.py
@@ -555,21 +560,21 @@
 </pre></div>
 </div>
 <p>为每个工作流和每个持久节点生成一次 UUID：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">"import uuid; print(uuid.uuid4())"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-c<span class="w"> </span><span class="s2">&quot;import uuid; print(uuid.uuid4())&quot;</span>
 </pre></div>
 </div>
 <p>UUID 写入源码后保持稳定。复制模板创建新流程时必须生成新 UUID；修改同一流程时不要无故更换。</p>
 </section>
 <section id="id13">
-<h2>步骤四：先写实验操作<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<h2>步骤四：先写实验操作<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h2>
 <p>先完成<a class="reference internal" href="experiment-operations.html"><span class="std std-doc">实验操作（子工作流）</span></a>。它应明确输入、输出、副作用和失败边界，并只在物理动作成功后提交一次物料位置变化。</p>
 </section>
 <section id="id14">
-<h2>步骤五：组合完整工作流<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h2>
+<h2>步骤五：组合完整工作流<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h2>
 <p>再按<a class="reference internal" href="complete-workflow.html"><span class="std std-doc">完整工作流</span></a>声明物料来源、调用实验操作、执行工艺动作并返回最终结果。</p>
 </section>
 <section id="package-yaml">
-<h2>步骤六：登记 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code><a class="headerlink" href="#package-yaml" title="Link to this heading">¶</a></h2>
+<h2>步骤六：登记 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code><a class="headerlink" href="#package-yaml" title="链接到此标题。">¶</a></h2>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">package</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_lab</span>
 
@@ -590,15 +595,15 @@
 </ul>
 </section>
 <section id="id15">
-<h2>步骤七：执行检查<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h2>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">"/absolute/path/to/device-package"</span>
+<h2>步骤七：执行检查<a class="headerlink" href="#id15" title="链接到此标题。">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/device-package&quot;</span>
 
 python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/example_lab/experiment_operations"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/example_lab/workflows"</span>
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/example_lab/experiment_operations&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/example_lab/workflows&quot;</span>
 
 unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--path<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--out<span class="w"> </span>/tmp/device-package-inspect
 </pre></div>
 </div>
@@ -606,9 +611,9 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 <p>不要直接运行 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">mix_sample.py</span></code>。工作流文件是供 Uni-Lab OS 静态编译的 DSL，不是普通 Python 脚本。</p>
 </section>
 <section id="id16">
-<h2>步骤八：模拟启动和预检<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h2>
+<h2>步骤八：模拟启动和预检<a class="headerlink" href="#id16" title="链接到此标题。">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/simulation.json<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--runtime-mode<span class="w"> </span>dry-run<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--startup-mode<span class="w"> </span>develop<span class="w"> </span><span class="se">\</span>
@@ -628,11 +633,11 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ol>
 </section>
 <section id="id17">
-<h2>修改与发布<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h2>
+<h2>修改与发布<a class="headerlink" href="#id17" title="链接到此标题。">¶</a></h2>
 <p>已发布工作流应视为不可变合同。修改输入、输出、动作或资源关系时创建新修订，完成同样的检查和预检。正在运行的 Task 继续使用创建时冻结的版本；不要覆盖旧文件后假设旧任务会自动迁移。</p>
 </section>
 <section id="id18">
-<h2>提交与发布前核对<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h2>
+<h2>提交与发布前核对<a class="headerlink" href="#id18" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>[ ] 需求卡和动作映射表已确认；</p></li>
 <li><p>[ ] 实验操作职责单一，完整工作流边界清楚；</p></li>
@@ -651,12 +656,12 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="workflow-features.html">
+          <a class="next-page" href="workflow-concepts.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">工作流编排特性</div>
+                <div class="title">先理解工作流</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -702,7 +707,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">4. 工作流</a><ul>
+<li><a class="reference internal" href="#">4. 工作流运行</a><ul>
 <li><a class="reference internal" href="#id2">完成本节后你将得到什么</a></li>
 <li><a class="reference internal" href="#id3">先分清两个层级</a></li>
 <li><a class="reference internal" href="#id4">统一撰写规范</a><ul>
@@ -735,10 +740,10 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

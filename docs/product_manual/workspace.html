@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="workspace.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="初始化工作区（unilab workspace init）" href="workspace-init.html"><link rel="prev" title="设备包规范与系统启动" href="unilabos-installation.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="1. 设备接入模板" href="device-template.html"><link rel="prev" title="设备包规范与系统启动" href="unilabos-installation.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>工作区 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">工作区</a><input aria-label="Toggle navigation of 工作区" checked="" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>工作区<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>工作区<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,13 +366,8 @@
 </div>
 <p>工作区是用户设备包的项目根目录。它把设备类型、物料模板、启动图（Graph JSON）、工作流和测试放在同一个可交付版本中，供 Uni-Lab OS 检查和加载。</p>
 <p>设备包由用户自行准备。Uni-Lab OS 不会从任意目录猜测要加载哪些文件；启动时必须通过 <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> 指向一个明确的设备包根目录。</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</div>
 <section id="uni-lab-os">
-<h2>Uni-Lab OS 如何读取设备包<a class="headerlink" href="#uni-lab-os" title="Link to this heading">¶</a></h2>
+<h2>Uni-Lab OS 如何读取设备包<a class="headerlink" href="#uni-lab-os" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pyproject.toml ───────────────► 包名称、版本、依赖和 Python 导入目录
 Python 包中的设备与物料定义 ─► 可用类型、动作、状态和资源合同
 package.yaml ────────────────► 本次允许加载的工作流源文件
@@ -411,7 +408,7 @@ package.yaml ────────────────► 本次允许加
 </div>
 </section>
 <section id="id2">
-<h2>步骤一：确定规范目录<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>步骤一：确定规范目录<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>下面的结构适合从零创建并长期维护一个设备包。<code class="docutils literal notranslate"><span class="pre">example_lab</span></code> 是示例 Python 包名，请替换为自己的业务名称，并在所有配置中保持一致。</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>device-package/
 ├── pyproject.toml
@@ -439,27 +436,27 @@ package.yaml ────────────────► 本次允许加
 <p>只创建实际需要的目录。设备和物料可以按业务领域继续分层，但工作流源文件必须在 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 中逐项登记。</p>
 </section>
 <section id="id3">
-<h2>步骤二：统一包身份<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>步骤二：统一包身份<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 中声明设备包的名称、版本、依赖和启动文件：</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[build-system]</span>
-<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"setuptools&gt;=68"</span><span class="p">,</span><span class="w"> </span><span class="s2">"wheel"</span><span class="p">]</span>
-<span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"setuptools.build_meta"</span>
+<span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;setuptools&gt;=68&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wheel&quot;</span><span class="p">]</span>
+<span class="n">build-backend</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;setuptools.build_meta&quot;</span>
 
 <span class="k">[project]</span>
-<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"example-lab"</span>
-<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"0.1.0"</span>
-<span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"&gt;=3.11"</span>
-<span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"unilabos"</span><span class="p">]</span>
+<span class="n">name</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;example-lab&quot;</span>
+<span class="n">version</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;0.1.0&quot;</span>
+<span class="n">requires-python</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;&gt;=3.11&quot;</span>
+<span class="n">dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;unilabos&quot;</span><span class="p">]</span>
 
 <span class="k">[project.optional-dependencies]</span>
-<span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"build&gt;=1.2"</span><span class="p">,</span><span class="w"> </span><span class="s2">"pytest&gt;=8"</span><span class="p">]</span>
+<span class="n">dev</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;build&gt;=1.2&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;pytest&gt;=8&quot;</span><span class="p">]</span>
 
 <span class="k">[tool.setuptools.packages.find]</span>
-<span class="n">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">"example_lab*"</span><span class="p">]</span>
+<span class="n">include</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;example_lab*&quot;</span><span class="p">]</span>
 
 <span class="k">[tool.unilabos.startup]</span>
-<span class="n">graph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"deployment/graphs/dry-run.json"</span>
-<span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">"deployment/local_config.py"</span>
+<span class="n">graph</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;deployment/graphs/dry-run.json&quot;</span>
+<span class="n">config</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="s2">&quot;deployment/local_config.py&quot;</span>
 <span class="n">ensure_dependencies</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="kc">true</span>
 </pre></div>
 </div>
@@ -496,7 +493,7 @@ package.yaml ────────────────► 本次允许加
 <p>设备驱动使用的第三方库应声明在 <code class="docutils literal notranslate"><span class="pre">dependencies</span></code> 中。密码、令牌和生产密钥不得写入 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、启动图或源码，应由运行环境的密钥配置提供。</p>
 </section>
 <section id="id4">
-<h2>步骤三：登记工作流<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>步骤三：登记工作流<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 是允许加载的工作流清单：</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">package</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_lab</span>
@@ -521,28 +518,28 @@ package.yaml ────────────────► 本次允许加
 <p>设备和物料类型由 Python 包中的规范定义形成目录，具体写法见<a class="reference internal" href="device-template.html"><span class="std std-doc">设备接入模板</span></a>和<a class="reference internal" href="material-template.html"><span class="std std-doc">物料定义模板</span></a>。实例、连接参数和父子关系写入<a class="reference internal" href="startup-files.html"><span class="std std-doc">启动文件</span></a>，流程源码按<a class="reference internal" href="workflow.html"><span class="std std-doc">工作流</span></a>中的规范登记。</p>
 </section>
 <section id="id5">
-<h2>步骤四：准备本地配置<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>步骤四：准备本地配置<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code> 中保存非敏感的本地运行设置：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BasicConfig</span><span class="p">:</span>
-    <span class="n">ak</span> <span class="o">=</span> <span class="s2">""</span>
-    <span class="n">sk</span> <span class="o">=</span> <span class="s2">""</span>
+    <span class="n">ak</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+    <span class="n">sk</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
     <span class="n">disable_browser</span> <span class="o">=</span> <span class="kc">True</span>
     <span class="n">no_update_feedback</span> <span class="o">=</span> <span class="kc">True</span>
-    <span class="n">log_level</span> <span class="o">=</span> <span class="s2">"INFO"</span>
+    <span class="n">log_level</span> <span class="o">=</span> <span class="s2">&quot;INFO&quot;</span>
 </pre></div>
 </div>
 <p>本地开发时 <code class="docutils literal notranslate"><span class="pre">ak</span></code>、<code class="docutils literal notranslate"><span class="pre">sk</span></code> 保持为空。真实凭证使用环境变量或部署密钥注入，不得提交到设备包。</p>
 </section>
 <section id="id6">
-<h2>步骤五：通过四道验证门<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>步骤五：通过四道验证门<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>先把命令中的路径替换为实际设备包绝对路径：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">"/absolute/path/to/device-package"</span>
-<span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/device-package&quot;</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
 <section id="python">
-<h3>验证门一：依赖与 Python 包<a class="headerlink" href="#python" title="Link to this heading">¶</a></h3>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">'.[dev]'</span>
+<h3>验证门一：依赖与 Python 包<a class="headerlink" href="#python" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
 python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>check
 python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w"> </span>example_lab
 </pre></div>
@@ -550,27 +547,27 @@ python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w
 <p>只有三条命令都成功，才能继续。若 Python 包名不是 <code class="docutils literal notranslate"><span class="pre">example_lab</span></code>，最后一条命令使用实际目录名。</p>
 </section>
 <section id="id7">
-<h3>验证门二：设备包目录与合同<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>验证门二：设备包目录与合同<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--path<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--out<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/inspect"</span>
+<span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/inspect&quot;</span>
 </pre></div>
 </div>
 <p>检查报告中不得出现语法错误、重复 ID、重复 UUID、缺失源文件或无法解析的设备与物料类型。启动图中的 <code class="docutils literal notranslate"><span class="pre">class</span></code> 应从检查结果复制，不能依靠猜测填写。</p>
 </section>
 <section id="id8">
-<h3>验证门三：构建交付物<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<h3>验证门三：构建交付物<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--path<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--out<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/build"</span>
+<span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/build&quot;</span>
 </pre></div>
 </div>
 <p>构建完成后检查安装包和 Catalog 是否同时生成，并确认配置表、模型和图片等运行资产已经进入交付物。构建成功不代表真机已经连接。</p>
 </section>
 <section id="id9">
-<h3>验证门四：安全加载工作区<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>验证门四：安全加载工作区<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/dry-run.json<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--runtime-mode<span class="w"> </span>dry-run<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--startup-mode<span class="w"> </span>develop<span class="w"> </span><span class="se">\</span>
@@ -578,13 +575,13 @@ python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w
 <span class="w">  </span>--json
 
 unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--json
 </pre></div>
 </div>
 <p>验收人员应确认：Uni-Lab OS 已就绪、设备包版本正确、设备与物料实例完整、工作流全部加载，并且没有真实设备动作。检查结束后停止工作区：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>stop<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">"</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">"</span><span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--wait<span class="w"> </span><span class="m">300</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--json
 </pre></div>
@@ -593,7 +590,7 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 </section>
 </section>
 <section id="id10">
-<h2>步骤六：按小闭环逐步扩展<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>步骤六：按小闭环逐步扩展<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <p>不要一次接入全部设备。推荐每次完成一个可验证的小闭环：</p>
 <ol class="arabic simple">
 <li><p>增加一个设备或物料类型；</p></li>
@@ -606,7 +603,7 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 <p>多个工站共用同一控制器时，只建立一个控制器连接，由各业务设备引用该连接；不要让每个设备重复建立会话。真实实现与模拟实现可以使用不同通信方式，但动作名称、参数、结果和状态合同必须一致。</p>
 </section>
 <section id="id11">
-<h2>常见问题<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>常见问题<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -649,7 +646,7 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 </div>
 </section>
 <section id="id12">
-<h2>交付前核对<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<h2>交付前核对<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>[ ] <code class="docutils literal notranslate"><span class="pre">project.name</span></code>、Python 包目录、<code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 和类型命名空间一致；</p></li>
 <li><p>[ ] 设备、物料、放置位和工作流身份稳定且唯一；</p></li>
@@ -668,12 +665,12 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="workspace-init.html">
+          <a class="next-page" href="device-template.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">初始化工作区（unilab workspace init）</div>
+                <div class="title">1. 设备接入模板</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -747,10 +744,10 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from typing import Any
 
 import pytest
@@ -291,6 +292,57 @@ def test_fixed_material_source_populates_first_consumer_final_param() -> None:
     assert _action_plan_node(plan)["param"] == {"plate": {"uuid": MATERIAL_UUID}}
     spec = _compile_real_plan(plan, jobs)
     assert spec.nodes[0].param == {"plate": {"uuid": MATERIAL_UUID}}
+
+
+def test_non_device_param_schema_accepts_backend_json_text() -> None:
+    """非设备节点必须把 Backend 发布的 JSON 文本 Schema 冻结为对象。
+
+    参数：无。返回：无；断言物料来源（MaterialSource）的文本 Schema 在计划
+    持久化边界前完成解析。异常：计划构建失败或仍保留字符串即测试失败。
+    """
+
+    graph = _real_authoring_graph()
+    expected_schema = {"type": "object", "properties": {"mode": {"type": "string"}}}
+    graph["node_templates"][0]["schema"] = json.dumps(expected_schema)
+
+    plan, _jobs = ExecutionPlanBuilder().build(
+        graph,
+        run_mode="normal",
+        target_node_uuid=None,
+    )
+    source_node = next(node for node in plan["nodes"] if node["uuid"] == SOURCE_NODE_UUID)
+
+    assert source_node["param_schema"] == expected_schema
+    assert isinstance(source_node["param_schema"], dict)
+
+
+@pytest.mark.parametrize(
+    "invalid_schema",
+    [
+        pytest.param("not-json", id="invalid-json"),
+        pytest.param(json.dumps(["not", "an", "object"]), id="json-array"),
+    ],
+)
+def test_non_device_param_schema_rejects_invalid_backend_text(
+    invalid_schema: str,
+) -> None:
+    """非设备节点的文本 Schema 无效时必须在计划持久化前失败关闭。
+
+    参数：``invalid_schema`` 是非法 JSON 或非对象 JSON。返回：无；断言稳定
+    错误码。异常：预期 ``ExecutionPlanBuildError``。
+    """
+
+    graph = _real_authoring_graph()
+    graph["node_templates"][0]["schema"] = invalid_schema
+
+    with pytest.raises(ExecutionPlanBuildError) as caught:
+        ExecutionPlanBuilder().build(
+            graph,
+            run_mode="normal",
+            target_node_uuid=None,
+        )
+
+    assert caught.value.code == "invalid_param_schema"
 
 
 def test_frozen_param_schema_enters_legacy_scheduler_node() -> None:

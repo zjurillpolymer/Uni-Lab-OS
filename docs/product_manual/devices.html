@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>设备与动作 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>设备与动作<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>设备与动作<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -363,13 +365,13 @@
 </ul>
 </div>
 <section id="uni-lab-os">
-<h2>Uni-Lab OS 页面的入口边界<a class="headerlink" href="#uni-lab-os" title="Link to this heading">¶</a></h2>
+<h2>Uni-Lab OS 页面的入口边界<a class="headerlink" href="#uni-lab-os" title="链接到此标题。">¶</a></h2>
 <p>Uni-Lab OS 没有独立“设备管理”或“单动作调试”页面时，日常用户可以在总监控中查看运行概况，在工作流和任务中观察设备动作；设备目录与单动作 Task 由 API 或 Theia Workbench 提供。</p>
 <p>这意味着“设备包里定义了动作”不等于“Uni-Lab OS 页面有一个按钮可以直接执行它”。对于真机动作，应优先使用经过发布、预检和资源锁保护的工作流。</p>
 <p>设备开发者如果要创建自己的设备包，应先完成<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>：该页面说明 <code class="docutils literal notranslate"><span class="pre">&#64;device</span></code>、启动图中的 <code class="docutils literal notranslate"><span class="pre">class</span></code>、实例 <code class="docutils literal notranslate"><span class="pre">id</span></code> 和工作流选择器之间的加载关系。</p>
 </section>
 <section id="driver">
-<h2>Driver 作者合同<a class="headerlink" href="#driver" title="Link to this heading">¶</a></h2>
+<h2>Driver 作者合同<a class="headerlink" href="#driver" title="链接到此标题。">¶</a></h2>
 <p>新驱动应把公开边界写成显式合同。下面展示一个最小设备类型；完整设备包、启动图和工作流结构见<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>。</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">TypedDict</span>
 
@@ -382,38 +384,38 @@
     <span class="n">message</span><span class="p">:</span> <span class="nb">str</span>
 
 
-<span class="nd">@device</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">"example_station"</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"example"</span><span class="p">],</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">"示例工作站"</span><span class="p">)</span>
+<span class="nd">@device</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="s2">&quot;example_station&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;example&quot;</span><span class="p">],</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;示例工作站&quot;</span><span class="p">)</span>
 <span class="k">class</span><span class="w"> </span><span class="nc">ExampleStation</span><span class="p">:</span>
-    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"sim://local"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;sim://local&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">endpoint</span> <span class="o">=</span> <span class="n">endpoint</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_upstream_status</span> <span class="o">=</span> <span class="s2">"unknown"</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_upstream_status</span> <span class="o">=</span> <span class="s2">&quot;unknown&quot;</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">displayname</span><span class="o">=</span><span class="s2">"运行"</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">"执行一次设备操作"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;运行&quot;</span><span class="p">,</span> <span class="n">description</span><span class="o">=</span><span class="s2">&quot;执行一次设备操作&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">target</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">1.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""执行一次设备操作。</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;执行一次设备操作。</span>
 
 <span class="sd">        Args:</span>
 <span class="sd">            target[目标值]: 经过设备合同校验的业务目标值。</span>
-<span class="sd">        """</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"completed"</span><span class="p">}</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;completed&quot;</span><span class="p">}</span>
 
-    <span class="nd">@action</span><span class="p">(</span><span class="n">always_free</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">"读取健康状态"</span><span class="p">)</span>
+    <span class="nd">@action</span><span class="p">(</span><span class="n">always_free</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;读取健康状态&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">read_health</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">RunResult</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""只读取状态，不发送命令或改变物料。"""</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s2">"success"</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">"message"</span><span class="p">:</span> <span class="s2">"ready"</span><span class="p">}</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;只读取状态，不发送命令或改变物料。&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s2">&quot;success&quot;</span><span class="p">:</span> <span class="kc">True</span><span class="p">,</span> <span class="s2">&quot;message&quot;</span><span class="p">:</span> <span class="s2">&quot;ready&quot;</span><span class="p">}</span>
 
     <span class="nd">@property</span>
     <span class="nd">@topic_config</span><span class="p">(</span><span class="n">period</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
-        <span class="k">return</span> <span class="s2">"idle"</span>
+        <span class="k">return</span> <span class="s2">&quot;idle&quot;</span>
 
-    <span class="nd">@subscribe</span><span class="p">(</span><span class="n">device_id</span><span class="o">=</span><span class="s2">"upstream_1"</span><span class="p">,</span> <span class="n">status_name</span><span class="o">=</span><span class="s2">"status"</span><span class="p">)</span>
+    <span class="nd">@subscribe</span><span class="p">(</span><span class="n">device_id</span><span class="o">=</span><span class="s2">&quot;upstream_1&quot;</span><span class="p">,</span> <span class="n">status_name</span><span class="o">=</span><span class="s2">&quot;status&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">on_upstream_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_upstream_status</span> <span class="o">=</span> <span class="n">value</span>
 
     <span class="nd">@not_action</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">"""公开生命周期方法，但不进入 Action Catalog。"""</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;公开生命周期方法，但不进入 Action Catalog。&quot;&quot;&quot;</span>
         <span class="o">...</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_send_command</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
@@ -428,13 +430,13 @@
 <p>驱动构造器也应使用与启动图 <code class="docutils literal notranslate"><span class="pre">config</span></code> 对齐的显式命名参数，不要用通用 <code class="docutils literal notranslate"><span class="pre">config</span></code> 或 <code class="docutils literal notranslate"><span class="pre">**kwargs</span></code> 静默吞掉拼写错误。动作具名结果、工作流输出和完整加载边界见<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>。</p>
 </section>
 <section id="id2">
-<h2>真实设备与模拟器<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>真实设备与模拟器<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>真实 Driver 与模拟实现可以更换 transport，但必须保持相同的 Action 名称、参数类型与默认值、具名结果 Schema，以及状态 topic 的名称和语义。这样同一工作流和 Workbench 表单才能在两种环境复用。</p>
 <p>模拟器应有确定性的状态推进，并支持受控时延、超时和故障注入；模拟路径不得连接真实设备。<code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 只生成模拟动作回执，不构造 Driver。要验证 PLC-Sim 等协议模拟器，应使用隔离 启动图 和 <code class="docutils literal notranslate"><span class="pre">normal</span></code>，具体步骤见<a class="reference internal" href="plc-sim.html"><span class="std std-doc">PLC-Sim 仿真器</span></a>。</p>
 <p>模拟实现如何被选择，应以当前 OS 和设备包实际支持的 启动图/构造参数为准。现行公共接口没有通用 <code class="docutils literal notranslate"><span class="pre">device_pair.yaml</span></code> 或 <code class="docutils literal notranslate"><span class="pre">--sim_engine</span></code>，不要自行发明这些文件或启动参数。</p>
 </section>
 <section id="id3">
-<h2>如何确认设备已加载<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>如何确认设备已加载<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>设备包中有 Driver 定义，不代表本次启动已经创建了设备实例。业务人员应运行 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">package</span> <span class="pre">inspect</span></code> 确认类型可发现，再通过 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">status</span> <span class="pre">--json</span></code> 或设备目录核对 启动图 中的实例。</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -471,7 +473,7 @@
 <p>数量不应写死。每次安装都以实际 启动图 和状态输出为准；没有实例化到活动 启动图 的设备不能算在线设备。</p>
 </section>
 <section id="id4">
-<h2>动作如何执行<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>动作如何执行<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>一次标准设备动作遵循以下路径：</p>
 <ol class="arabic simple">
 <li><p>工作流节点绑定设备实例和动作模板。</p></li>
@@ -484,7 +486,7 @@
 <p>设备动作和 Task 使用幂等身份，防止网络重试产生第二次物理动作。不要通过重复提交新任务来代替恢复原任务。</p>
 </section>
 <section id="id5">
-<h2>单动作运行<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>单动作运行<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>如果必须单独验证设备动作：</p>
 <ul class="simple">
 <li><p>使用连接到 Python Local Profile 的 Theia Workbench“设备”页，或由管理员使用设备动作 Task API；</p></li>
@@ -495,7 +497,7 @@
 </ul>
 </section>
 <section id="id6">
-<h2>设备边界必须怎样写<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>设备边界必须怎样写<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>设备包应为每类设备提供一张边界表，让业务人员知道系统返回的到底是什么。</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -535,7 +537,7 @@
 </div>
 </section>
 <section id="plc-sim">
-<h2>PLC-Sim 的作用<a class="headerlink" href="#plc-sim" title="Link to this heading">¶</a></h2>
+<h2>PLC-Sim 的作用<a class="headerlink" href="#plc-sim" title="链接到此标题。">¶</a></h2>
 <p>PLC-Sim 可以模拟 OPC UA 命令、动作过程、传感器变化、延时、超时和故障；仓库还提供独立的 Modbus TCP/RTU/ASCII 模拟器。它适合离线联调，不负责工作流调度、物料权威状态或机器人运动安全。仿真通过不能代替真机的 IP、NodeId、联锁、急停、工位、容量和恢复语义验收。</p>
 <p>仿真器的交付要求、启动顺序和联调步骤见<a class="reference internal" href="plc-sim.html"><span class="std std-doc">PLC / OPC UA 仿真器</span></a>。</p>
 </section>
@@ -600,10 +602,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

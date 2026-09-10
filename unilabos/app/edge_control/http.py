@@ -66,6 +66,17 @@ class EdgeDataPlane:
             json=payload,
         )
 
+    def report_error_decision_required(self, payload: Dict[str, Any]) -> Dict[str, Any]:
+        """上报一个等待人工选择的动作异常。"""
+
+        return self._request(
+            "POST",
+            f"{self.scheduler_api}/edge/error-decisions",
+            span_name="edge.http.error_decision.report",
+            http_route="/api/v1/edge/error-decisions",
+            json=payload,
+        )
+
     def update_device_status(
         self,
         session_uuid: str,

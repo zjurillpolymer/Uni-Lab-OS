@@ -16,6 +16,9 @@ from unilabos.workflow.store import WorkflowStore
 from unilabos.workflow.task_scheduler_bridge import TaskSchedulerBridge
 
 DEVICE_MATERIAL_UUID = "10000000-0000-4000-8000-000000000001"
+TRANSFER_MATERIAL_UUID = "10000000-0000-4000-8000-000000000011"
+TARGET_OWNER_UUID = "10000000-0000-4000-8000-000000000012"
+TARGET_SITE_UUID = "10000000-0000-4000-8000-000000000013"
 DEVICE_RESOURCE_TEMPLATE_UUID = device_template_uuid("contract-device")
 OTHER_RESOURCE_TEMPLATE_UUID = "20000000-0000-4000-8000-000000000002"
 IDEMPOTENCY_KEY = "device-run-contract-1"
@@ -98,6 +101,78 @@ class DeviceActionRegistry:
         """
 
         return []
+
+
+class MaterialTransferActionRegistry(DeviceActionRegistry):
+    """提供带物料转移执行责任和目标库位合同的动作目录。"""
+
+    def obtain_registry_device_info(self) -> list[dict[str, Any]]:
+        """返回一个与 SZLab 机械臂相同资源语义的最小动作合同。"""
+
+        devices = super().obtain_registry_device_info()
+        action = devices[0]["class"]["action_value_mappings"]["hold"]
+        action.update(
+            {
+                "executor_kind": "material_transfer",
+                "goal": {
+                    "resource": "resource",
+                    "target_warehouse": "target_warehouse",
+                    "target_site": "target_site",
+                },
+                "goal_default": {},
+            }
+        )
+        action["schema"] = {
+            "type": "object",
+            "properties": {
+                "goal": {
+                    "type": "object",
+                    "properties": {
+                        "resource": {
+                            "type": "object",
+                            "x-unilabos-material-lock": True,
+                            "properties": {
+                                "uuid": {"type": "string", "format": "uuid"}
+                            },
+                            "required": ["uuid"],
+                        },
+                        "target_warehouse": {
+                            "type": "object",
+                            "x-unilabos-material-lock": True,
+                            "properties": {
+                                "uuid": {"type": "string", "format": "uuid"}
+                            },
+                            "required": ["uuid"],
+                        },
+                        "target_site": {"type": "string"},
+                    },
+                    "required": ["resource", "target_warehouse", "target_site"],
+                    "additionalProperties": False,
+                },
+                "feedback": {"type": "object", "properties": {}},
+                "result": {"type": "object", "properties": {}},
+            },
+            "x-unilabos-action-contract": {
+                "version": 2,
+                "input_order": ["resource", "target_warehouse", "target_site"],
+                "output_order": [],
+                "resource_template_symbols": {"goal": {}, "result": {}},
+                "resource_contract": {
+                    "version": 1,
+                    "transfer": {
+                        "material_param": "resource",
+                        "source_owner_param": "",
+                        "source_site_uuid_param": "",
+                        "source_site_name_param": "",
+                        "target_owner_param": "target_warehouse",
+                        "target_site_uuid_param": "",
+                        "target_site_name_param": "target_site",
+                        "gripper_site_role": "robot.gripper",
+                    },
+                },
+            },
+        }
+        return devices
 
 
 def _client(
@@ -189,6 +264,60 @@ def _request(template_uuid: str) -> dict[str, Any]:
     }
 
 
+def _material_transfer_client(
+    tmp_path: Any,
+) -> tuple[TestClient, WorkflowStore, str, list[dict[str, Any]]]:
+    """装配可审计精确库位选择的物料转移单动作入口。"""
+
+    store = WorkflowStore(tmp_path / "material_transfer_history.db")
+    projection = RegistryTemplateProjection(
+        store,
+        authority_id="local",
+        resource_template_identity_resolver=(
+            lambda _resource_name: DEVICE_RESOURCE_TEMPLATE_UUID
+        ),
+    )
+    snapshot = projection.refresh(MaterialTransferActionRegistry())
+    template_uuid = str(snapshot.actions[0].template["uuid"])
+    requests: list[dict[str, Any]] = []
+
+    def resolve_material(material_uuid: str) -> dict[str, Any] | None:
+        if material_uuid not in {
+            DEVICE_MATERIAL_UUID,
+            TRANSFER_MATERIAL_UUID,
+            TARGET_OWNER_UUID,
+        }:
+            return None
+        return {
+            "uuid": material_uuid,
+            "resource_template_uuid": DEVICE_RESOURCE_TEMPLATE_UUID,
+            "meta_data": (
+                {"edge_local_id": "contract-device"}
+                if material_uuid == DEVICE_MATERIAL_UUID
+                else {}
+            ),
+        }
+
+    def resolve_site_selection(request: dict[str, Any]) -> dict[str, Any]:
+        requests.append(dict(request))
+        return {
+            "site_uuids": [TARGET_SITE_UUID],
+            "fingerprint": "sha256:" + "a" * 64,
+        }
+
+    service = WorkflowService(
+        store,
+        material_resolver=resolve_material,
+        site_selection_resolver=resolve_site_selection,
+    )
+    return (
+        TestClient(create_workflow_app(service)),
+        store,
+        template_uuid,
+        requests,
+    )
+
+
 def test_device_action_run_creates_backend_shaped_task_and_job(tmp_path: Any) -> None:
     """首次创建返回 201，并可经标准任务/作业接口恢复同一持久事实。
 
@@ -233,6 +362,67 @@ def test_device_action_run_creates_backend_shaped_task_and_job(tmp_path: Any) ->
         client.close()
         if bridge is not None:
             bridge.close()
+        store.close()
+
+
+def test_material_transfer_device_action_run_freezes_typed_executor_and_site(
+    tmp_path: Any,
+) -> None:
+    """临时转运动作必须保留库存结算类型并冻结目标 Site 身份。"""
+
+    client, store, template_uuid, site_requests = _material_transfer_client(tmp_path)
+    try:
+        response = client.post(
+            "/api/v1/device-action-runs",
+            json={
+                "material_uuid": DEVICE_MATERIAL_UUID,
+                "workflow_node_template_uuid": template_uuid,
+                "param": {
+                    "resource": {"uuid": TRANSFER_MATERIAL_UUID},
+                    "target_warehouse": {"uuid": TARGET_OWNER_UUID},
+                    "target_site": TARGET_SITE_UUID,
+                },
+                "execution_policy": {},
+                "idempotency_key": "typed-material-transfer-run",
+            },
+        )
+
+        assert response.status_code == 201
+        created = response.json()["data"]
+        assert created["job"]["executor_kind"] == "material_transfer"
+        assert created["job"]["param"] == {
+            "resource": {"uuid": TRANSFER_MATERIAL_UUID},
+            "target_warehouse": {"uuid": TARGET_OWNER_UUID},
+        }
+        planned_node = created["task"]["execution_plan"]["nodes"][0]
+        assert planned_node["kind"] == "material_transfer"
+        assert planned_node["action_resource_contract"]["transfer"][
+            "target_site_name_param"
+        ] == "target_site"
+        assert planned_node["execution_policy"]["target_site_group"] == [
+            TARGET_SITE_UUID
+        ]
+        assert planned_node["execution_policy"]["target_site_selection"] == {
+            "version": 1,
+            "owner_material_uuid": TARGET_OWNER_UUID,
+            "group_key": "",
+            "requested_reference": TARGET_SITE_UUID,
+            "strategy": "sort_order",
+            "site_uuids": [TARGET_SITE_UUID],
+            "fingerprint": "sha256:" + "a" * 64,
+        }
+        assert site_requests == [
+            {
+                "version": 1,
+                "owner_material_uuid": TARGET_OWNER_UUID,
+                "occupant_material_uuid": TRANSFER_MATERIAL_UUID,
+                "group_key": "",
+                "exact_site_reference": TARGET_SITE_UUID,
+                "strategy": "sort_order",
+            }
+        ]
+    finally:
+        client.close()
         store.close()
 
 

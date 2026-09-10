@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import json
 from collections import defaultdict
 from collections.abc import Mapping, Sequence
 from copy import deepcopy
@@ -17,9 +18,21 @@ from unilabos.workflow._execution_plan_graph import (
 from unilabos.workflow.store import StoreConflict
 from unilabos.workflow.execution_resource_policy import (
     ExecutionResourcePolicyError,
+    action_device_resource_params,
     merge_action_resource_policy,
     validate_static_device_tenancy_order,
 )
+from unilabos.workflow.resource_lock_plan import (
+    RESOURCE_PLAN_CAPABILITY,
+    RESOURCE_PLAN_VERSION,
+    STATIC_RESOURCE_DAG_CAPABILITY,
+    ResourcePlanError,
+    bind_station_resource_plan,
+    compile_template_resource_plan,
+    resource_plan_for_node,
+    serialize_resource_plan,
+)
+from unilabos.workflow.resource_lock_key import device_lock_key, material_lock_key
 from unilabos.workflow.manual_confirmation import (
     normalize_manual_confirmation_config,
 )
@@ -68,8 +81,7 @@ class ExecutionPlanBuilder:
         material_sources = {
             node_uuid: node
             for node_uuid, node in nodes.items()
-            if node.get("disabled") is not True
-            and kinds[node_uuid] == "material_source"
+            if node.get("disabled") is not True and kinds[node_uuid] == "material_source"
         }
         # ``active`` 只包含既有本地调度器能够执行的普通节点；物料来源由任务桥
         # 在普通动作之前统一完成任务物料准入（TaskMaterialAdmission）。组合
@@ -84,8 +96,7 @@ class ExecutionPlanBuilder:
         disabled_control_regions = {
             node_uuid
             for node_uuid, node in nodes.items()
-            if kinds[node_uuid] in {"condition", "repeat_until"}
-            and node.get("disabled") is True
+            if kinds[node_uuid] in {"condition", "repeat_until"} and node.get("disabled") is True
         }
         for active_uuid in active:
             current = active_uuid
@@ -102,9 +113,7 @@ class ExecutionPlanBuilder:
                     break
                 current = parent
             else:
-                raise ExecutionPlanBuildError(
-                    "invalid_control_region", "条件区域父子关系包含环"
-                )
+                raise ExecutionPlanBuildError("invalid_control_region", "条件区域父子关系包含环")
         # ``planned_graph_nodes`` 同时保留协调责任与普通执行责任，使来源运行连接点
         # 和来源到首消费动作的直连边成为冻结执行计划（ExecutionPlan）事实。
         planned_graph_nodes = {**material_sources, **active}
@@ -143,9 +152,7 @@ class ExecutionPlanBuilder:
         )
         # 来源与普通节点都先遵守冻结图拓扑，再由计划作业序列保证全部协调责任先于
         # 任何物理动作；这样不会让无边来源受创建时间影响而落到动作之后。
-        ordered_sources = [
-            node_uuid for node_uuid in graph_order if node_uuid in material_sources
-        ]
+        ordered_sources = [node_uuid for node_uuid in graph_order if node_uuid in material_sources]
         ordered = [node_uuid for node_uuid in graph_order if node_uuid in active]
         if run_mode == "single_node":
             if target_node_uuid is None:
@@ -162,20 +169,16 @@ class ExecutionPlanBuilder:
                 raise StoreConflict("single_node target is not enabled")
             planned_edges = []
             runtime_handles = [
-                handle
-                for handle in runtime_handles
-                if handle["node_uuid"] == target_node_uuid
+                handle for handle in runtime_handles if handle["node_uuid"] == target_node_uuid
             ]
 
-        requirements, material_params, material_binding_targets = (
-            self._material_source_inputs(
-                nodes=nodes,
-                active=active,
-                kinds=kinds,
-                edges=planned_edges,
-                topological_order=graph_order,
-                included_source_uuids=set(ordered_sources),
-            )
+        requirements, material_params, material_binding_targets = self._material_source_inputs(
+            nodes=nodes,
+            active=active,
+            kinds=kinds,
+            edges=planned_edges,
+            topological_order=graph_order,
+            included_source_uuids=set(ordered_sources),
         )
 
         planned_nodes: list[dict[str, Any]] = []
@@ -249,17 +252,24 @@ class ExecutionPlanBuilder:
                     if handle["io_type"] == "target"
                 ],
                 "source_handle_uuids": [
-                    handle["uuid"]
-                    for handle in node_handles
-                    if handle["io_type"] == "source"
+                    handle["uuid"] for handle in node_handles if handle["io_type"] == "source"
                 ],
             }
             node_metadata = node.get("meta_data")
             node_unilab = (
-                node_metadata.get("unilab")
-                if isinstance(node_metadata, Mapping)
-                else None
+                node_metadata.get("unilab") if isinstance(node_metadata, Mapping) else None
             )
+            if isinstance(node_unilab, Mapping):
+                planned_node["meta_data"] = {"unilab": deepcopy(dict(node_unilab))}
+            for resource_field in (
+                "resource_defaults",
+                "resources",
+                "branch_id",
+                "order_sensitive",
+                "physical_hold_resources",
+            ):
+                if resource_field in node:
+                    planned_node[resource_field] = deepcopy(node[resource_field])
             result_name = (
                 node_unilab.get("authoring_result_name")
                 if isinstance(node_unilab, Mapping)
@@ -268,44 +278,32 @@ class ExecutionPlanBuilder:
             if isinstance(result_name, str) and result_name:
                 planned_node["result_name"] = result_name
             carry_bindings = (
-                node_unilab.get("carry_bindings")
-                if isinstance(node_unilab, Mapping)
-                else None
+                node_unilab.get("carry_bindings") if isinstance(node_unilab, Mapping) else None
             )
             if isinstance(carry_bindings, Mapping) and carry_bindings:
                 planned_node["carry_bindings"] = {
-                    runtime_handle_ids[(node_uuid, str(handle_uuid))]: deepcopy(
-                        dict(binding)
-                    )
+                    runtime_handle_ids[(node_uuid, str(handle_uuid))]: deepcopy(dict(binding))
                     for handle_uuid, binding in carry_bindings.items()
                     if (node_uuid, str(handle_uuid)) in runtime_handle_ids
                     and isinstance(binding, Mapping)
                 }
             input_bindings = (
-                node_unilab.get("input_bindings")
-                if isinstance(node_unilab, Mapping)
-                else None
+                node_unilab.get("input_bindings") if isinstance(node_unilab, Mapping) else None
             )
             if isinstance(input_bindings, Mapping) and input_bindings:
                 planned_node["input_bindings"] = {
-                    runtime_handle_ids[(node_uuid, str(handle_uuid))]: deepcopy(
-                        dict(binding)
-                    )
+                    runtime_handle_ids[(node_uuid, str(handle_uuid))]: deepcopy(dict(binding))
                     for handle_uuid, binding in input_bindings.items()
                     if (node_uuid, str(handle_uuid)) in runtime_handle_ids
                     and isinstance(binding, Mapping)
                 }
             site_group_bindings = (
-                node_unilab.get("site_group_bindings")
-                if isinstance(node_unilab, Mapping)
-                else None
+                node_unilab.get("site_group_bindings") if isinstance(node_unilab, Mapping) else None
             )
             site_selectors: list[dict[str, Any]] = []
             for handle in node_handles:
                 selector = handle.get("site_selector")
-                if handle.get("io_type") != "target" or not isinstance(
-                    selector, Mapping
-                ):
+                if handle.get("io_type") != "target" or not isinstance(selector, Mapping):
                     continue
                 owner_parameter = selector.get("owner")
                 if not isinstance(owner_parameter, str) or not owner_parameter.strip():
@@ -347,10 +345,7 @@ class ExecutionPlanBuilder:
                     )
                     exact_parameter = raw_group.get("exact_parameter")
                     if exact_parameter is not None:
-                        if (
-                            not isinstance(exact_parameter, str)
-                            or not exact_parameter.strip()
-                        ):
+                        if not isinstance(exact_parameter, str) or not exact_parameter.strip():
                             raise ExecutionPlanBuildError(
                                 "invalid_site_group_binding",
                                 "命名库位组精确覆盖参数无效",
@@ -362,9 +357,7 @@ class ExecutionPlanBuilder:
             if kind in {"condition", "repeat_until"}:
                 planned_node["control_region"] = deepcopy(planned_param)
             if kind in {"device_action", "material_transfer"}:
-                planned_node.update(
-                    self._device_action_contract(node, template=template)
-                )
+                planned_node.update(self._device_action_contract(node, template=template))
                 # ``action_contract`` 来自模板投影保留元数据，而 ``template.schema``
                 # 只承载 Backend 规范的 Goal 参数子模式。
                 action_contract = self._frozen_action_contract(
@@ -378,18 +371,14 @@ class ExecutionPlanBuilder:
                         "invalid_executor_binding",
                         "人工确认节点必须绑定一个真实设备动作",
                     )
-                planned_node.update(
-                    self._device_action_contract(node, template=template)
-                )
+                planned_node.update(self._device_action_contract(node, template=template))
                 planned_node["param_schema"] = self._frozen_action_contract(
                     template,
                     node_uuid=node_uuid,
                 )
                 try:
-                    planned_node["manual_confirmation"] = (
-                        normalize_manual_confirmation_config(
-                            node.get("manual_confirmation")
-                        )
+                    planned_node["manual_confirmation"] = normalize_manual_confirmation_config(
+                        node.get("manual_confirmation")
                     )
                 except StoreConflict as error:
                     raise ExecutionPlanBuildError(
@@ -409,13 +398,14 @@ class ExecutionPlanBuilder:
                 }
                 and template.get("schema") is not None
             ):
-                planned_node["param_schema"] = template["schema"]
+                planned_node["param_schema"] = self._frozen_param_schema(
+                    template,
+                    node_uuid=node_uuid,
+                )
             if requirements.get(node_uuid):
                 planned_node["material_requirements"] = requirements[node_uuid]
             if material_binding_targets.get(node_uuid):
-                planned_node["material_binding_targets"] = material_binding_targets[
-                    node_uuid
-                ]
+                planned_node["material_binding_targets"] = material_binding_targets[node_uuid]
             planned_nodes.append(planned_node)
             if not self._has_repeat_ancestor(
                 node_uuid,
@@ -440,9 +430,12 @@ class ExecutionPlanBuilder:
                 "static_resource_deadlock",
                 str(error),
             ) from error
-        has_repeat_regions = any(
-            kinds[node_uuid] == "repeat_until" for node_uuid in active
+        resource_plan = self._resource_plan(
+            graph=graph,
+            planned_nodes=planned_nodes,
+            planned_edges=planned_edges,
         )
+        has_repeat_regions = any(kinds[node_uuid] == "repeat_until" for node_uuid in active)
         has_control_regions = bool(control_edges or repeat_edges)
         plan: dict[str, Any] = {
             "version": CONTROL_PLAN_VERSION if has_control_regions else PLAN_VERSION,
@@ -455,9 +448,285 @@ class ExecutionPlanBuilder:
             plan["capabilities"] = list(CONTROL_PLAN_CAPABILITIES)
             if has_repeat_regions:
                 plan["capabilities"].append(DYNAMIC_ITERATION_CAPABILITY)
+        if resource_plan is not None:
+            plan["resource_plan"] = serialize_resource_plan(resource_plan)
+            if any(
+                node.get("kind") == "material_source"
+                or (node.get("action_resource_contract") or {}).get("transfer")
+                for node in planned_nodes
+            ):
+                plan["inventory_resource_binding"] = "pending"
+            capabilities = plan.setdefault("capabilities", [])
+            for capability in resource_plan.capabilities:
+                if capability not in capabilities:
+                    capabilities.append(capability)
+            for node in planned_nodes:
+                node["resource_plan_id"] = resource_plan.plan_id
+                projection = resource_plan_for_node(resource_plan, str(node["uuid"]))
+                if projection["intervals"]:
+                    node["resource_interval_ids"] = [
+                        str(item["interval_id"]) for item in projection["intervals"]
+                    ]
+                if projection["acquire_sets"]:
+                    node["resource_acquire_set_id"] = str(
+                        projection["acquire_sets"][0]["acquire_set_id"]
+                    )
+            planned_by_uuid = {str(node["uuid"]): node for node in planned_nodes}
+            for job in jobs:
+                node = planned_by_uuid.get(str(job.get("workflow_node_uuid") or ""))
+                if node is None:
+                    continue
+                job["resource_plan_id"] = resource_plan.plan_id
+                job["resource_interval_ids"] = list(node.get("resource_interval_ids") or [])
+                job["resource_acquire_set_id"] = str(node.get("resource_acquire_set_id") or "")
         if target_node_uuid is not None:
             plan["target_node_uuid"] = target_node_uuid
         return plan, jobs
+
+    @staticmethod
+    def _resource_plan(
+        *,
+        graph: Mapping[str, Any],
+        planned_nodes: Sequence[Mapping[str, Any]],
+        planned_edges: Sequence[Mapping[str, Any]],
+    ) -> Any:
+        """按需构造资源计划；没有资源声明的旧图保持原有计划形状。"""
+
+        resource_graph = deepcopy(graph)
+        resource_graph["nodes"] = [deepcopy(dict(node)) for node in planned_nodes]
+        workflow = graph.get("workflow")
+        workflow_meta = workflow.get("meta_data") if isinstance(workflow, Mapping) else None
+        unilab_meta = workflow_meta.get("unilab") if isinstance(workflow_meta, Mapping) else None
+        persisted_bindings = (
+            unilab_meta.get("resource_bindings") if isinstance(unilab_meta, Mapping) else None
+        )
+        if persisted_bindings is not None and not isinstance(persisted_bindings, Mapping):
+            raise ExecutionPlanBuildError(
+                "invalid_resource_plan",
+                "Workflow resource_bindings 必须是对象",
+            )
+        graph_bindings = graph.get("resource_bindings")
+        if graph_bindings is not None and not isinstance(graph_bindings, Mapping):
+            raise ExecutionPlanBuildError(
+                "invalid_resource_plan",
+                "resource_bindings 必须是对象",
+            )
+        bindings = {
+            **dict(persisted_bindings or {}),
+            **dict(graph_bindings or {}),
+        }
+        material_source_binding_targets = {
+            (
+                str(target.get("workflow_node_uuid") or ""),
+                str(target.get("param_key") or ""),
+            )
+            for source in resource_graph["nodes"]
+            for target in source.get("material_binding_targets", ())
+            if isinstance(target, Mapping)
+        }
+        has_deferred_material_binding = False
+        for node in resource_graph["nodes"]:
+            material_uuid = str(node.get("material_uuid") or "")
+            if material_uuid and node.get("kind") in {
+                "device_action",
+                "material_transfer",
+                "manual_confirm",
+            }:
+                alias = f"device:{material_uuid}"
+                defaults = list(node.get("resource_defaults") or [])
+                defaults.append(alias)
+                bindings[alias] = {
+                    "instance_uuid": material_uuid,
+                    "kind": "device",
+                    "canonical_key": device_lock_key(material_uuid),
+                }
+                # 根/词法声明可以复用已冻结的设备别名，不访问可变运行态。
+                local_id = str(node.get("device_id") or "")
+                if local_id:
+                    bindings.setdefault(local_id, bindings[alias])
+                node["resource_defaults"] = list(dict.fromkeys(defaults))
+            material_instances = {
+                str(req["instance_uuid"])
+                for req in node.get("material_requirements", ())
+                if isinstance(req, Mapping) and req.get("instance_uuid")
+            }
+            schema = node.get("param_schema")
+            params = node.get("param") or {}
+            contract = node.get("action_resource_contract") or {}
+            contract_material_instances: set[str] = set()
+            for name in action_device_resource_params(contract):
+                value = params.get(name)
+                if value is None:
+                    continue  # 未来输入仍须有显式绑定，派发前再次按最终参数校验。
+                raw_uuid = (
+                    value.get("uuid") or value.get("material_uuid")
+                    if isinstance(value, Mapping)
+                    else value
+                )
+                try:
+                    instance_uuid = str(UUID(str(raw_uuid)))
+                except (ValueError, TypeError) as error:
+                    raise ExecutionPlanBuildError(
+                        "invalid_resource_plan", f"设备资源参数 {name} 缺少规范实例 UUID"
+                    ) from error
+                expected = {
+                    "instance_uuid": instance_uuid,
+                    "kind": "device",
+                    "canonical_key": device_lock_key(instance_uuid),
+                }
+                supplied = bindings.get(name)
+                if supplied is not None:
+                    # 复用计划绑定器规范化角色和实例键，避免建立第二套身份规则。
+                    probe = compile_template_resource_plan(
+                        {"nodes": [{"uuid": "binding", "resources": [name]}]}
+                    )
+                    try:
+                        actual = (
+                            bind_station_resource_plan(probe, {name: supplied})
+                            .resources[0]
+                            .canonical_key
+                        )
+                    except ResourcePlanError as error:
+                        raise ExecutionPlanBuildError(
+                            "invalid_resource_plan", error.message
+                        ) from error
+                    if actual != expected["canonical_key"]:
+                        raise ExecutionPlanBuildError(
+                            "invalid_resource_plan", f"资源绑定 {name} 与冻结动作参数实例不一致"
+                        )
+                bindings[name] = expected
+                node["resource_defaults"] = list(
+                    dict.fromkeys([*node.get("resource_defaults", ()), name])
+                )
+            for name in _action_material_resource_params(contract):
+                value = params.get(name)
+                if value is None:
+                    if (str(node.get("uuid") or ""), name) in material_source_binding_targets:
+                        # 自动 MaterialSource 的具体 UUID 只会在库存准入后写入。
+                        # 此时保留符号资源计划，随后由 bind_inventory_resource_plan
+                        # 用同一构建器绑定并校验真实物料互斥键。
+                        has_deferred_material_binding = True
+                    continue
+                raw_uuid = (
+                    value.get("uuid") or value.get("material_uuid")
+                    if isinstance(value, Mapping)
+                    else value
+                )
+                try:
+                    instance_uuid = str(UUID(str(raw_uuid)))
+                except (ValueError, TypeError) as error:
+                    raise ExecutionPlanBuildError(
+                        "invalid_resource_plan", f"物料资源参数 {name} 缺少规范实例 UUID"
+                    ) from error
+                expected = {
+                    "instance_uuid": instance_uuid,
+                    "kind": "material",
+                    "canonical_key": material_lock_key(instance_uuid),
+                }
+                supplied = bindings.get(name)
+                if supplied is not None:
+                    probe = compile_template_resource_plan(
+                        {"nodes": [{"uuid": "binding", "resources": [name]}]}
+                    )
+                    try:
+                        actual = (
+                            bind_station_resource_plan(probe, {name: supplied})
+                            .resources[0]
+                            .canonical_key
+                        )
+                    except ResourcePlanError as error:
+                        raise ExecutionPlanBuildError(
+                            "invalid_resource_plan", error.message
+                        ) from error
+                    if actual != expected["canonical_key"]:
+                        raise ExecutionPlanBuildError(
+                            "invalid_resource_plan", f"资源绑定 {name} 与冻结动作参数实例不一致"
+                        )
+                bindings[name] = expected
+                contract_material_instances.add(instance_uuid)
+                node["resource_defaults"] = list(
+                    dict.fromkeys([*node.get("resource_defaults", ()), name])
+                )
+            if isinstance(schema, Mapping):
+                from unilabos.registry.material_lock_schema import compile_material_lock_schema
+
+                goal = (schema.get("properties") or {}).get("goal") or {}
+                properties = goal.get("properties") or {}
+                deferred_site_parameters = {
+                    selector["parameter"]
+                    for selector in node.get("site_selectors", ())
+                    if isinstance(selector, Mapping) and selector.get("parameter")
+                }
+                for key, value in params.items():
+                    if key not in properties or key in deferred_site_parameters:
+                        continue
+                    # 库位选择器仍是名称或组引用，由任务输入阶段的库存权威解析并
+                    # 冻结候选库位；不能在这里把选择表达式当作最终动作 UUID。
+                    # 动态输入尚未到达；只解析已经冻结的字段，仍用同一合同解析器。
+                    partial_goal = {
+                        "type": "object",
+                        "properties": properties,
+                        **({"$defs": goal["$defs"]} if "$defs" in goal else {}),
+                        **({"definitions": goal["definitions"]} if "definitions" in goal else {}),
+                    }
+                    partial_schema = {"properties": {"goal": partial_goal}}
+                    material_instances.update(
+                        compile_material_lock_schema(partial_schema).material_lock_uuids(
+                            {key: value}
+                        )
+                    )
+            for instance_uuid in sorted(material_instances):
+                if instance_uuid in contract_material_instances:
+                    # material 角色参数已经用其合同参数名表示同一物理互斥资源；
+                    # 不再创建 synthetic alias，避免一次动作产生两个同义资源。
+                    continue
+                alias = f"material:{instance_uuid}"
+                bindings[alias] = {
+                    "instance_uuid": instance_uuid,
+                    "kind": "material",
+                    "canonical_key": material_lock_key(instance_uuid),
+                }
+                node["resource_defaults"] = list(
+                    dict.fromkeys([*node.get("resource_defaults", ()), alias])
+                )
+        if not _has_resource_declarations(resource_graph, resource_graph["nodes"]):
+            return None
+        resource_graph["edges"] = [dict(edge) for edge in planned_edges]
+        _project_resource_scopes_to_planned_nodes(
+            resource_graph,
+            planned_node_uuids={str(node["uuid"]) for node in planned_nodes},
+        )
+        try:
+            raw_bindings = bindings or graph.get("resource_bindings")
+            template_plan = compile_template_resource_plan(
+                resource_graph, _defer_cycle_validation=raw_bindings is not None
+            )
+            if has_deferred_material_binding:
+                return template_plan
+            has_named_scope_resources = any(
+                scope.kind in {"root", "with"} and scope.resource_ids
+                for scope in template_plan.scopes
+            )
+            if raw_bindings is None and not has_named_scope_resources:
+                return template_plan
+            raw_concurrency = graph.get("concurrent_resource_plans") or ()
+            if not isinstance(raw_concurrency, Sequence) or isinstance(
+                raw_concurrency, (str, bytes)
+            ):
+                raise ResourcePlanError(
+                    "invalid_concurrency",
+                    "concurrent_resource_plans 必须是资源计划数组",
+                )
+            return bind_station_resource_plan(
+                template_plan,
+                raw_bindings or {},
+                concurrency=raw_concurrency,
+            )
+        except ResourcePlanError as error:
+            raise ExecutionPlanBuildError(
+                "invalid_resource_plan",
+                f"{error.message} ({error.path})",
+            ) from error
 
     @staticmethod
     def _validate_control_nesting(
@@ -1216,6 +1485,33 @@ class ExecutionPlanBuilder:
         return deepcopy(dict(contract))
 
     @staticmethod
+    def _frozen_param_schema(
+        template: Mapping[str, Any], *, node_uuid: str
+    ) -> dict[str, Any]:
+        """冻结非设备节点的参数 Schema，并兼容 Backend 的 JSON 文本格式。
+
+        参数：``template`` 是应用图冻结的节点模板，``node_uuid`` 是诊断使用的
+        节点身份。返回：与模板容器隔离的 JSON Schema 对象。异常：Schema 文本
+        不是合法 JSON，或解码后不是对象时抛 ``ExecutionPlanBuildError``。
+        """
+
+        schema = template.get("schema")
+        if isinstance(schema, str):
+            try:
+                schema = json.loads(schema)
+            except json.JSONDecodeError as error:
+                raise ExecutionPlanBuildError(
+                    "invalid_param_schema",
+                    f"节点参数 Schema 不是合法 JSON：{node_uuid}",
+                ) from error
+        if not isinstance(schema, Mapping):
+            raise ExecutionPlanBuildError(
+                "invalid_param_schema",
+                f"节点参数 Schema 必须是对象：{node_uuid}",
+            )
+        return deepcopy(dict(schema))
+
+    @staticmethod
     def _frozen_action_resource_contract(
         template: Mapping[str, Any],
     ) -> dict[str, Any]:
@@ -1395,10 +1691,127 @@ class ExecutionPlanBuilder:
         return list(value)
 
 
+def _has_resource_declarations(
+    graph: Mapping[str, Any],
+    planned_nodes: Sequence[Mapping[str, Any]],
+) -> bool:
+    """判断冻结图是否显式进入资源计划语义。"""
+
+    if any(graph.get(key) for key in ("resources", "resource_scopes")):
+        return True
+    workflow = graph.get("workflow")
+    workflow_meta = workflow.get("meta_data") if isinstance(workflow, Mapping) else None
+    unilab_meta = workflow_meta.get("unilab") if isinstance(workflow_meta, Mapping) else None
+    if isinstance(unilab_meta, Mapping) and any(
+        unilab_meta.get(key) for key in ("resources", "resource_scopes")
+    ):
+        return True
+    for node in planned_nodes:
+        if node.get("resource_defaults") or node.get("resources") or node.get("transfer_step"):
+            return True
+        metadata = node.get("meta_data")
+        node_unilab = metadata.get("unilab") if isinstance(metadata, Mapping) else None
+        if isinstance(node_unilab, Mapping) and node_unilab.get("resource_defaults"):
+            return True
+        contract = node.get("action_resource_contract")
+        if isinstance(contract, Mapping):
+            if (
+                contract.get("resource_aliases")
+                or contract.get("required_device_params")
+                or contract.get("transfer_step")
+            ):
+                return True
+            transfer = contract.get("transfer")
+            if isinstance(transfer, Mapping) and any(
+                transfer.get(field) for field in ("motion_resource_roles", "tool_resource_roles")
+            ):
+                return True
+            if contract.get("version") == 2 and contract.get("resource_params"):
+                return True
+    return False
+
+
+def _action_material_resource_params(contract: Mapping[str, Any]) -> tuple[str, ...]:
+    """返回 v2 动作合同中明确声明为物料资源的参数名。"""
+
+    resource_params = contract.get("resource_params", ())
+    if not isinstance(resource_params, Sequence) or isinstance(
+        resource_params, (str, bytes)
+    ):
+        return ()
+    return tuple(
+        dict.fromkeys(
+            str(item["param"])
+            for item in resource_params
+            if isinstance(item, Mapping)
+            and item.get("role") == "material"
+            and str(item.get("param") or "")
+        )
+    )
+
+
+def _project_resource_scopes_to_planned_nodes(
+    graph: dict[str, Any],
+    *,
+    planned_node_uuids: set[str],
+) -> None:
+    """去掉只存在于作者图中的展示节点，保留执行节点的资源边界。
+
+    作者 AST 的 scope 成员可以包含 Group/Condition 等结构节点，而执行计划只
+    携带实际作业节点。此 seam 使用已知 planned UUID 做安全投影；未知业务 UUID
+    不会被静默创造，过滤后为空的作用域仍交给资源计划模块报错。
+    """
+
+    def project(raw_scopes: Any) -> Any:
+        if not isinstance(raw_scopes, list):
+            return raw_scopes
+        projected: list[Any] = []
+        for raw_scope in raw_scopes:
+            if not isinstance(raw_scope, Mapping):
+                projected.append(raw_scope)
+                continue
+            scope = dict(raw_scope)
+            raw_members = scope.get("node_uuids")
+            if isinstance(raw_members, Sequence) and not isinstance(
+                raw_members, (str, bytes)
+            ):
+                members = [
+                    str(node_uuid)
+                    for node_uuid in raw_members
+                    if str(node_uuid) in planned_node_uuids
+                ]
+                if raw_members and members:
+                    scope["node_uuids"] = members
+                    if str(scope.get("entry_node_uuid") or "") not in planned_node_uuids:
+                        scope["entry_node_uuid"] = members[0]
+                    if str(scope.get("exit_node_uuid") or "") not in planned_node_uuids:
+                        scope["exit_node_uuid"] = members[-1]
+            projected.append(scope)
+        return projected
+
+    if isinstance(graph.get("resource_scopes"), list):
+        graph["resource_scopes"] = project(graph["resource_scopes"])
+    workflow = graph.get("workflow")
+    if not isinstance(workflow, Mapping):
+        return
+    workflow_meta = workflow.get("meta_data")
+    if not isinstance(workflow_meta, Mapping):
+        return
+    unilab_meta = workflow_meta.get("unilab")
+    if not isinstance(unilab_meta, Mapping):
+        return
+    raw_scopes = unilab_meta.get("resource_scopes")
+    if isinstance(raw_scopes, list):
+        unilab_meta["resource_scopes"] = project(raw_scopes)
+
+
 __all__ = [
     "CONTROL_PLAN_CAPABILITIES",
     "CONTROL_PLAN_VERSION",
     "PLAN_VERSION",
+    "RESOURCE_PLAN_CAPABILITY",
+    "RESOURCE_PLAN_VERSION",
+    "STATIC_RESOURCE_DAG_CAPABILITY",
     "ExecutionPlanBuildError",
     "ExecutionPlanBuilder",
 ]

@@ -11,7 +11,7 @@ from uuid import UUID, uuid5
 from unilabos.workflow.authoring_identity import authoring_edge_uuid
 from unilabos.workflow.composite_invocation import (
     CompositeInvocationInvalid,
-    expand_composite_invocation,
+    compile_composite_invocation,
 )
 from unilabos.workflow.json_codec import strict_json_equal
 
@@ -407,11 +407,16 @@ def _replace_invocation(
         retained_edges.append(edge)
     base_graph = {
         **deepcopy(dict(parent_graph)),
+        "workflow": _without_invocation_resource_projection(
+            parent_graph["workflow"],
+            invocation_uuid=invocation_uuid,
+            descendant_uuids=descendants,
+        ),
         "nodes": retained_nodes,
         "edges": retained_edges,
     }
     try:
-        expanded_nodes, expanded_edges = expand_composite_invocation(
+        expansion = compile_composite_invocation(
             parent_graph=base_graph,
             contract=current_contract,
             invocation_uuid=invocation_uuid,
@@ -424,6 +429,8 @@ def _replace_invocation(
             "composite_expansion_invalid",
             str(error),
         ) from None
+    expanded_nodes = list(expansion.nodes)
+    expanded_edges = list(expansion.edges)
     root = expanded_nodes[0]
     root["parent_uuid"] = invocation.get("parent_uuid")
     for field in ("execution_policy", "disabled", "minimized"):
@@ -443,9 +450,59 @@ def _replace_invocation(
         root["meta_data"] = preserved
     return {
         **base_graph,
+        "workflow": {
+            **base_graph["workflow"],
+            "meta_data": expansion.workflow_meta_data,
+        },
         "nodes": [*retained_nodes, *expanded_nodes],
         "edges": [*retained_edges, *expanded_edges],
     }
+
+
+def _without_invocation_resource_projection(
+    workflow: Mapping[str, Any],
+    *,
+    invocation_uuid: str,
+    descendant_uuids: set[str],
+) -> dict[str, Any]:
+    """移除一次旧组合展开派生的作用域，并收缩父作用域成员。"""
+
+    result = deepcopy(dict(workflow))
+    raw_meta_data = result.get("meta_data")
+    if not isinstance(raw_meta_data, Mapping):
+        return result
+    meta_data = deepcopy(dict(raw_meta_data))
+    result["meta_data"] = meta_data
+    raw_unilab = meta_data.get("unilab")
+    if not isinstance(raw_unilab, Mapping):
+        return result
+    unilab = deepcopy(dict(raw_unilab))
+    meta_data["unilab"] = unilab
+    raw_scopes = unilab.get("resource_scopes")
+    if not isinstance(raw_scopes, list):
+        return result
+    retained: list[Any] = []
+    for raw_scope in raw_scopes:
+        if not isinstance(raw_scope, Mapping):
+            retained.append(deepcopy(raw_scope))
+            continue
+        scope_owner = raw_scope.get("composite_invocation_uuid")
+        if isinstance(scope_owner, str) and (
+            scope_owner == invocation_uuid or scope_owner in descendant_uuids
+        ):
+            continue
+        scope = deepcopy(dict(raw_scope))
+        members = scope.get("node_uuids")
+        if isinstance(members, list):
+            scope["node_uuids"] = [
+                member for member in members if str(member) not in descendant_uuids
+            ]
+        retained.append(scope)
+    if retained:
+        unilab["resource_scopes"] = retained
+    else:
+        unilab.pop("resource_scopes", None)
+    return result
 
 
 def refresh_published_composite_invocations(

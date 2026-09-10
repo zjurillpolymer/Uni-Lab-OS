@@ -94,7 +94,7 @@ from unilabos.ros.nodes.base_device_node import (
 from unilabos.ros.nodes.presets.controller_node import ControllerNode
 from unilabos.utils import logger
 from unilabos.utils.exception import DeviceClassInvalid
-from unilabos.utils.log import warning
+from unilabos.utils.log import warning, is_detailed_logging_enabled
 from unilabos.utils.type_check import serialize_result_info
 from unilabos.config.config import BasicConfig
 
@@ -520,7 +520,8 @@ class HostNode(BaseROS2DeviceNode):
         检测ROS2网络中的所有设备节点，并为它们创建ActionClient
         同时检测设备离线情况
         """
-        self.lab_logger().trace("[Host Node] Discovering devices in the network...")
+        if is_detailed_logging_enabled():
+            self.lab_logger().trace("[Host Node] 开始发现网络中的设备。")
 
         # 获取当前所有设备
         nodes_and_names = self.get_node_names_and_namespaces()
@@ -598,7 +599,8 @@ class HostNode(BaseROS2DeviceNode):
 
         # 更新在线设备列表
         self._online_devices = current_devices
-        self.lab_logger().trace(f"[Host Node] Total online devices: {len(self._online_devices)}")
+        if is_detailed_logging_enabled():
+            self.lab_logger().trace(f"[Host Node] 在线设备总数: {len(self._online_devices)}")
 
     def _discovery_devices_callback(self) -> None:
         """
@@ -613,7 +615,8 @@ class HostNode(BaseROS2DeviceNode):
             finally:
                 self._discovery_lock.release()
         else:
-            self.lab_logger().debug("[Host Node] Device discovery already in progress, skipping.")
+            if is_detailed_logging_enabled():
+                self.lab_logger().trace("[Host Node] 设备发现已在进行，跳过本轮。")
 
     def _report_action_locks_free(self, action_pairs: List[Tuple[str, str]]) -> None:
         """向所有桥接器主动上报新发现 action 的锁状态为 free(report_action_lock)。

@@ -12,7 +12,7 @@
 
 ### `unilab` 命令不存在
 
-先执行 `mamba activate unilabos`，再检查 `python -m pip show unilabos`。源码教程还应确认 `python scripts/dev_install.py --use-pip` 已成功结束。不要在系统 Python 和 Conda Python 之间混装。
+先激活安装 Uni-Lab OS 的 Conda 环境，再检查 `python -m pip show unilabos`。源码安装还应确认 `pip install -e .` 和 `uv pip install -r unilabos/utils/requirements.txt` 已成功结束。不要在系统 Python 和 Conda Python 之间混装。
 
 ### `import rclpy` 失败
 

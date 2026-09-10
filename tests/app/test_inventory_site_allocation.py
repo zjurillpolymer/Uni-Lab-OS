@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import sqlite3
 from pathlib import Path
 
 import pytest
@@ -19,7 +20,11 @@ from unilabos.app.scheduler.inventory.site_selection import (
     InventorySiteSelectionError,
     build_inventory_site_selection_resolver,
 )
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import (
+    InventoryStore,
+    SiteOccupancyConflict,
+    set_site_occupancy,
+)
 from unilabos.app.scheduler.inventory.workflow_quantity import (
     WorkflowQuantityReservationError,
 )
@@ -1005,3 +1010,108 @@ def test_move_instance_commits_parent_and_site_occupancy_atomically(
         )["count"]
         == 1
     )
+
+
+def test_compatibility_move_rejects_occupied_target_without_losing_either_material(
+    inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """兼容 move 不能覆盖目标 Site 原有物料，并且失败必须零写入。"""
+
+    store, service, identities = inventory
+
+    with pytest.raises(CommandRejected, match="occupied"):
+        service.move_instance(
+            identities["first"],
+            parent_uuid=identities["mount"],
+            slot_id="B1",
+            actor="compatibility.move",
+        )
+
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_A,),
+    )["occupied_material_uuid"] == identities["first"]
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_B,),
+    )["occupied_material_uuid"] == identities["second"]
+    assert service.store.get_instance(identities["first"])["parent_uuid"] == identities[
+        "mount"
+    ]
+
+
+def test_site_occupancy_api_is_idempotent_and_rejects_another_material(
+    inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """统一原子 API 接受同 Material/Site 重放，但不能覆盖另一个 Material。"""
+
+    store, _service, identities = inventory
+    with store.transaction() as connection:
+        assert set_site_occupancy(
+            connection,
+            site_uuid=SITE_A,
+            material_uuid=identities["first"],
+        ) == SITE_A
+        with pytest.raises(SiteOccupancyConflict) as raised:
+            set_site_occupancy(
+                connection,
+                site_uuid=SITE_B,
+                material_uuid=identities["first"],
+            )
+
+    assert raised.value.code == "site_occupied"
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_A,),
+    )["occupied_material_uuid"] == identities["first"]
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_B,),
+    )["occupied_material_uuid"] == identities["second"]
+
+
+def test_site_occupancy_unique_index_is_the_last_line_of_defense(
+    inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """绕过领域 API 的直接 SQL 也不能让一个 Material 同时占两个活动 Site。"""
+
+    store, _service, identities = inventory
+    with pytest.raises(sqlite3.IntegrityError):
+        with store.transaction() as connection:
+            connection.execute(
+                "UPDATE site SET occupied_material_uuid=? WHERE uuid=?",
+                (identities["first"], SITE_EMPTY),
+            )
+
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_A,),
+    )["occupied_material_uuid"] == identities["first"]
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_EMPTY,),
+    )["occupied_material_uuid"] is None
+
+
+def test_legacy_relation_write_rejects_occupied_target_atomically(
+    inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """旧 relation 写入口也不能覆盖目标 Site，并且冲突时不移动来源物料。"""
+
+    store, _service, identities = inventory
+    with pytest.raises(sqlite3.IntegrityError, match="target site is occupied"):
+        with store.transaction() as connection:
+            connection.execute(
+                "INSERT INTO resource_relation(parent_uuid,slot_id,child_uuid,version) "
+                "VALUES (?,?,?,1)",
+                (identities["mount"], "B1", identities["first"]),
+            )
+
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_A,),
+    )["occupied_material_uuid"] == identities["first"]
+    assert store.query_one(
+        "SELECT occupied_material_uuid FROM site WHERE uuid=?",
+        (SITE_B,),
+    )["occupied_material_uuid"] == identities["second"]

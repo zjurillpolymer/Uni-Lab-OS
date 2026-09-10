@@ -27,6 +27,8 @@ from unilabos.app.edge_control.addressing import (
     normalize_scheduler_address,
     resolve_scheduler_address,
 )
+from unilabos.utils.log_storage import LogPolicy, read_log_tail
+from unilabos.utils.process_output import ProcessOutput
 
 from .discovery import WorkspaceHostLock, ensure_local_token
 from .launch import (
@@ -215,14 +217,7 @@ class WorkspaceHost:
         if not isinstance(value, str) or not value:
             return {"component": component, "logPath": None, "content": ""}
         path = Path(value)
-        try:
-            with path.open("rb") as stream:
-                stream.seek(0, os.SEEK_END)
-                size = stream.tell()
-                stream.seek(max(0, size - max_bytes))
-                content = stream.read().decode("utf-8", errors="replace")
-        except FileNotFoundError:
-            content = ""
+        content = read_log_tail(path, max_bytes).decode("utf-8", errors="replace")
         return {"component": component, "logPath": str(path), "content": content}
 
     def close(self) -> None:
@@ -411,17 +406,18 @@ class WorkspaceHost:
             else source_root
         )
         try:
-            with log_path.open("ab", buffering=0) as stream:
+            with ProcessOutput(log_path, LogPolicy.from_env(environment)) as output:
                 completed = subprocess.run(
                     command,
                     cwd=self.paths.workspace,
-                    env=environment,
+                    env=output.environment(environment),
                     stdin=subprocess.DEVNULL,
-                    stdout=stream,
+                    stdout=output.stream,
                     stderr=subprocess.STDOUT,
                     timeout=max(self.readiness_timeout, 120.0),
                     check=False,
                 )
+            output.wait()
         except subprocess.TimeoutExpired as error:
             raise WorkspaceHostError(
                 "template_validation_timeout",
@@ -1046,35 +1042,35 @@ class WorkspaceHost:
                 {"generation": plan.generation},
             )
         plan.log_path.parent.mkdir(parents=True, exist_ok=True)
-        with plan.log_path.open("ab", buffering=0) as log_stream:
-            try:
+        try:
+            with ProcessOutput(plan.log_path, LogPolicy.from_env(plan.environment)) as output:
                 process = subprocess.Popen(
                     list(plan.command),
                     cwd=plan.cwd,
-                    env=plan.environment,
+                    env=output.environment(plan.environment),
                     stdin=subprocess.DEVNULL,
-                    stdout=log_stream,
+                    stdout=output.stream,
                     stderr=subprocess.STDOUT,
                     start_new_session=os.name != "nt",
                     creationflags=(
                         subprocess.CREATE_NEW_PROCESS_GROUP if os.name == "nt" else 0
                     ),
                 )
-            except BaseException as error:
-                with self._lock:
-                    component.update(
-                        {
-                            "phase": "failed",
-                            "diagnostic": str(error),
-                        }
-                    )
-                    self._publish_locked(
-                        f"{plan.component}.failed", {"error": str(error)}
-                    )
-                raise WorkspaceHostError(
-                    f"{plan.component}_start_failed",
-                    f"{plan.component} 启动失败：{error}",
-                ) from error
+        except BaseException as error:
+            with self._lock:
+                component.update(
+                    {
+                        "phase": "failed",
+                        "diagnostic": str(error),
+                    }
+                )
+                self._publish_locked(
+                    f"{plan.component}.failed", {"error": str(error)}
+                )
+            raise WorkspaceHostError(
+                f"{plan.component}_start_failed",
+                f"{plan.component} 启动失败：{error}",
+            ) from error
         with self._lock:
             self._processes[plan.component] = process
             component["pid"] = process.pid
@@ -1766,13 +1762,13 @@ class WorkspaceHost:
         ]
         log_path.parent.mkdir(parents=True, exist_ok=True)
         environment = _renderer_process_environment(configuration)
-        with log_path.open("ab", buffering=0) as stream:
+        with ProcessOutput(log_path, LogPolicy.from_env(environment)) as output:
             process = subprocess.Popen(
                 command,
                 cwd=project_path,
-                env=environment,
+                env=output.environment(environment),
                 stdin=subprocess.DEVNULL,
-                stdout=stream,
+                stdout=output.stream,
                 stderr=subprocess.STDOUT,
                 start_new_session=os.name != "nt",
                 creationflags=(

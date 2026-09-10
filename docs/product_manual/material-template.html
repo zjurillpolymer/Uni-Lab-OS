@@ -7,7 +7,7 @@
 <link rel="describedby" type="text/plain" href="llms.txt">
 <link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="工作站台面与仓库" href="deck-warehouse.html"><link rel="prev" title="鼠标模拟点击（可选）" href="mouse-automation.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>2. 物料定义模板 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul class="current">
 <li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 current has-children current-page"><a class="current reference internal" href="#">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" checked="" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>2. 物料定义模板<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>2. 物料定义模板<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -383,7 +385,7 @@
 </ul>
 </div>
 <section id="id2">
-<h2>先分清“规格、实物和位置”<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>先分清“规格、实物和位置”<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -419,7 +421,7 @@
 <p>不要把这几层混在一起。模板保存不会随单件实物变化的规格，例如尺寸和容量；实例保存条码、批次、当前体积和当前位置；设备负责实际取放；只有设备确认动作成功后，系统才更新物料位置。</p>
 </section>
 <section id="id3">
-<h2>在自己的设备包中建立目录<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>在自己的设备包中建立目录<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>下面是推荐的最小目录。业务人员只需知道：<code class="docutils literal notranslate"><span class="pre">materials.py</span></code> 放物料规格，<code class="docutils literal notranslate"><span class="pre">carriers.py</span></code> 放载架和放置位，<code class="docutils literal notranslate"><span class="pre">graph.json</span></code> 放现场实际存在的设备与物料。开发人员按下面结构建文件即可。</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>your_lab_package/
 ├── package.yaml
@@ -442,12 +444,12 @@
 <p>在 <code class="docutils literal notranslate"><span class="pre">resources/__init__.py</span></code> 中加入下面两行，让系统启动检查设备包时能够找到这些物料定义：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">carriers</span><span class="p">,</span> <span class="n">materials</span>
 
-<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">"carriers"</span><span class="p">,</span> <span class="s2">"materials"</span><span class="p">]</span>
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;carriers&quot;</span><span class="p">,</span> <span class="s2">&quot;materials&quot;</span><span class="p">]</span>
 </pre></div>
 </div>
 </section>
 <section id="id4">
-<h2>第一步：选择最接近的物料类型<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>第一步：选择最接近的物料类型<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -507,32 +509,32 @@
 <p>优先选择表中已有类型。只有现有类型无法表达关键业务结构时，才开发新的类型。只是名称、品牌或容量不同，不需要再创造一套新的基础类型。</p>
 </section>
 <section id="id5">
-<h2>第二步：登记物料规格<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>第二步：登记物料规格<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>下面使用可复用的 Container 工厂模式。把 ID、尺寸、容量和说明换成你已确认的数据：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Container</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.decorators</span><span class="w"> </span><span class="kn">import</span> <span class="n">resource</span>
 
 
 <span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">,</span>
-    <span class="n">displayname</span><span class="o">=</span><span class="s2">"My Lab 50 mL 样品瓶"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"my_lab"</span><span class="p">,</span> <span class="s2">"container"</span><span class="p">,</span> <span class="s2">"sample_vial"</span><span class="p">],</span>
-    <span class="n">description</span><span class="o">=</span><span class="s2">"可在样品瓶载架与检测工位之间转运的 50 mL 样品瓶。"</span><span class="p">,</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">,</span>
+    <span class="n">displayname</span><span class="o">=</span><span class="s2">&quot;My Lab 50 mL 样品瓶&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_lab&quot;</span><span class="p">,</span> <span class="s2">&quot;container&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_vial&quot;</span><span class="p">],</span>
+    <span class="n">description</span><span class="o">=</span><span class="s2">&quot;可在样品瓶载架与检测工位之间转运的 50 mL 样品瓶。&quot;</span><span class="p">,</span>
 <span class="p">)</span>
-<span class="k">def</span><span class="w"> </span><span class="nf">sample_vial_50ml</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">"MyLabSampleVial50mL"</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Container</span><span class="p">:</span>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_vial_50ml</span><span class="p">(</span><span class="n">name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;MyLabSampleVial50mL&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Container</span><span class="p">:</span>
     <span class="k">return</span> <span class="n">Container</span><span class="p">(</span>
         <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
         <span class="n">size_x</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
         <span class="n">size_y</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
         <span class="n">size_z</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>
         <span class="n">max_volume</span><span class="o">=</span><span class="mf">50_000.0</span><span class="p">,</span>
-        <span class="n">category</span><span class="o">=</span><span class="s2">"sample_vial"</span><span class="p">,</span>
+        <span class="n">category</span><span class="o">=</span><span class="s2">&quot;sample_vial&quot;</span><span class="p">,</span>
     <span class="p">)</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">id</span></code> 是系统识别“这一类物料”的永久编号，不是现场实物的条码。中文名称或供应商名称变化时不要修改它。如果尺寸、孔位或兼容规则发生变化，导致旧流程不能继续使用，应登记一个新的类型编号，并安排已有库存的数据迁移。</p>
 <section id="id6">
-<h3>物料登记字段怎么填写<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>物料登记字段怎么填写<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -640,37 +642,37 @@
 </section>
 </section>
 <section id="id7">
-<h2>第三步：给每个放置位置固定编号<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>第三步：给每个放置位置固定编号<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <p>对于堆栈和板库，每个实际位置都应有一个长期不变的放置位编号。开发人员用 <code class="docutils literal notranslate"><span class="pre">ResourceHolder</span></code> 表示普通物料放置位：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">pylabrobot.resources</span><span class="w"> </span><span class="kn">import</span> <span class="n">Coordinate</span><span class="p">,</span> <span class="n">ResourceHolder</span>
 
 <span class="n">holder</span> <span class="o">=</span> <span class="n">ResourceHolder</span><span class="p">(</span>
-    <span class="n">name</span><span class="o">=</span><span class="s2">"sample_rack_slot_01"</span><span class="p">,</span>
+    <span class="n">name</span><span class="o">=</span><span class="s2">&quot;sample_rack_slot_01&quot;</span><span class="p">,</span>
     <span class="n">size_x</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
     <span class="n">size_y</span><span class="o">=</span><span class="mf">40.0</span><span class="p">,</span>
     <span class="n">size_z</span><span class="o">=</span><span class="mf">80.0</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">holder</span><span class="o">.</span><span class="n">location</span> <span class="o">=</span> <span class="n">Coordinate</span><span class="p">(</span><span class="n">x</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="mf">10.0</span><span class="p">,</span> <span class="n">z</span><span class="o">=</span><span class="mf">0.0</span><span class="p">)</span>
 <span class="n">holder</span><span class="o">.</span><span class="n">unilabos_extra</span> <span class="o">=</span> <span class="p">{</span>
-    <span class="s2">"content_type"</span><span class="p">:</span> <span class="p">[</span><span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">],</span>
+    <span class="s2">&quot;content_type&quot;</span><span class="p">:</span> <span class="p">[</span><span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">],</span>
 <span class="p">}</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">content_type</span></code> 表示“这个位置允许放哪些物料”。它必须填写前一步已经登记的物料类型编号，不能写“任何瓶子”等模糊文字。没有经过尺寸和工艺验证的物料，也不能为了让流程通过而加入允许列表。</p>
 </section>
 <section id="id8">
-<h2>第四步：补充外形和三维模型<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>第四步：补充外形和三维模型<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>如有三维模型，可登记 Xacro 模型文件和用于页面布局、碰撞检查的简化形状文件：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="nd">@resource</span><span class="p">(</span>
-    <span class="nb">id</span><span class="o">=</span><span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">,</span>
-    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">"my_lab"</span><span class="p">,</span> <span class="s2">"container"</span><span class="p">,</span> <span class="s2">"sample_vial"</span><span class="p">],</span>
+    <span class="nb">id</span><span class="o">=</span><span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">,</span>
+    <span class="n">category</span><span class="o">=</span><span class="p">[</span><span class="s2">&quot;my_lab&quot;</span><span class="p">,</span> <span class="s2">&quot;container&quot;</span><span class="p">,</span> <span class="s2">&quot;sample_vial&quot;</span><span class="p">],</span>
     <span class="n">model</span><span class="o">=</span><span class="p">{</span>
-        <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"xacro"</span><span class="p">,</span>
-        <span class="s2">"entry"</span><span class="p">:</span> <span class="s2">"models/my_lab_sample_vial_50ml/resource.xacro"</span><span class="p">,</span>
-        <span class="s2">"macro"</span><span class="p">:</span> <span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">,</span>
-        <span class="s2">"shape"</span><span class="p">:</span> <span class="p">{</span>
-            <span class="s2">"format"</span><span class="p">:</span> <span class="s2">"unilab.shape/v1"</span><span class="p">,</span>
-            <span class="s2">"entry"</span><span class="p">:</span> <span class="s2">"models/my_lab_sample_vial_50ml/shape.yml"</span><span class="p">,</span>
+        <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;xacro&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;entry&quot;</span><span class="p">:</span> <span class="s2">&quot;models/my_lab_sample_vial_50ml/resource.xacro&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;macro&quot;</span><span class="p">:</span> <span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;shape&quot;</span><span class="p">:</span> <span class="p">{</span>
+            <span class="s2">&quot;format&quot;</span><span class="p">:</span> <span class="s2">&quot;unilab.shape/v1&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;entry&quot;</span><span class="p">:</span> <span class="s2">&quot;models/my_lab_sample_vial_50ml/shape.yml&quot;</span><span class="p">,</span>
         <span class="p">},</span>
     <span class="p">},</span>
 <span class="p">)</span>
@@ -679,47 +681,47 @@
 <p>没有精确三维模型时，可以先用长、宽、高组成的外接盒表示占用空间，并明确标注“仅用于页面布局”。未经测量和现场标定的数据不能作为机器人抓取或运动坐标。</p>
 </section>
 <section id="id9">
-<h2>第五步：把现场实物加入启动清单<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>第五步：把现场实物加入启动清单<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <p>前面的代码定义“这一类物料的固定规格”，启动图 定义“现场现在有哪些实物”。下面示例表示一号载架的 <code class="docutils literal notranslate"><span class="pre">R01C01</span></code> 位置放着条码为 <code class="docutils literal notranslate"><span class="pre">SAMPLE-001</span></code> 的样品瓶。<code class="docutils literal notranslate"><span class="pre">class</span></code> 要替换成设备包检查报告中显示的完整类型名称：</p>
 <div class="highlight-json notranslate"><div class="highlight"><pre><span></span><span class="p">{</span>
-<span class="w">  </span><span class="nt">"nodes"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
+<span class="w">  </span><span class="nt">&quot;nodes&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_rack_01"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"一号样品瓶载架"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"vial_001"</span><span class="p">],</span>
-<span class="w">      </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"warehouse"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.my_device_package.my_lab_vial_rack_12"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"sites"</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span>
-<span class="w">          </span><span class="nt">"label"</span><span class="p">:</span><span class="w"> </span><span class="s2">"R01C01"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"R01C01"</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
-<span class="w">          </span><span class="nt">"size"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"width"</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"height"</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"depth"</span><span class="p">:</span><span class="w"> </span><span class="mf">80.0</span><span class="p">},</span>
-<span class="w">          </span><span class="nt">"content_type"</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">"my_lab_sample_vial_50ml"</span><span class="p">],</span>
-<span class="w">          </span><span class="nt">"visible"</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
-<span class="w">          </span><span class="nt">"occupied_by"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vial_001"</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sample_rack_01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;一号样品瓶载架&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;vial_001&quot;</span><span class="p">],</span>
+<span class="w">      </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">null</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;warehouse&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.my_device_package.my_lab_vial_rack_12&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;sites&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[{</span>
+<span class="w">          </span><span class="nt">&quot;label&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;R01C01&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;R01C01&quot;</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
+<span class="w">          </span><span class="nt">&quot;size&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;width&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;height&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;depth&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">80.0</span><span class="p">},</span>
+<span class="w">          </span><span class="nt">&quot;content_type&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;my_lab_sample_vial_50ml&quot;</span><span class="p">],</span>
+<span class="w">          </span><span class="nt">&quot;visible&quot;</span><span class="p">:</span><span class="w"> </span><span class="kc">true</span><span class="p">,</span>
+<span class="w">          </span><span class="nt">&quot;occupied_by&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vial_001&quot;</span>
 <span class="w">        </span><span class="p">}]</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{}</span>
 <span class="w">    </span><span class="p">},</span>
 <span class="w">    </span><span class="p">{</span>
-<span class="w">      </span><span class="nt">"id"</span><span class="p">:</span><span class="w"> </span><span class="s2">"vial_001"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"name"</span><span class="p">:</span><span class="w"> </span><span class="s2">"样品瓶 001"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"children"</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
-<span class="w">      </span><span class="nt">"parent"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_rack_01"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"type"</span><span class="p">:</span><span class="w"> </span><span class="s2">"container"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"class"</span><span class="p">:</span><span class="w"> </span><span class="s2">"community.my_device_package.my_lab_sample_vial_50ml"</span><span class="p">,</span>
-<span class="w">      </span><span class="nt">"position"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"x"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"y"</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">"z"</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"config"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
-<span class="w">        </span><span class="nt">"size_x"</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"size_y"</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"size_z"</span><span class="p">:</span><span class="w"> </span><span class="mf">80.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"max_volume"</span><span class="p">:</span><span class="w"> </span><span class="mf">50000.0</span><span class="p">,</span>
-<span class="w">        </span><span class="nt">"category"</span><span class="p">:</span><span class="w"> </span><span class="s2">"sample_vial"</span>
+<span class="w">      </span><span class="nt">&quot;id&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;vial_001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;name&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;样品瓶 001&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;children&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">[],</span>
+<span class="w">      </span><span class="nt">&quot;parent&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sample_rack_01&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;type&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;container&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;class&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;community.my_device_package.my_lab_sample_vial_50ml&quot;</span><span class="p">,</span>
+<span class="w">      </span><span class="nt">&quot;position&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">10.0</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">0.0</span><span class="p">},</span>
+<span class="w">      </span><span class="nt">&quot;config&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span>
+<span class="w">        </span><span class="nt">&quot;size_x&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;size_y&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">40.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;size_z&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">80.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;max_volume&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">50000.0</span><span class="p">,</span>
+<span class="w">        </span><span class="nt">&quot;category&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;sample_vial&quot;</span>
 <span class="w">      </span><span class="p">},</span>
-<span class="w">      </span><span class="nt">"data"</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">"barcode"</span><span class="p">:</span><span class="w"> </span><span class="s2">"SAMPLE-001"</span><span class="p">,</span><span class="w"> </span><span class="nt">"current_volume_ul"</span><span class="p">:</span><span class="w"> </span><span class="mf">12500.0</span><span class="p">}</span>
+<span class="w">      </span><span class="nt">&quot;data&quot;</span><span class="p">:</span><span class="w"> </span><span class="p">{</span><span class="nt">&quot;barcode&quot;</span><span class="p">:</span><span class="w"> </span><span class="s2">&quot;SAMPLE-001&quot;</span><span class="p">,</span><span class="w"> </span><span class="nt">&quot;current_volume_ul&quot;</span><span class="p">:</span><span class="w"> </span><span class="mf">12500.0</span><span class="p">}</span>
 <span class="w">    </span><span class="p">}</span>
 <span class="w">  </span><span class="p">]</span>
 <span class="p">}</span>
@@ -728,7 +730,7 @@
 <p>载架的 <code class="docutils literal notranslate"><span class="pre">children</span></code>、瓶子的 <code class="docutils literal notranslate"><span class="pre">parent</span></code> 和放置位的 <code class="docutils literal notranslate"><span class="pre">occupied_by</span></code> 必须互相对应，三处都指向同一个瓶子编号。空位置不要填写 <code class="docutils literal notranslate"><span class="pre">occupied_by</span></code>。整份 启动图 中每个 <code class="docutils literal notranslate"><span class="pre">id</span></code> 都必须唯一，位置统一使用毫米。某件实物的条码只写在实例数据中，不能写进通用物料模板。</p>
 </section>
 <section id="id10">
-<h2>第六步：搬运成功后再更新物料位置<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>第六步：搬运成功后再更新物料位置<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <p>工作流需要同时传递“搬什么、从哪里搬、搬到哪里”。<code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code> 是系统用于传递这些物料对象的标准字段。只有机械设备明确返回成功后，才调用一次 <code class="docutils literal notranslate"><span class="pre">transfer_resource</span></code> 更新库存位置：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">unilabos.registry.placeholder_type</span><span class="w"> </span><span class="kn">import</span> <span class="n">ResourceSlot</span>
 
@@ -752,7 +754,7 @@
     <span class="p">)</span>
     <span class="k">return</span> <span class="n">host</span><span class="o">.</span><span class="n">transfer_resource</span><span class="p">(</span>
         <span class="n">resource</span><span class="o">=</span><span class="n">put</span><span class="o">.</span><span class="n">resource</span><span class="p">,</span>
-        <span class="n">target_device</span><span class="o">=</span><span class="s2">"target_device_id"</span><span class="p">,</span>
+        <span class="n">target_device</span><span class="o">=</span><span class="s2">&quot;target_device_id&quot;</span><span class="p">,</span>
         <span class="n">mount_resource</span><span class="o">=</span><span class="n">target_warehouse</span><span class="p">,</span>
         <span class="n">site</span><span class="o">=</span><span class="n">target_site</span><span class="p">,</span>
     <span class="p">)</span>
@@ -761,7 +763,7 @@
 <p>如果设备失败、超时，或无法确认物料是否已经搬走，系统中的位置先保持不变，并提示现场人员核对。不要在结果不确定时提前把物料标记到目标位置。</p>
 </section>
 <section id="id11">
-<h2>怎样确认已经接入成功<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>怎样确认已经接入成功<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w"> </span>your_lab
 unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>./inspect-output
 </pre></div>
@@ -776,7 +778,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ol>
 </section>
 <section id="id12">
-<h2>各类型适配指南<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<h2>各类型适配指南<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p><a class="reference internal" href="deck-warehouse.html"><span class="std std-doc">工作站台面与仓库</span></a>：Deck、WareHouse、普通堆栈/料架、位置坐标和排列顺序；</p></li>
 <li><p><a class="reference internal" href="stack.html"><span class="std std-doc">光电堆栈与旋转堆栈：物料 + 设备</span></a>：同时定义整机设备能力和挂在设备节点下的 Stack/Site 物料树；光电设备面尚无统一规范；</p></li>
@@ -873,10 +875,10 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

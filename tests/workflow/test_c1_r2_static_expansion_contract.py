@@ -10,7 +10,11 @@ from unilabos.workflow.authoring_identity import (
     authoring_edge_uuid,
     expanded_node_uuid,
 )
+from unilabos.workflow.authoring_ast import parse_authoring_source
+from unilabos.workflow.authoring_graph import build_candidate_graph
+from unilabos.workflow.authoring_engine import WorkflowAuthoringEngine
 from unilabos.workflow.authoring_kernel import AuthoringCatalogSnapshot
+from unilabos.workflow.authoring_python import render_authoring_python
 from unilabos.workflow.catalog import PublishedSourceCatalog, PublishedWorkflowSource
 from unilabos.workflow.composite import (
     CompositeAuthoring,
@@ -23,6 +27,7 @@ from unilabos.workflow.composite_expansion import (
 from unilabos.workflow.composite_compatibility import (
     published_workflow_compatibility_projection,
 )
+from unilabos.workflow.resource_lock_plan import compile_template_resource_plan
 
 PARENT_WORKFLOW_UUID = "44444444-4444-4444-8444-444444444444"
 INVOCATION_UUID = "11111111-1111-4111-8111-111111111111"
@@ -649,6 +654,64 @@ def test_direct_invocation_returns_hierarchical_expansion_mappings_and_pin() -> 
     assert provider.read_count == 1
 
 
+def test_direct_invocation_remaps_experiment_operation_resource_scopes() -> None:
+    """源码展开必须隔离子实验操作的资源作用域身份与节点引用。"""
+
+    authoring, provider = _world()
+    provider.snapshots[CHILD_WORKFLOW_UUID]["workflow"]["meta_data"]["unilab"][
+        "resource_scopes"
+    ] = [
+        {
+            "scope_id": "child-outer",
+            "kind": "with",
+            "resources": ["turntable"],
+            "parent_scope_id": None,
+            "entry_node_uuid": CHILD_NODE_UUID,
+            "exit_node_uuid": CHILD_NODE_UUID,
+            "node_uuids": [CHILD_NODE_UUID],
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        },
+        {
+            "scope_id": "child-inner",
+            "kind": "with",
+            "resources": ["robot"],
+            "parent_scope_id": "child-outer",
+            "entry_node_uuid": CHILD_NODE_UUID,
+            "exit_node_uuid": CHILD_NODE_UUID,
+            "node_uuids": [CHILD_NODE_UUID],
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        },
+    ]
+
+    first = authoring.compile_invocation(
+        parent_workflow_uuid=PARENT_WORKFLOW_UUID,
+        invocation_uuid=INVOCATION_UUID,
+        module="c1_published_lab.workflows.child",
+        symbol="prepare_sample",
+        keyword_arguments={"value": 7.5},
+    )
+    second = authoring.compile_invocation(
+        parent_workflow_uuid=PARENT_WORKFLOW_UUID,
+        invocation_uuid=INVOCATION_UUID,
+        module="c1_published_lab.workflows.child",
+        symbol="prepare_sample",
+        keyword_arguments={"value": 7.5},
+    )
+
+    assert first.resource_scopes == second.resource_scopes
+    assert len(first.resource_scopes) == 2
+    outer, inner = first.resource_scopes
+    assert outer["scope_id"] != "child-outer"
+    assert inner["scope_id"] != "child-inner"
+    assert inner["parent_scope_id"] == outer["scope_id"]
+    for scope in first.resource_scopes:
+        assert scope["entry_node_uuid"] == EXPANDED_CHILD_NODE_UUID
+        assert scope["exit_node_uuid"] == EXPANDED_CHILD_NODE_UUID
+        assert scope["node_uuids"] == [EXPANDED_CHILD_NODE_UUID]
+
+
 def test_control_only_input_is_materialized_without_action_target() -> None:
     """只被条件控制节点消费的输入允许空目标映射并固化字面量。"""
 
@@ -1077,6 +1140,133 @@ def test_two_invocations_share_templates_but_not_expanded_node_identity() -> Non
     }
 
 
+def test_parent_candidate_merges_isolated_child_resource_scopes() -> None:
+    """父候选图必须合并每次调用的子作用域，并扩大覆盖调用的父作用域。"""
+
+    authoring, provider, catalog, _source_catalog = _world_components()
+    provider.snapshots[CHILD_WORKFLOW_UUID]["workflow"]["meta_data"]["unilab"][
+        "resource_scopes"
+    ] = [
+        {
+            "scope_id": "child-operation",
+            "kind": "with",
+            "resources": ["child-lock"],
+            "parent_scope_id": None,
+            "entry_node_uuid": CHILD_NODE_UUID,
+            "exit_node_uuid": CHILD_NODE_UUID,
+            "node_uuids": [CHILD_NODE_UUID],
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        }
+    ]
+    source = f'''from c1_published_lab.workflows.child import prepare_sample
+from unilabos.workflow.authoring import resources, workflow, workflow_output
+
+
+@workflow(
+    workflow_uuid="{PARENT_WORKFLOW_UUID}",
+    displayname="Parent",
+)
+def parent():
+    with resources("parent-lock"):
+        # unilab:node_uuid={INVOCATION_UUID}
+        first = prepare_sample(value=1)
+    # unilab:node_uuid={OTHER_INVOCATION_UUID}
+    second = prepare_sample(value=2)
+    return workflow_output()
+'''
+    program = parse_authoring_source(
+        python_source=source,
+        expected_workflow_uuid=PARENT_WORKFLOW_UUID,
+    )
+    graph, _changeset = build_candidate_graph(
+        program=program,
+        catalog=catalog,
+        applied_graph={
+            "workflow": {
+                "uuid": PARENT_WORKFLOW_UUID,
+                "revision": 1,
+                "name": "Parent",
+                "tags": [],
+                "description": None,
+                "workflow_type": "normal",
+                "meta_data": {},
+            },
+            "nodes": [],
+            "edges": [],
+            "node_templates": [],
+            "handle_templates": [],
+        },
+        composite_authoring=authoring,
+    )
+
+    scopes = graph["workflow"]["meta_data"]["unilab"]["resource_scopes"]
+    parent_scope = next(scope for scope in scopes if scope["resources"] == ["parent-lock"])
+    child_scopes = [scope for scope in scopes if scope["resources"] == ["child-lock"]]
+    first_child_uuid = expanded_node_uuid(INVOCATION_UUID, CHILD_NODE_UUID)
+    second_child_uuid = expanded_node_uuid(OTHER_INVOCATION_UUID, CHILD_NODE_UUID)
+    assert len(child_scopes) == 2
+    assert child_scopes[0]["scope_id"] != child_scopes[1]["scope_id"]
+    assert parent_scope["node_uuids"] == [INVOCATION_UUID, first_child_uuid]
+    first_scope = next(
+        scope for scope in child_scopes if scope["node_uuids"] == [first_child_uuid]
+    )
+    second_scope = next(
+        scope for scope in child_scopes if scope["node_uuids"] == [second_child_uuid]
+    )
+    assert first_scope["parent_scope_id"] == parent_scope["scope_id"]
+    assert second_scope["parent_scope_id"] is None
+
+    rendered = render_authoring_python(graph=graph, catalog=catalog)
+    assert "with resources('parent-lock'):" in rendered.python_source
+    assert "with resources('child-lock'):" not in rendered.python_source
+
+    plan = compile_template_resource_plan(graph)
+    child_resource_id = next(
+        resource.resource_id
+        for resource in plan.resources
+        if resource.alias == "child-lock"
+    )
+    child_intervals = [
+        interval
+        for interval in plan.intervals
+        if interval.resource_id == child_resource_id
+    ]
+    assert {interval.node_uuids for interval in child_intervals} == {
+        (first_child_uuid,),
+        (second_child_uuid,),
+    }
+
+    compilation = WorkflowAuthoringEngine(
+        catalog=catalog,
+        composite_authoring=authoring,
+    ).compile(
+        workflow_uuid=PARENT_WORKFLOW_UUID,
+        workflow_revision=1,
+        python_source=source,
+        source_uri="memory://parent.py",
+        applied_graph={
+            "workflow": {
+                "uuid": PARENT_WORKFLOW_UUID,
+                "revision": 1,
+                "name": "Parent",
+                "tags": [],
+                "description": None,
+                "workflow_type": "normal",
+                "meta_data": {},
+            },
+            "nodes": [],
+            "edges": [],
+            "node_templates": [],
+            "handle_templates": [],
+        },
+    )
+    assert compilation.valid and compilation.graph is not None, compilation.diagnostics
+    assert len(
+        compilation.graph["workflow"]["meta_data"]["unilab"]["resource_scopes"]
+    ) == 3
+
+
 def test_nested_published_workflow_expands_into_one_hierarchical_parent_graph() -> None:
     """嵌套已发布工作流递归展开，且不产生嵌套工作流任务（WorkflowTask）。
 
@@ -1106,6 +1296,63 @@ def test_nested_published_workflow_expands_into_one_hierarchical_parent_graph() 
         "child_workflow_uuid"
     ] == LEAF_WORKFLOW_UUID
     assert provider.read_count == 2
+
+
+def test_nested_invocation_keeps_child_scopes_inside_covering_parent_scope() -> None:
+    """嵌套调用的资源作用域必须保留，并继承覆盖调用节点的父作用域。"""
+
+    authoring, provider = _nested_world()
+    provider.snapshots[CHILD_WORKFLOW_UUID]["workflow"]["meta_data"]["unilab"][
+        "resource_scopes"
+    ] = [
+        {
+            "scope_id": "outer-operation",
+            "kind": "with",
+            "resources": ["turntable"],
+            "parent_scope_id": None,
+            "entry_node_uuid": CHILD_NODE_UUID,
+            "exit_node_uuid": CHILD_NODE_UUID,
+            "node_uuids": [CHILD_NODE_UUID],
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        }
+    ]
+    provider.snapshots[LEAF_WORKFLOW_UUID]["workflow"]["meta_data"]["unilab"][
+        "resource_scopes"
+    ] = [
+        {
+            "scope_id": "leaf-operation",
+            "kind": "with",
+            "resources": ["robot"],
+            "parent_scope_id": None,
+            "entry_node_uuid": LEAF_NODE_UUID,
+            "exit_node_uuid": LEAF_NODE_UUID,
+            "node_uuids": [LEAF_NODE_UUID],
+            "hard_boundary": True,
+            "source": "authoring.with.resources",
+        }
+    ]
+
+    expansion = authoring.compile_invocation(
+        parent_workflow_uuid=PARENT_WORKFLOW_UUID,
+        invocation_uuid=INVOCATION_UUID,
+        module="c1_published_lab.workflows.child",
+        symbol="prepare_sample",
+        keyword_arguments={"value": 2},
+    )
+
+    nested_invocation_uuid = expanded_node_uuid(INVOCATION_UUID, CHILD_NODE_UUID)
+    nested_leaf_uuid = expanded_node_uuid(nested_invocation_uuid, LEAF_NODE_UUID)
+    assert len(expansion.resource_scopes) == 2
+    outer = next(
+        scope for scope in expansion.resource_scopes if scope["resources"] == ["turntable"]
+    )
+    leaf = next(
+        scope for scope in expansion.resource_scopes if scope["resources"] == ["robot"]
+    )
+    assert outer["node_uuids"] == [nested_invocation_uuid, nested_leaf_uuid]
+    assert leaf["node_uuids"] == [nested_leaf_uuid]
+    assert leaf["parent_scope_id"] == outer["scope_id"]
 
 
 def test_recursive_or_uncovered_invocation_fails_without_snapshot_write_port() -> None:

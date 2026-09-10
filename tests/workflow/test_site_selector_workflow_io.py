@@ -264,6 +264,152 @@ def site_selector_workflow(*, resource: ResourceSlot):
     assert compiled.graph["nodes"][0]["param"]["site"] is None
 
 
+def test_exact_site_workflow_input_is_not_reinjected_after_selection_freeze() -> None:
+    """精确库位输入冻结成候选 UUID 后，不得在 Scheduler 编译时再次注入名称。"""
+
+    template, handles = _registry_action_projection(nullable=False)
+    catalog = AuthoringCatalogSnapshot.from_entities([template], handles)
+    source = f'''from lab.devices import SitePicker
+from unilabos.registry.placeholder_type import ResourceSlot
+from unilabos.workflow.authoring import device, workflow, workflow_output
+
+
+picker: SitePicker = device()
+
+
+@workflow(workflow_uuid="{WORKFLOW_UUID}", displayname="Exact site input")
+def exact_site_input(*, resource: ResourceSlot, site: str):
+    # unilab:node_uuid={NODE_UUID}
+    picked = picker.pick(resource=resource, site=site)
+    return workflow_output()
+'''
+    compiled = WorkflowAuthoringEngine(catalog=catalog).compile(
+        workflow_uuid=WORKFLOW_UUID,
+        workflow_revision=1,
+        python_source=source,
+        source_uri="package://lab/workflows/exact_site_input.py",
+        applied_graph={
+            "workflow": {
+                "uuid": WORKFLOW_UUID,
+                "name": "Persisted",
+                "tags": [],
+                "description": None,
+                "meta_data": {},
+                "revision": 1,
+            },
+            "nodes": [],
+            "edges": [],
+            "node_templates": [],
+            "handle_templates": [],
+        },
+    )
+    assert compiled.valid and compiled.graph is not None, compiled.diagnostics
+    plan, jobs = ExecutionPlanBuilder().build(
+        compiled.graph,
+        run_mode="normal",
+        target_node_uuid=None,
+    )
+    prepared = prepare_task_input(
+        graph=compiled.graph,
+        raw_input={
+            "resource": {"uuid": OWNER_MATERIAL_UUID},
+            "site": "warehouse.A1",
+        },
+        execution_plan=plan,
+        jobs=jobs,
+        resource_resolver=lambda _uuid: {
+            "uuid": OWNER_MATERIAL_UUID,
+            "resource_template_uuid": RESOURCE_TEMPLATE_UUID,
+        },
+        site_selection_resolver=lambda _request: {
+            "site_uuids": [GROUP_SITE_A_UUID],
+            "fingerprint": "sha256:exact-site",
+        },
+    )
+
+    action_node = next(
+        node for node in prepared.execution_plan["nodes"] if node["uuid"] == NODE_UUID
+    )
+    assert "site" not in action_node["param"]
+    assert all(
+        binding.get("parameter") != "site"
+        for binding in action_node["input_bindings"].values()
+    )
+
+
+def test_literal_exact_site_without_input_binding_can_be_frozen() -> None:
+    """源码固定库位没有输入连接点时也必须完成冻结，不能误报库存不可用。"""
+
+    template, handles = _registry_action_projection(nullable=False)
+    catalog = AuthoringCatalogSnapshot.from_entities([template], handles)
+    source = f'''from lab.devices import SitePicker
+from unilabos.registry.placeholder_type import ResourceSlot
+from unilabos.workflow.authoring import device, workflow, workflow_output
+
+
+picker: SitePicker = device()
+
+
+@workflow(workflow_uuid="{WORKFLOW_UUID}", displayname="Literal exact site")
+def literal_exact_site(*, resource: ResourceSlot):
+    # unilab:node_uuid={NODE_UUID}
+    picked = picker.pick(resource=resource, site="warehouse.A1")
+    return workflow_output()
+'''
+    compiled = WorkflowAuthoringEngine(catalog=catalog).compile(
+        workflow_uuid=WORKFLOW_UUID,
+        workflow_revision=1,
+        python_source=source,
+        source_uri="package://lab/workflows/literal_exact_site.py",
+        applied_graph={
+            "workflow": {
+                "uuid": WORKFLOW_UUID,
+                "name": "Persisted",
+                "tags": [],
+                "description": None,
+                "meta_data": {},
+                "revision": 1,
+            },
+            "nodes": [],
+            "edges": [],
+            "node_templates": [],
+            "handle_templates": [],
+        },
+    )
+    assert compiled.valid and compiled.graph is not None, compiled.diagnostics
+    plan, jobs = ExecutionPlanBuilder().build(
+        compiled.graph,
+        run_mode="normal",
+        target_node_uuid=None,
+    )
+    action_plan_node = next(
+        node for node in plan["nodes"] if node["uuid"] == NODE_UUID
+    )
+    # 固定值来自源码而非工作流输入时，生产计划不会生成节点 input_bindings。
+    action_plan_node.pop("input_bindings", None)
+
+    prepared = prepare_task_input(
+        graph=compiled.graph,
+        raw_input={"resource": {"uuid": OWNER_MATERIAL_UUID}},
+        execution_plan=plan,
+        jobs=jobs,
+        resource_resolver=lambda _uuid: {
+            "uuid": OWNER_MATERIAL_UUID,
+            "resource_template_uuid": RESOURCE_TEMPLATE_UUID,
+        },
+        site_selection_resolver=lambda request: {
+            "site_uuids": [GROUP_SITE_A_UUID],
+            "fingerprint": f"sha256:{request['exact_site_reference']}",
+        },
+    )
+
+    action_node = next(
+        node for node in prepared.execution_plan["nodes"] if node["uuid"] == NODE_UUID
+    )
+    assert "site" not in action_node["param"]
+    assert action_node["execution_policy"]["target_site_group"] == [GROUP_SITE_A_UUID]
+
+
 def test_site_group_marker_compiles_to_stable_site_selector_binding() -> None:
     """命名库位组必须作为逻辑选择器进入候选图并保持源码固定点。
 

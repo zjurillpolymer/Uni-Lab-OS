@@ -93,7 +93,7 @@ from unilabos.resources.resource_tracker import (
 from unilabos.ros.utils.driver_creator import WorkstationNodeCreator, PyLabRobotCreator, DeviceClassCreator
 from rclpy.task import Task, Future
 from unilabos.utils.import_manager import default_manager
-from unilabos.utils.log import info, debug, warning, error, critical, logger, trace
+from unilabos.utils.log import info, debug, warning, error, critical, logger, trace, is_detailed_logging_enabled
 from unilabos.utils.tracing import (
     add_event,
     attach_workflow_execution_identity,
@@ -113,7 +113,7 @@ from unilabos.utils.type_check import (
     get_result_info_str,
     get_type_class,
 )
-from unilabos.utils.exception import DeviceActionError
+from unilabos.utils.exception import DeviceActionError, TimeoutException
 
 if TYPE_CHECKING:
     from pylabrobot.resources import Resource as ResourcePLR
@@ -248,6 +248,21 @@ def _native_driver_result_failed(
     if value is False:
         return True
     return False
+
+
+def _native_driver_result_error(
+    device_id: str, action_name: str, action_type: Any, value: Any
+) -> DeviceActionError | None:
+    """把驱动约定的失败返回值统一转换为策略链可处理的异常。"""
+
+    if not _native_driver_result_failed(action_name, action_type, value):
+        return None
+    return DeviceActionError(
+        device_id,
+        action_name,
+        "驱动返回失败结果",
+        return_value=value,
+    )
 
 
 class RclpyAsyncMutex:
@@ -472,7 +487,8 @@ class PropertyPublisher:
     def get_property(self):
         if asyncio.iscoroutinefunction(self.get_method):
             # 如果是异步函数，运行事件循环并等待结果
-            self.node.lab_logger().trace(f"【.get_property】获取异步属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property】获取异步属性: {self.name}")
             loop = self.__loop
             if loop:
                 future = asyncio.run_coroutine_threadsafe(self.get_method(), loop)
@@ -483,14 +499,16 @@ class PropertyPublisher:
                 return None
         else:
             # 如果是同步函数，直接调用并返回结果
-            self.node.lab_logger().trace(f"【.get_property】获取同步属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property】获取同步属性: {self.name}")
             self._value = self.get_method()
             return self._value
 
     async def get_property_async(self):
         try:
             # 获取异步属性值
-            self.node.lab_logger().trace(f"【.get_property_async】异步获取属性: {self.name}")
+            if is_detailed_logging_enabled():
+                self.node.lab_logger().trace(f"【.get_property_async】异步获取属性: {self.name}")
             self._value = await self.get_method()
         except Exception as e:
             self.node.lab_logger().error(f"【.get_property_async】获取异步属性出错: {str(e)}")
@@ -975,22 +993,51 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             self.lab_logger().warning(f"[HostLink] 物料查询失败，回退 ROS service: {e}")
             return None
 
-    async def get_resource(self, resources_uuid: List[str], with_children: bool = True) -> ResourceTreeSet:
-        """
-        根据资源UUID列表获取资源树
+    async def get_resource(
+        self,
+        resources_uuid: List[str],
+        with_children: bool = True,
+    ) -> ResourceTreeSet:
+        """按稳定 UUID 读取动作参数所需的资源树。
 
-        Args:
-            resources_uuid: 资源UUID列表
-            with_children: 是否包含子节点，默认为True
+        参数：``resources_uuid`` 是调度器（Scheduler）已解析的物料（Material）
+        或设备资源稳定身份；``with_children`` 控制是否保留查询根的后代。
+        返回：可供原生 ROS 动作转换的 ``ResourceTreeSet``。
 
-        Returns:
-            ResourceTreeSet: 资源树集合
+        Edge Runtime 只能读取注册阶段安装的 Backend 物料投影，不能回退到同进程
+        Host 的遗留 ROS 服务；本地组合进程继续优先使用 HostLink，再使用 ROS 服务。
+        异常：生产投影未安装、身份未知或遗留服务返回无效 JSON 时失败关闭。
         """
+
+        # ``normalized_uuids`` 是本次原生动作请求的稳定资源身份集合。
+        normalized_uuids = [str(resource_uuid).strip() for resource_uuid in resources_uuid]
+        if (
+            BasicConfig.control_plane == "backend"
+            or BasicConfig.process_role == "edge_runtime"
+        ):
+            # ``raw_nodes`` 来自 Edge 注册时冻结的 Backend 身份投影，不发起新的
+            # 本机 HTTP/ROS 查询，因此不会把 Edge 镜像误当库存权威。
+            raw_nodes = query_production_resource_nodes_sync(normalized_uuids)
+            if not with_children:
+                requested_uuids = set(normalized_uuids)
+                raw_nodes = [
+                    node
+                    for node in raw_nodes
+                    if str(node.get("uuid") or node.get("unilabos_uuid") or "")
+                    in requested_uuids
+                ]
+            tree_set = ResourceTreeSet.from_raw_dict_list(raw_nodes)
+            self.lab_logger().trace(
+                "从 Backend 物料投影读取资源结果: "
+                f"{len(tree_set.trees)} 个资源树"
+            )
+            return tree_set
+
         # TCP 优先：HostLink 在线时逐 uuid 向 host 的物料服务查询
         link_nodes: Optional[List[Dict[str, Any]]] = None
-        if resources_uuid:
+        if normalized_uuids:
             collected: List[Dict[str, Any]] = []
-            for res_uuid in resources_uuid:
+            for res_uuid in normalized_uuids:
                 nodes = self._hostlink_get_nodes(uuid=res_uuid, with_children=with_children)
                 if nodes is None:
                     collected = []
@@ -1006,7 +1053,7 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             SerialCommand.Request(
                 command=json.dumps(
                     {
-                        "data": {"data": resources_uuid, "with_children": with_children},
+                        "data": {"data": normalized_uuids, "with_children": with_children},
                         "action": "get",
                     }
                 )
@@ -2293,9 +2340,10 @@ class BaseROS2DeviceNode(Node, Generic[T]):
         action_value_mapping: Dict[str, Any],
         action_func,
         action_kwargs: Dict[str, Any],
-    ) -> Tuple[Optional[Dict[str, Any]], str]:
+    ) -> Tuple[Optional[Dict[str, Any]], str, Dict[str, Any]]:
         """Resolve policy from the real business action, including JSON command routes."""
 
+        action_meta = dict(getattr(action_func, "_action_registry_meta", {}) or {})
         policy = getattr(action_func, "_action_error_policy", None)
         report_action_name = action_name
         if action_name in {"_execute_driver_command", "_execute_driver_command_async"}:
@@ -2304,6 +2352,9 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                 report_action_name = str(command["function_name"])
                 method_name = self._resolve_driver_method_name(report_action_name)
                 real_func = getattr(self.driver_instance, method_name)
+                action_meta = dict(
+                    getattr(real_func, "_action_registry_meta", {}) or {}
+                )
                 policy = getattr(real_func, "_action_error_policy", None)
                 if policy is None:
                     mapping = self._action_value_mappings.get(
@@ -2311,11 +2362,13 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                     ) or self._action_value_mappings.get(f"auto-{report_action_name}")
                     if isinstance(mapping, dict):
                         policy = mapping.get("error_policy")
+                        action_meta = {**mapping, **action_meta}
             except (AttributeError, KeyError, TypeError, ValueError, json.JSONDecodeError):
                 policy = None
         if policy is None:
             policy = action_value_mapping.get("error_policy")
-        return policy, report_action_name
+        action_meta = {**action_value_mapping, **action_meta}
+        return policy, report_action_name, action_meta
 
     def handle_action_error_decision(
         self,
@@ -2381,6 +2434,21 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             pass
         return False
 
+    def _error_device_snapshot(self) -> Dict[str, Any]:
+        """读取驱动可选的错误快照；快照失败不影响错误上报。"""
+
+        snapshot = {"device_id": self.device_id, "device_uuid": self.uuid}
+        getter = getattr(self.driver_instance, "get_error_snapshot", None)
+        if not callable(getter):
+            return snapshot
+        try:
+            value = getter()
+            if isinstance(value, dict):
+                snapshot.update(value)
+        except Exception:  # noqa: BLE001 - 原异常必须优先被保留
+            self.lab_logger().warning("采集设备错误快照失败")
+        return snapshot
+
     async def _request_action_error_decision(
         self,
         exc: BaseException,
@@ -2409,9 +2477,14 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             "task_id": context.get("task_id", ""),
             "job_id": context.get("job_id", ""),
             "exception_type": type(exc).__name__,
+            "exception_category": getattr(exc, "category", "exception"),
+            "exception_severity": getattr(exc, "severity", "error"),
             "error_message": str(exc),
             "traceback": "".join(traceback.format_exception(type(exc), exc, exc.__traceback__)),
+            "device_snapshot": self._error_device_snapshot(),
             "options": options,
+            "decision_timeout_seconds": timeout_seconds,
+            "default_on_decision_timeout": default_on_timeout,
             "require_confirmation": True,
         }
         inject_trace_context(report)
@@ -2429,7 +2502,21 @@ class BaseROS2DeviceNode(Node, Generic[T]):
         if not sent:
             with self._pending_action_error_decisions_lock:
                 self._pending_action_error_decisions.pop(decision_id, None)
-            raise exc
+            # 边云通信短暂不可用时不让动作停在未收束状态。按超时默认值继续
+            # 本地决策流程，调用方仍会先等待已超时的动作结束。
+            add_event(
+                "action.decision.unavailable",
+                {
+                    "action.decision.id": decision_id,
+                    "action.decision.default": default_on_timeout,
+                },
+            )
+            return {
+                "decision_id": decision_id,
+                "job_id": context.get("job_id", ""),
+                "action": default_on_timeout,
+                "reason": "decision_transport_unavailable",
+            }
 
         deadline = time.monotonic() + timeout_seconds
         try:
@@ -2478,6 +2565,8 @@ class BaseROS2DeviceNode(Node, Generic[T]):
         action_name: str,
         context: Dict[str, Any],
         policy: Dict[str, Any],
+        run_fallback_action=None,
+        wait_for_timed_out_action=None,
     ) -> ActionDecisionOutcome:
         """Resolve an action exception through retry, skip, or operator intervention."""
 
@@ -2502,16 +2591,38 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             },
         )
         while True:
+            # 无论后续是否仍有可选项，都必须先收束上一次 timeout 的不可取消
+            # driver 调用；否则 retry-only 策略耗尽时会提前释放当前动作。
+            if wait_for_timed_out_action is not None:
+                settled_outcome = await wait_for_timed_out_action()
+                if isinstance(settled_outcome, ActionDecisionOutcome):
+                    return settled_outcome
             options = resolve_error_options(policy, exc)
+            can_retry = retries < max_retries
+            if not can_retry:
+                options = [
+                    option for option in options
+                    if option.get("action") != "retry"
+                    and option.get("then") != "retry"
+                ]
             if not options:
                 raise exc
+            allowed_actions = {str(option.get("action")) for option in options}
+            # 超时默认值必须是本轮仍可达的路径。abort 是框架始终可用的
+            # 收束动作，即使没有显式展示终止按钮也允许使用。
+            effective_default = default_on_timeout
+            if (
+                effective_default != "abort"
+                and effective_default not in allowed_actions
+            ):
+                effective_default = "abort"
             decision = await self._request_action_error_decision(
                 exc,
                 action_name,
                 context,
                 options,
                 timeout_seconds,
-                default_on_timeout,
+                effective_default,
             )
             selected_option = decision.get("option")
             if isinstance(selected_option, dict):
@@ -2520,9 +2631,30 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                     decision["result"] = selected_option["result"]
             else:
                 selected = str(decision.get("action") or selected_option or "abort")
-            allowed_actions = {str(option.get("action")) for option in options}
-            if selected not in allowed_actions and decision.get("reason") != "decision_timeout":
+            if selected not in allowed_actions and decision.get("reason") not in {
+                "decision_timeout",
+                "decision_transport_unavailable",
+            }:
                 raise RuntimeError(f"backend returned unconfigured error option: {selected}")
+
+            configured_option = next(
+                (option for option in options if option.get("action") == selected),
+                None,
+            )
+            # 2.6 的恢复动作在边缘端执行，随后按 then 继续原动作、跳过或终止。
+            # 没有 then 的旧策略仍沿用“服务端返回恢复结果”的历史语义。
+            if (
+                configured_option
+                and configured_option.get("fallback_action")
+                and configured_option.get("then")
+                and run_fallback_action is not None
+            ):
+                try:
+                    await run_fallback_action(configured_option)
+                except Exception as fallback_exc:
+                    exc = fallback_exc
+                    continue
+                selected = str(configured_option["then"])
 
             if selected == "retry":
                 if retries >= max_retries:
@@ -2573,6 +2705,11 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                 return ActionDecisionOutcome(
                     decision.get("result", decision.get("return_value")),
                     SUCCESS_TYPE_SKIP,
+                    "".join(
+                        traceback.format_exception(
+                            type(exc), exc, exc.__traceback__
+                        )
+                    ),
                 )
             if selected == "abort":
                 add_event(
@@ -2601,6 +2738,7 @@ class BaseROS2DeviceNode(Node, Generic[T]):
         ):
             # 初始化结果信息变量
             execution_error = ""
+            execution_audit_error = ""
             execution_exception: Optional[BaseException] = None
             execution_success = False
             action_return_value = None
@@ -2631,22 +2769,133 @@ class BaseROS2DeviceNode(Node, Generic[T]):
             action_kwargs = convert_from_ros_msg_with_mapping(goal, action_value_mapping["goal"])
             self.lab_logger().debug(f"任务 {ACTION.__name__} 接收到原始目标: {str(action_kwargs)[:1000]}")
             self.lab_logger().trace(f"任务 {ACTION.__name__} 接收到原始目标: {action_kwargs}")
-            error_policy, report_action_name = self._resolve_runtime_error_policy(
+            error_policy, report_action_name, runtime_settings = self._resolve_runtime_error_policy(
                 action_name,
                 action_value_mapping,
                 ACTION,
                 action_kwargs,
             )
 
-            async def _retry_action_once():
-                if asyncio.iscoroutinefunction(ACTION):
-                    return await ACTION(**action_kwargs)
-                retry_future = submit_with_context(
-                    self._executor, ACTION, **action_kwargs
+            exception_handling = bool(runtime_settings.get("exception_handling", True))
+
+            def _timeout_limit() -> Tuple[Optional[float], str]:
+                configured = [
+                    (runtime_settings.get("timeout"), "hard"),
+                    (runtime_settings.get("execution_timeout"), "execution"),
+                ]
+                valid = [
+                    (float(seconds), kind)
+                    for seconds, kind in configured
+                    if isinstance(seconds, (int, float)) and not isinstance(seconds, bool) and seconds > 0
+                ]
+                return min(valid, default=(None, "hard"), key=lambda item: item[0])
+
+            # 一个 action 在任意时刻最多只有一个不可取消的执行实例。首次调用和
+            # retry 共用这个槽位；一旦超时，后续任何决策都会先等该实例收束。
+            in_flight_future = None
+
+            async def _await_action_until_deadline(
+                action_future,
+                timeout: Optional[float],
+                timeout_kind: str,
+                started_at: Optional[float] = None,
+            ) -> Any:
+                """等待动作 future；超时则登记未收束动作并返回统一异常。"""
+
+                nonlocal in_flight_future
+                started_at = started_at if started_at is not None else time.monotonic()
+                while not action_future.done():
+                    if (
+                        timeout is not None
+                        and time.monotonic() - started_at >= timeout
+                    ):
+                        in_flight_future = action_future
+                        return TimeoutException(
+                            f"动作 {report_action_name} {timeout_kind} 超时（{timeout}s）",
+                            kind=timeout_kind,
+                            seconds=timeout,
+                        )
+                    await ROS2DeviceNode.async_wait_for(
+                        self, 0.05, callback_group=self.callback_group
+                    )
+                try:
+                    return action_future.result()
+                except BaseException as exc:  # 动作异常也作为结果进入统一决策漏斗
+                    return exc
+
+            async def _wait_for_in_flight_action():
+                """等待已超时的动作收束，并保留其晚到的成功结果。"""
+
+                nonlocal in_flight_future
+                future_to_settle = in_flight_future
+                if future_to_settle is None:
+                    return
+                self.lab_logger().warning(
+                    f"动作 {report_action_name} 已超时，等待原执行结束后再处理决策"
                 )
-                while not retry_future.done():
-                    await self.sleep(0.02)
-                return retry_future.result()
+                while not future_to_settle.done():
+                    await ROS2DeviceNode.async_wait_for(
+                        self, 0.05, callback_group=self.callback_group
+                    )
+                try:
+                    settled_result = future_to_settle.result()
+                    settled_normally = True
+                except BaseException:
+                    # 原始失败已进入错误策略；这里只负责保证不并发。
+                    settled_result = None
+                    settled_normally = False
+                if in_flight_future is future_to_settle:
+                    in_flight_future = None
+                if not settled_normally or _native_driver_result_failed(
+                    action_name, action_type, settled_result
+                ):
+                    return None
+                return ActionDecisionOutcome(settled_result, SUCCESS_TYPE_NORMAL)
+
+            async def _run_fallback_action(option: Dict[str, Any]):
+                fallback = dict(option["fallback_action"])
+                method_name = self._resolve_driver_method_name(
+                    str(fallback["action_name"])
+                )
+                fallback_func, _ = self.get_real_function(
+                    self.driver_instance, method_name
+                )
+                params = dict(fallback.get("params") or {})
+                if asyncio.iscoroutinefunction(fallback_func):
+                    result = await fallback_func(**params)
+                else:
+                    future = submit_with_context(self._executor, fallback_func, **params)
+                    while not future.done():
+                        await self.sleep(0.02)
+                    result = future.result()
+                native_error = _native_driver_result_error(
+                    self.device_id, method_name, None, result
+                )
+                if native_error is not None:
+                    raise native_error
+                return result
+
+            async def _retry_action_once():
+                timeout_seconds, timeout_kind = _timeout_limit()
+                if asyncio.iscoroutinefunction(ACTION):
+                    retry_future = ROS2DeviceNode.run_async_func(
+                        ACTION, trace_error=False, **action_kwargs
+                    )
+                else:
+                    retry_future = submit_with_context(
+                        self._executor, ACTION, **action_kwargs
+                    )
+                result = await _await_action_until_deadline(
+                    retry_future, timeout_seconds, timeout_kind
+                )
+                if isinstance(result, BaseException):
+                    raise result
+                native_error = _native_driver_result_error(
+                    self.device_id, report_action_name, action_type, result
+                )
+                if native_error is not None:
+                    raise native_error
+                return result
 
             error_skip = False
             # 向Host查询物料当前状态，如果是host本身的增加物料的请求，则直接跳过
@@ -2725,6 +2974,9 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                             break
 
             time_start = time.time()
+            action_started_at = time.monotonic()
+            timeout_seconds, timeout_kind = _timeout_limit()
+
             time_overall = 100
             future = None
             if not error_skip:
@@ -2816,42 +3068,12 @@ class BaseROS2DeviceNode(Node, Generic[T]):
 
             # 等待 action 完成
             if future is not None:
-                if isinstance(future, Task):
-                    # rclpy Task 的 done callback 可能由当前 Action 所在的同一
-                    # executor worker 触发。长耗时动作下直接 await 偶尔不会重新
-                    # 调度外层 Action 协程，导致驱动已返回但 ROS result 永不发布。
-                    # 用短时 rclpy timer 主动让出 executor，并在 Task 完成后读取
-                    # 结果，保证 HostNode 一定能收到终态。
-                    while not future.done():
-                        await ROS2DeviceNode.async_wait_for(
-                            self,
-                            0.05,
-                            callback_group=self.callback_group,
-                        )
-                    try:
-                        _raw_result = future.result()
-                    except Exception as e:
-                        _raw_result = e
-                else:
-                    # concurrent.futures.Future（同步 action）：用 rclpy 兼容的轮询
-                    _poll_future = Future()
-
-                    def _on_sync_done(fut):
-                        async def _wake():
-                            if not _poll_future.done():
-                                _poll_future.set_result(None)
-
-                        # ThreadPoolExecutor callbacks run outside the rclpy executor.
-                        # Wake the awaiting action coroutine from the executor thread;
-                        # otherwise it may only resume when the executor naturally wakes up.
-                        rclpy.get_global_executor().create_task(_wake())
-
-                    future.add_done_callback(_on_sync_done)
-                    await _poll_future
-                    try:
-                        _raw_result = future.result()
-                    except Exception as e:
-                        _raw_result = e
+                _raw_result = await _await_action_until_deadline(
+                    future,
+                    timeout_seconds,
+                    timeout_kind,
+                    action_started_at,
+                )
 
                 # 确保 execution_error/success 被正确设置（不依赖 done callback 时序）
                 if isinstance(_raw_result, BaseException):
@@ -2869,12 +3091,18 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                         action_name, action_type, _raw_result
                     )
                     if not execution_success:
-                        execution_error = (
-                            "driver returned an unsuccessful native action result: "
-                            f"{_raw_result!r}"
+                        _raw_result = _native_driver_result_error(
+                            self.device_id,
+                            report_action_name,
+                            action_type,
+                            _raw_result,
                         )
+                        assert _raw_result is not None
+                        execution_error = str(_raw_result)
+                        action_return_value = _raw_result
+                        execution_exception = _raw_result
 
-                if isinstance(_raw_result, BaseException) and error_policy:
+                if isinstance(_raw_result, BaseException) and exception_handling and error_policy:
                     try:
                         decision_outcome = await self._resolve_action_exception(
                             _raw_result,
@@ -2882,9 +3110,12 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                             report_action_name,
                             job_context,
                             error_policy,
+                            _run_fallback_action,
+                            _wait_for_in_flight_action,
                         )
                         action_return_value = decision_outcome.value
                         execution_suc_type = decision_outcome.suc_type
+                        execution_audit_error = decision_outcome.audit_error
                         execution_error = ""
                         execution_exception = None
                         execution_success = True
@@ -2988,7 +3219,7 @@ class BaseROS2DeviceNode(Node, Generic[T]):
                         result_msg,
                         attr_name,
                         get_result_info_str(
-                            execution_error,
+                            execution_audit_error or execution_error,
                             execution_success,
                             action_return_value,
                             suc_type=execution_suc_type,

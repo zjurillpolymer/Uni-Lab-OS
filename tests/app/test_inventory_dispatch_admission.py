@@ -22,6 +22,11 @@ from unilabos.app.scheduler.inventory.dispatch_admission import (
     OperateInPlaceCondition,
     TransferDispatchCondition,
 )
+from unilabos.app.scheduler.inventory.domain import (
+    InsufficientStock,
+    MaterialRequirement,
+    MaterialSourceAdmissionRequest,
+)
 from unilabos.app.scheduler.inventory.service import InventoryService
 from unilabos.app.scheduler.inventory.station_resource import (
     AliquotReceipt,
@@ -71,6 +76,7 @@ def station_inventory(
     )["templates"]
     template_by_name = {item["name"]: item["uuid"] for item in templates}
     identities: dict[str, str] = {}
+    identities["vessel_template"] = template_by_name["test.dispatch-vessel"]
     for key, barcode in (
         ("source_device", "SOURCE-DEVICE"),
         ("target_device", "TARGET-DEVICE"),
@@ -225,6 +231,369 @@ def _request(
     )
 
 
+def _material_only_request(
+    identities: dict[str, str],
+    *,
+    task_uuid: str,
+    job_uuid: str,
+) -> DispatchAdmissionRequest:
+    """构造一个未声明 MaterialSource、但动作直接使用具体物料的派发请求。"""
+
+    return DispatchAdmissionRequest(
+        effect_uuid=f"50000000-0000-4000-8000-{job_uuid[-12:]}",
+        task_uuid=task_uuid,
+        job_uuid=job_uuid,
+        attempt=1,
+        parameter_hash=f"sha256:material-only:{job_uuid}",
+        expected_change_set={"kind": "no_inventory_change"},
+        resources=(
+            DispatchResource(
+                lock_key=f"material/{identities['vessel']}/exclusive",
+                scope="material",
+                material_uuid=identities["vessel"],
+            ),
+        ),
+    )
+
+
+def _admit_vessel_source(
+    service: InventoryService,
+    identities: dict[str, str],
+    *,
+    task_uuid: str,
+    custody_policy: str,
+) -> None:
+    """通过公开任务准入入口绑定测试容器。"""
+
+    service.admit_material_sources(
+        task_uuid,
+        [
+            MaterialSourceAdmissionRequest(
+                node_id="source-node",
+                resource_template_uuid=identities["vessel_template"],
+                custody_policy=custody_policy,
+                requirement=MaterialRequirement(
+                    template_id=identities["vessel_template"],
+                    instance_uuid=identities["vessel"],
+                ),
+            )
+        ],
+    )
+
+
+def test_task_exclusive_source_blocks_foreign_action_without_source_declaration(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """Task A 的独占来源必须阻止未声明来源的 Task B 动作使用同一物料。"""
+
+    _store, service, identities = station_inventory
+    owner_task_uuid = "30000000-0000-4000-8000-000000000181"
+    foreign_task_uuid = "30000000-0000-4000-8000-000000000182"
+    _admit_vessel_source(
+        service,
+        identities,
+        task_uuid=owner_task_uuid,
+        custody_policy="task_exclusive",
+    )
+
+    decision = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid=foreign_task_uuid,
+            job_uuid="40000000-0000-4000-8000-000000000182",
+        )
+    )
+
+    assert decision.acquired is False
+    assert decision.wait_code == "task_material_claimed"
+    assert decision.blocking_task_uuid == owner_task_uuid
+
+    service.release_workflow(owner_task_uuid, reason="task_finished")
+    retried = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid=foreign_task_uuid,
+            job_uuid="40000000-0000-4000-8000-000000000182",
+        )
+    )
+    assert retried.acquired is True
+
+
+def test_task_exclusive_source_allows_another_action_of_the_owner_task(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """任务级独占不应阻止同一 Task 内不同动作按 JobActiveUse 仲裁。"""
+
+    _store, service, identities = station_inventory
+    owner_task_uuid = "30000000-0000-4000-8000-000000000183"
+    _admit_vessel_source(
+        service,
+        identities,
+        task_uuid=owner_task_uuid,
+        custody_policy="task_exclusive",
+    )
+
+    decision = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid=owner_task_uuid,
+            job_uuid="40000000-0000-4000-8000-000000000183",
+        )
+    )
+
+    assert decision.acquired is True
+
+
+def test_shared_source_does_not_block_foreign_action_before_job_lock(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """共享来源没有任务级占有；物料空闲时其他 Task 可直接取得动作锁。"""
+
+    _store, service, identities = station_inventory
+    _admit_vessel_source(
+        service,
+        identities,
+        task_uuid="30000000-0000-4000-8000-000000000184",
+        custody_policy="shared_source",
+    )
+
+    decision = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid="30000000-0000-4000-8000-000000000185",
+            job_uuid="40000000-0000-4000-8000-000000000185",
+        )
+    )
+
+    assert decision.acquired is True
+
+
+def test_active_foreign_material_action_blocks_task_exclusive_source_admission(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """反向竞态也要关闭：活动 JobActiveUse 期间不能新建外国任务独占。"""
+
+    _store, service, identities = station_inventory
+    active = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid="30000000-0000-4000-8000-000000000186",
+            job_uuid="40000000-0000-4000-8000-000000000186",
+        )
+    )
+    assert active.acquired is True
+
+    with pytest.raises(InsufficientStock, match="active action"):
+        _admit_vessel_source(
+            service,
+            identities,
+            task_uuid="30000000-0000-4000-8000-000000000187",
+            custody_policy="task_exclusive",
+        )
+
+
+@pytest.mark.parametrize("same_task", [False, True])
+def test_shared_material_job_active_use_releases_at_action_boundary(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+    same_task: bool,
+) -> None:
+    """共享物料每次只允许一个动作，前一动作释放后下一动作立即可用。"""
+
+    _store, service, identities = station_inventory
+    owner_task_uuid = "30000000-0000-4000-8000-000000000188"
+    _admit_vessel_source(
+        service,
+        identities,
+        task_uuid=owner_task_uuid,
+        custody_policy="shared_source",
+    )
+    first = service.station_resources.acquire_dispatch_permit(
+        _material_only_request(
+            identities,
+            task_uuid=owner_task_uuid,
+            job_uuid="40000000-0000-4000-8000-000000000188",
+        )
+    )
+    assert first.acquired and first.permit is not None
+
+    next_task_uuid = (
+        owner_task_uuid
+        if same_task
+        else "30000000-0000-4000-8000-000000000189"
+    )
+    next_request = _material_only_request(
+        identities,
+        task_uuid=next_task_uuid,
+        job_uuid="40000000-0000-4000-8000-000000000189",
+    )
+    blocked = service.station_resources.acquire_dispatch_permit(next_request)
+    assert blocked.acquired is False
+    assert blocked.wait_code == "resource_claimed"
+    assert blocked.blocking_job_uuid == first.permit.job_uuid
+
+    service.station_resources.transition_dispatch_permit(
+        first.permit.claim_uuid,
+        target_state="released",
+    )
+    admitted = service.station_resources.acquire_dispatch_permit(next_request)
+    assert admitted.acquired is True
+
+
+def test_dispatch_admission_request_preserves_legacy_condition_positions() -> None:
+    """新增资源字段不能改变三个既有条件参数的位置构造顺序。"""
+
+    transfer = TransferDispatchCondition(
+        material_uuid="material",
+        source_owner_material_uuid="source-owner",
+        source_site_uuid="source-site",
+        target_owner_material_uuid="target-owner",
+        target_site_uuid="target-site",
+        executor_material_uuid="executor",
+        gripper_site_uuid="gripper-site",
+    )
+    operate_in_place = OperateInPlaceCondition(
+        material_uuid="material",
+        site_owner_material_uuid="site-owner",
+        site_uuid="site",
+        device_material_uuid="device",
+    )
+    aliquot = AliquotDispatchCondition(
+        source_material_uuid="source",
+        target_material_uuids=("target",),
+    )
+
+    request = DispatchAdmissionRequest(
+        "effect",
+        "task",
+        "job",
+        1,
+        "sha256:parameters",
+        {},
+        (),
+        (),
+        (),
+        transfer,
+        operate_in_place,
+        aliquot,
+    )
+
+    assert request.transfer is transfer
+    assert request.operate_in_place is operate_in_place
+    assert request.aliquot is aliquot
+    assert request.shared_scope_lock_keys == ()
+    assert request.reserved_target_site_uuids == ()
+
+
+@pytest.mark.parametrize("scope", ["device", "material", "material_site"])
+def test_dispatch_resource_identity_mismatch_writes_nothing(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+    scope: str,
+) -> None:
+    """物理描述字段与 canonical key 错配时必须在写 Claim 前失败关闭。"""
+
+    store, service, identities = station_inventory
+    request = _request(identities)
+    resources = list(request.resources)
+    index = next(i for i, resource in enumerate(resources) if resource.scope == scope)
+    if scope == "device":
+        resources[index] = replace(
+            resources[index],
+            material_uuid=identities["target_device"],
+        )
+    elif scope == "material":
+        resources[index] = replace(
+            resources[index],
+            material_uuid=identities["source_device"],
+        )
+    else:
+        resources[index] = replace(
+            resources[index],
+            material_uuid=identities["target_device"],
+            site_uuid=TARGET_SITE,
+        )
+
+    with pytest.raises(DispatchAdmissionConflict, match="身份.*lock_key"):
+        service.station_resources.acquire_dispatch_permit(
+            replace(request, resources=tuple(resources))
+        )
+
+    assert store.query_all("SELECT * FROM station_execution_claim") == []
+    assert store.query_all("SELECT * FROM station_execution_lock_lease") == []
+    assert store.query_all("SELECT * FROM station_execution_fence_counter") == []
+
+
+@pytest.mark.parametrize("scope", ["device", "material"])
+def test_dispatch_non_site_resource_rejects_extra_site_identity(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+    scope: str,
+) -> None:
+    """Inventory 仍要求 descriptor 完整精确，且拒绝物理键外的 Site 身份。"""
+
+    store, service, identities = station_inventory
+    request = _request(identities)
+    resources = list(request.resources)
+    index = next(i for i, resource in enumerate(resources) if resource.scope == scope)
+    resources[index] = replace(resources[index], site_uuid=SOURCE_SITE)
+
+    with pytest.raises(DispatchAdmissionConflict, match="身份.*lock_key"):
+        service.station_resources.acquire_dispatch_permit(
+            replace(request, resources=tuple(resources))
+        )
+
+    assert store.query_all("SELECT * FROM station_execution_claim") == []
+    assert store.query_all("SELECT * FROM station_execution_lock_lease") == []
+    assert store.query_all("SELECT * FROM station_execution_fence_counter") == []
+
+
+def test_exact_physical_resource_identities_acquire_one_atomic_permit(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """三类规范物理描述与键身份完全一致时仍可共同签发 Permit。"""
+
+    store, service, identities = station_inventory
+    resources = (
+        DispatchResource(
+            lock_key=f"/devices/{identities['source_device']}",
+            scope="device",
+            material_uuid=identities["source_device"],
+        ),
+        DispatchResource(
+            lock_key=f"material/{identities['vessel']}/exclusive",
+            scope="material",
+            material_uuid=identities["vessel"],
+        ),
+        DispatchResource(
+            lock_key=(
+                f"material/{identities['source_device']}/site/{SOURCE_SITE}/exclusive"
+            ),
+            scope="material_site",
+            material_uuid=identities["source_device"],
+            site_uuid=SOURCE_SITE,
+        ),
+    )
+    request = DispatchAdmissionRequest(
+        effect_uuid="50000000-0000-4000-8000-000000000151",
+        task_uuid="30000000-0000-4000-8000-000000000151",
+        job_uuid="40000000-0000-4000-8000-000000000151",
+        attempt=1,
+        parameter_hash="sha256:exact-physical-identities",
+        expected_change_set={"kind": "no_inventory_change"},
+        resources=resources,
+    )
+
+    decision = service.station_resources.acquire_dispatch_permit(request)
+
+    assert decision.acquired is True
+    assert {fence.lock_key for fence in decision.fences} == {
+        resource.lock_key for resource in resources
+    }
+    assert store.query_one(
+        "SELECT COUNT(*) AS count FROM station_execution_lock_lease "
+        "WHERE claim_uuid=?",
+        (decision.claim_uuid,),
+    ) == {"count": 3}
+
+
 def test_transfer_conditions_and_all_claims_commit_in_one_inventory_transaction(
     station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
 ) -> None:
@@ -245,6 +614,290 @@ def test_transfer_conditions_and_all_claims_commit_in_one_inventory_transaction(
         "SELECT state,parameter_hash FROM station_execution_claim WHERE claim_uuid=?",
         (permit.claim_uuid,),
     ) == {"state": "prepared", "parameter_hash": "sha256:test-parameters"}
+
+
+def test_continuation_admission_releases_only_previous_job_claim_after_handoff(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """连续区间的物理预持有资源允许同任务后继接管，并收敛前一 Job Claim。"""
+
+    store, service, identities = station_inventory
+    shared_key = f"/devices/{identities['source_device']}"
+    trailing_key = f"/devices/{identities['target_device']}"
+    first_job = "40000000-0000-4000-8000-000000000201"
+    second_job = "40000000-0000-4000-8000-000000000202"
+    task_uuid = "30000000-0000-4000-8000-000000000201"
+
+    first = service.station_resources.acquire_dispatch_permit(
+        DispatchAdmissionRequest(
+            effect_uuid="50000000-0000-4000-8000-000000000201",
+            task_uuid=task_uuid,
+            job_uuid=first_job,
+            attempt=1,
+            parameter_hash="sha256:interval-first",
+            expected_change_set={"kind": "no_inventory_change"},
+            resources=(
+                DispatchResource(
+                    lock_key=shared_key,
+                    scope="device",
+                    material_uuid=identities["source_device"],
+                ),
+                DispatchResource(
+                    lock_key=trailing_key,
+                    scope="device",
+                    material_uuid=identities["target_device"],
+                ),
+            ),
+        )
+    )
+    assert first.acquired and first.permit is not None
+    service.station_resources.transition_dispatch_permit(
+        first.permit.claim_uuid,
+        target_state="reserved",
+    )
+    service.station_resources.transition_dispatch_permit(
+        first.permit.claim_uuid,
+        target_state="running",
+    )
+    service.station_resources.retain_dispatch_permit_resources(
+        first.permit.claim_uuid,
+        keep_lock_keys=(shared_key,),
+    )
+
+    second = service.station_resources.acquire_dispatch_permit(
+        DispatchAdmissionRequest(
+            effect_uuid="50000000-0000-4000-8000-000000000202",
+            task_uuid=task_uuid,
+            job_uuid=second_job,
+            attempt=1,
+            parameter_hash="sha256:interval-second",
+            expected_change_set={"kind": "no_inventory_change"},
+            resources=(
+                DispatchResource(
+                    lock_key=shared_key,
+                    scope="device",
+                    material_uuid=identities["source_device"],
+                ),
+            ),
+            preheld_lock_keys=(shared_key,),
+            preheld_job_uuids=(first_job,),
+        )
+    )
+    assert second.acquired and second.permit is not None
+    assert second.permit.claim_uuid != first.permit.claim_uuid
+    service.station_resources.release_preheld_dispatch_claims(
+        task_uuid=task_uuid,
+        job_uuids=(first_job,),
+        lock_keys=(shared_key,),
+    )
+    assert store.query_one(
+        "SELECT state FROM station_execution_claim WHERE claim_uuid=?",
+        (first.permit.claim_uuid,),
+    ) == {"state": "released"}
+    assert store.query_one(
+        "SELECT state FROM station_execution_claim WHERE claim_uuid=?",
+        (second.permit.claim_uuid,),
+    ) == {"state": "prepared"}
+    assert store.query_all(
+        "SELECT lock_key FROM station_execution_lock_lease "
+        "WHERE claim_uuid=? AND state <> 'released'",
+        (first.permit.claim_uuid,),
+    ) == []
+
+
+def test_preheld_admission_rejects_missing_active_predecessor_without_writes(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """声明预持有资源却没有活动前驱租约时必须关闭失败且不写新凭据。"""
+
+    store, service, identities = station_inventory
+    shared_key = f"/devices/{identities['source_device']}"
+    successor_job = "40000000-0000-4000-8000-000000000222"
+    before = {
+        "claims": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_claim"
+        ),
+        "leases": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_lock_lease"
+        ),
+        "fences": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_fence_counter"
+        ),
+    }
+
+    with pytest.raises(
+        DispatchAdmissionConflict,
+        match="连续区间预持有资源缺少活动前驱租约",
+    ):
+        service.station_resources.acquire_dispatch_permit(
+            DispatchAdmissionRequest(
+                effect_uuid="50000000-0000-4000-8000-000000000222",
+                task_uuid="30000000-0000-4000-8000-000000000222",
+                job_uuid=successor_job,
+                attempt=1,
+                parameter_hash="sha256:missing-preheld-predecessor",
+                expected_change_set={"kind": "no_inventory_change"},
+                resources=(
+                    DispatchResource(
+                        lock_key=shared_key,
+                        scope="device",
+                        material_uuid=identities["source_device"],
+                    ),
+                ),
+                preheld_lock_keys=(shared_key,),
+                preheld_job_uuids=("40000000-0000-4000-8000-000000000221",),
+            )
+        )
+
+    assert store.query_one(
+        "SELECT claim_uuid FROM station_execution_claim WHERE job_uuid=?",
+        (successor_job,),
+    ) is None
+    assert {
+        "claims": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_claim"
+        ),
+        "leases": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_lock_lease"
+        ),
+        "fences": store.query_one(
+            "SELECT COUNT(*) AS count FROM station_execution_fence_counter"
+        ),
+    } == before
+
+
+def test_preheld_admission_rejects_released_predecessor_without_writes(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """已释放的前驱租约不能证明区间仍连续，也不能推进 Fence。"""
+
+    store, service, identities = station_inventory
+    shared_key = f"/devices/{identities['source_device']}"
+    task_uuid = "30000000-0000-4000-8000-000000000231"
+    predecessor_job = "40000000-0000-4000-8000-000000000231"
+    successor_job = "40000000-0000-4000-8000-000000000232"
+    predecessor = service.station_resources.acquire_dispatch_permit(
+        DispatchAdmissionRequest(
+            effect_uuid="50000000-0000-4000-8000-000000000231",
+            task_uuid=task_uuid,
+            job_uuid=predecessor_job,
+            attempt=1,
+            parameter_hash="sha256:released-preheld-predecessor",
+            expected_change_set={"kind": "no_inventory_change"},
+            resources=(
+                DispatchResource(
+                    lock_key=shared_key,
+                    scope="device",
+                    material_uuid=identities["source_device"],
+                ),
+            ),
+        )
+    )
+    assert predecessor.acquired and predecessor.permit is not None
+    service.station_resources.transition_dispatch_permit(
+        predecessor.permit.claim_uuid,
+        target_state="released",
+    )
+    fence_before = store.query_one(
+        "SELECT last_fencing_token FROM station_execution_fence_counter "
+        "WHERE lock_key=?",
+        (shared_key,),
+    )
+
+    with pytest.raises(
+        DispatchAdmissionConflict,
+        match="连续区间预持有资源缺少活动前驱租约",
+    ):
+        service.station_resources.acquire_dispatch_permit(
+            DispatchAdmissionRequest(
+                effect_uuid="50000000-0000-4000-8000-000000000232",
+                task_uuid=task_uuid,
+                job_uuid=successor_job,
+                attempt=1,
+                parameter_hash="sha256:released-preheld-successor",
+                expected_change_set={"kind": "no_inventory_change"},
+                resources=(
+                    DispatchResource(
+                        lock_key=shared_key,
+                        scope="device",
+                        material_uuid=identities["source_device"],
+                    ),
+                ),
+                preheld_lock_keys=(shared_key,),
+                preheld_job_uuids=(predecessor_job,),
+            )
+        )
+
+    assert store.query_one(
+        "SELECT claim_uuid FROM station_execution_claim WHERE job_uuid=?",
+        (successor_job,),
+    ) is None
+    assert store.query_one(
+        "SELECT last_fencing_token FROM station_execution_fence_counter "
+        "WHERE lock_key=?",
+        (shared_key,),
+    ) == fence_before
+
+
+def test_preheld_admission_requires_the_declared_previous_job_identity(
+    station_inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """同 Task 的其他并行 Job 不能冒充声明前驱来证明连续占用。"""
+
+    store, service, identities = station_inventory
+    shared_key = f"/devices/{identities['source_device']}"
+    first_job = "40000000-0000-4000-8000-000000000211"
+    second_job = "40000000-0000-4000-8000-000000000212"
+    task_uuid = "30000000-0000-4000-8000-000000000211"
+    first = service.station_resources.acquire_dispatch_permit(
+        DispatchAdmissionRequest(
+            effect_uuid="50000000-0000-4000-8000-000000000211",
+            task_uuid=task_uuid,
+            job_uuid=first_job,
+            attempt=1,
+            parameter_hash="sha256:preheld-first",
+            expected_change_set={"kind": "no_inventory_change"},
+            resources=(
+                DispatchResource(
+                    lock_key=shared_key,
+                    scope="device",
+                    material_uuid=identities["source_device"],
+                ),
+            ),
+        )
+    )
+    assert first.acquired and first.permit is not None
+    service.station_resources.transition_dispatch_permit(
+        first.permit.claim_uuid,
+        target_state="reserved",
+    )
+    with pytest.raises(
+        DispatchAdmissionConflict,
+        match="连续区间预持有资源缺少活动前驱租约",
+    ):
+        service.station_resources.acquire_dispatch_permit(
+            DispatchAdmissionRequest(
+                effect_uuid="50000000-0000-4000-8000-000000000212",
+                task_uuid=task_uuid,
+                job_uuid=second_job,
+                attempt=1,
+                parameter_hash="sha256:preheld-second",
+                expected_change_set={"kind": "no_inventory_change"},
+                resources=(
+                    DispatchResource(
+                        lock_key=shared_key,
+                        scope="device",
+                        material_uuid=identities["source_device"],
+                    ),
+                ),
+                preheld_lock_keys=(shared_key,),
+                preheld_job_uuids=("40000000-0000-4000-8000-000000000299",),
+            )
+        )
+    assert store.query_one(
+        "SELECT claim_uuid FROM station_execution_claim WHERE job_uuid=?",
+        (second_job,),
+    ) is None
 
 
 def test_gate7_claims_fallback_site_in_same_inventory_transaction(
@@ -1181,3 +1834,138 @@ def test_released_prepared_permit_can_be_reprepared_for_same_job_attempt(
     assert [fence.fencing_token for fence in replay.fences] == [
         fence.fencing_token + 1 for fence in first.fences
     ]
+
+
+def test_split_pick_reserves_empty_final_site_in_same_atomic_claim(station_inventory):
+    """即使本次只取到夹爪，也先预留最终放料位。"""
+    store, inventory, identities = station_inventory
+    request = replace(
+        _request(identities),
+        transfer=None,
+        expected_change_set={"kind": "no_inventory_change"},
+        reserved_target_site_uuids=(TARGET_SITE,),
+    )
+    decision = inventory.station_resources.acquire_dispatch_permit(request)
+    assert decision.acquired
+    assert any(f.lock_key.endswith(f"/{TARGET_SITE}/exclusive") for f in decision.fences)
+
+
+def test_occupied_future_site_rolls_back_entire_pick_claim(station_inventory):
+    """未来目标被占用时不能先取得机械臂或部分资源。"""
+    from unilabos.app.scheduler.inventory.dispatch_admission import TemporaryDispatchCondition
+
+    store, inventory, identities = station_inventory
+    request = replace(
+        _request(identities),
+        transfer=None,
+        expected_change_set={"kind": "no_inventory_change"},
+        reserved_target_site_uuids=(SOURCE_SITE,),
+    )
+    with pytest.raises((TemporaryDispatchCondition, StationResourceError)):
+        inventory.station_resources.acquire_dispatch_permit(request)
+    assert store.query_all("SELECT * FROM station_execution_claim") == []
+
+
+def test_split_pick_place_settles_via_gripper_and_keeps_destination(station_inventory):
+    """两次真实库存结算之间物料位于夹爪，最终目标持续预留。"""
+    store, service, identities = station_inventory
+    base = _request(identities)
+    pick = replace(
+        base,
+        reserved_target_site_uuids=(TARGET_SITE,),
+        transfer=replace(
+            base.transfer,
+            target_owner_material_uuid=identities["robot"],
+            target_site_uuid=GRIPPER_SITE,
+        ),
+        expected_change_set={
+            "kind": "material_transfer",
+            "material_uuid": identities["vessel"],
+            "source_site_uuid": SOURCE_SITE,
+            "target_site_uuid": GRIPPER_SITE,
+        },
+    )
+
+    def settle(request, owner, site):
+        decision = service.station_resources.acquire_dispatch_permit(request)
+        assert decision.acquired and decision.permit
+        permit = decision.permit
+        for state in ["reserved", "running"]:
+            service.station_resources.transition_dispatch_permit(
+                permit.claim_uuid, target_state=state
+            )
+        service.station_resources.settle_material_transfer(
+            MaterialTransferCommand(
+                material_uuid=identities["vessel"],
+                target_owner_material_uuid=owner,
+                target_site_uuid=site,
+                target_site_name=store.query_one("SELECT name FROM site WHERE uuid=?", (site,))[
+                    "name"
+                ],
+                actor="station_scheduler.physical_settlement",
+                causation_id=request.job_uuid,
+                effect_uuid=permit.effect_uuid,
+                claim_uuid=permit.claim_uuid,
+                job_uuid=request.job_uuid,
+                attempt=request.attempt,
+                parameter_hash=request.parameter_hash,
+                expected_change_set=request.expected_change_set,
+                fences=permit.fences,
+            )
+        )
+        return permit
+
+    first = settle(pick, identities["robot"], GRIPPER_SITE)
+    assert (
+        store.query_one("SELECT occupied_material_uuid FROM site WHERE uuid=?", (GRIPPER_SITE,))[
+            "occupied_material_uuid"
+        ]
+        == identities["vessel"]
+    )
+    assert (
+        store.query_one("SELECT occupied_material_uuid FROM site WHERE uuid=?", (TARGET_SITE,))[
+            "occupied_material_uuid"
+        ]
+        is None
+    )
+    kept = tuple(r for r in base.resources if r.material_uuid != identities["source_device"])
+    service.station_resources.retain_dispatch_permit_resources(
+        first.claim_uuid, keep_lock_keys=tuple(r.lock_key for r in kept)
+    )
+    place = replace(
+        base,
+        effect_uuid="50000000-0000-4000-8000-000000000777",
+        job_uuid="40000000-0000-4000-8000-000000000777",
+        resources=kept,
+        preheld_lock_keys=tuple(r.lock_key for r in kept),
+        preheld_job_uuids=(pick.job_uuid,),
+        transfer=replace(
+            base.transfer,
+            source_owner_material_uuid=identities["robot"],
+            source_site_uuid=GRIPPER_SITE,
+            allow_held_material=True,
+        ),
+        expected_change_set={
+            "kind": "material_transfer",
+            "material_uuid": identities["vessel"],
+            "source_site_uuid": GRIPPER_SITE,
+            "target_site_uuid": TARGET_SITE,
+        },
+    )
+    second = settle(place, identities["target_device"], TARGET_SITE)
+    service.station_resources.release_preheld_dispatch_claims(
+        task_uuid=base.task_uuid, job_uuids=(pick.job_uuid,), lock_keys=place.preheld_lock_keys
+    )
+    service.station_resources.transition_dispatch_permit(second.claim_uuid, target_state="released")
+    assert (
+        store.query_one("SELECT occupied_material_uuid FROM site WHERE uuid=?", (GRIPPER_SITE,))[
+            "occupied_material_uuid"
+        ]
+        is None
+    )
+    assert (
+        store.query_one("SELECT occupied_material_uuid FROM site WHERE uuid=?", (TARGET_SITE,))[
+            "occupied_material_uuid"
+        ]
+        == identities["vessel"]
+    )

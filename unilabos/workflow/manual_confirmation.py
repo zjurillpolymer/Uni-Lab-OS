@@ -291,6 +291,24 @@ class ManualConfirmationStore:
 
 
 def _row(row: sqlite3.Row) -> dict[str, Any]:
+    """兼容内部查询调用，把 SQLite 行委托给统一人工确认投影器。
+
+    参数：``row`` 是人工确认表的一行。返回：与公开查询接口一致的人工确认事实；
+    异常：缺失列时由统一投影器原样抛出，禁止静默补齐状态。
+    """
+
+    return manual_confirmation_projection(row)
+
+
+def manual_confirmation_projection(row: sqlite3.Row) -> dict[str, Any]:
+    """把人工确认表行转换为公开的任务作业投影。
+
+    参数：``row`` 是 ``workflow_manual_confirmation`` 的 SQLite 行。返回：包含
+    稳定作业/任务身份、状态、截止时间和可用人工操作的字典；非空决定字段也会
+    被保留。异常：调用方传入缺少规范列的行时由 SQLite 行访问原样抛出，避免
+    用不完整事实生成确认状态。
+    """
+
     result: dict[str, Any] = {
         "workflow_node_job_uuid": str(row["workflow_node_job_uuid"]),
         "workflow_task_uuid": str(row["workflow_task_uuid"]),
@@ -330,5 +348,6 @@ __all__ = [
     "close_pending_manual_confirmation",
     "ensure_manual_confirmation_schema",
     "normalize_manual_confirmation_config",
+    "manual_confirmation_projection",
     "open_manual_confirmation",
 ]

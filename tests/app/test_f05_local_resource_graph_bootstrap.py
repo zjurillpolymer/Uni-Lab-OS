@@ -194,6 +194,23 @@ class _ConfigSiteResourceTree:
         ]]
 
 
+class _ConflictingConfigSiteResourceTree(_ConfigSiteResourceTree):
+    """让同一子物料同时出现在两个配置式 Site，制造占用冲突。"""
+
+    def dump(self) -> list[list[dict[str, Any]]]:
+        """返回违反“一个 Material 至多一个 Site”的资源图快照。"""
+
+        trees = super().dump()
+        owner = trees[0][0]
+        duplicate = dict(owner["config"]["sites"][0])
+        duplicate["label"] = "Slot 2"
+        owner["config"] = {
+            **owner["config"],
+            "sites": [*owner["config"]["sites"], duplicate],
+        }
+        return trees
+
+
 class _ResourceTree:
     """以产品 ``ResourceTreeSet.dump`` 形状暴露固定资源树。
 
@@ -412,6 +429,53 @@ def test_config_sites_project_ordered_occupied_inventory_sites() -> None:
         "resource_role": "robot.gripper"
     }
     assert child["current_site_uuid"] == owner["sites"][0]["uuid"]
+
+
+def test_config_site_occupancy_bootstrap_replays_idempotently() -> None:
+    """同源同指纹重启不得复制或移动已由启动图形成的 SiteOccupancy。"""
+
+    store = InventoryStore(":memory:")
+    try:
+        first = _bootstrap(
+            store,
+            _ConfigSiteResourceTree(),
+            registry=_RegistryWithConfigSite(),
+        )
+        second = _bootstrap(
+            store,
+            _ConfigSiteResourceTree(),
+            registry=_RegistryWithConfigSite(),
+        )
+        occupied = store.query_all(
+            "SELECT uuid,occupied_material_uuid FROM site "
+            "WHERE occupied_material_uuid IS NOT NULL"
+        )
+    finally:
+        store.close()
+
+    assert first["status"] == "imported"
+    assert second["status"] == "unchanged"
+    assert len(occupied) == 1
+
+
+def test_config_site_occupancy_conflict_rolls_back_bootstrap() -> None:
+    """启动图把同一 Material 放入两个 Site 时必须在任何库存行提交前拒绝。"""
+
+    store = InventoryStore(":memory:")
+    try:
+        with pytest.raises(ResourceGraphBootstrapError, match="一个物料.*多个库位"):
+            _bootstrap(
+                store,
+                _ConflictingConfigSiteResourceTree(),
+                registry=_RegistryWithConfigSite(),
+            )
+        materials = store.query_one("SELECT COUNT(*) AS count FROM material")
+        sites = store.query_one("SELECT COUNT(*) AS count FROM site")
+    finally:
+        store.close()
+
+    assert materials == {"count": 0}
+    assert sites == {"count": 0}
 
 
 def test_shared_implementation_class_keeps_unique_business_aliases() -> None:

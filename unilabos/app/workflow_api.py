@@ -22,7 +22,15 @@ from fastapi.exception_handlers import request_validation_exception_handler
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.routing import APIRoute
-from pydantic import BaseModel, ConfigDict, Field, field_validator, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StrictBool,
+    StrictInt,
+    field_validator,
+    model_validator,
+)
 
 from unilabos.app.startup_mode import (
     allows_definition_writes,
@@ -797,6 +805,15 @@ class ManualConfirmationDecisionRequest(_StrictModel):
     """人工确认批准或拒绝的公共 DTO。"""
 
     action: Literal["approve", "reject"]
+
+
+class WorkflowTaskExecutionLockReleaseRequest(_StrictModel):
+    """工作流任务执行锁人工释放请求；必须携带物理安全确认和并发快照。"""
+
+    expected_claim_uuid: str
+    expected_fencing_token: StrictInt = Field(gt=0)
+    reason: str = Field(min_length=1, max_length=500)
+    physical_settlement_confirmed: StrictBool
 
 
 class WorkflowInterventionDecisionRequest(_StrictModel):
@@ -1869,6 +1886,33 @@ def create_workflow_router(service: WorkflowService) -> APIRouter:
     @router.get("/workflow-tasks/{task_uuid}/jobs")
     def list_workflow_node_jobs(task_uuid: str) -> JSONResponse:
         return _success(service.list_workflow_node_jobs(task_uuid))
+
+    @router.get("/workflow-tasks/{task_uuid}/execution-locks")
+    def list_workflow_task_execution_locks(task_uuid: str) -> JSONResponse:
+        """返回任务当前活动执行锁及每个租约的人工释放资格。"""
+
+        return _success(service.list_workflow_task_execution_locks(task_uuid))
+
+    @router.post(
+        "/workflow-tasks/{task_uuid}/execution-locks/{lease_uuid}/force-release"
+    )
+    def force_release_workflow_task_execution_lock(
+        task_uuid: str,
+        lease_uuid: str,
+        body: WorkflowTaskExecutionLockReleaseRequest,
+    ) -> JSONResponse:
+        """在安全确认和 CAS 校验通过后释放目标作业的全部执行锁。"""
+
+        return _success(
+            service.force_release_workflow_task_execution_lock(
+                task_uuid,
+                lease_uuid,
+                expected_claim_uuid=body.expected_claim_uuid,
+                expected_fencing_token=body.expected_fencing_token,
+                reason=body.reason,
+                physical_settlement_confirmed=body.physical_settlement_confirmed,
+            )
+        )
 
     @router.get("/workflow-tasks/{task_uuid}/events")
     def list_workflow_task_runtime_events(

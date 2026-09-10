@@ -243,6 +243,35 @@ def list_blocked_material_task_uuids(
     return [str(row["workflow_task_uuid"]) for row in rows]
 
 
+def find_active_foreign_material_claim(
+    connection: sqlite3.Connection,
+    *,
+    task_uuid: str,
+    material_uuids: Sequence[str],
+) -> sqlite3.Row | None:
+    """查找请求物料上由其他 Task 持有的活动任务级独占。
+
+    参数：当前工作流事务、发起动作的 Task 和动作实际引用的物料集合。返回：按
+    取得时间稳定排序的首个外国 TaskMaterialClaim，不存在时返回 ``None``。
+    ``shared_source`` 从不写本表，因此不会形成任务级阻塞。
+    """
+
+    normalized = tuple(
+        sorted({str(value or "").strip() for value in material_uuids} - {""})
+    )
+    if not normalized:
+        return None
+    placeholders = ",".join("?" for _ in normalized)
+    return connection.execute(
+        "SELECT * FROM workflow_task_material_claim "
+        "WHERE deleted_at IS NULL AND status='active' "
+        "AND workflow_task_uuid<>? "
+        f"AND material_uuid IN ({placeholders}) "
+        "ORDER BY acquired_at,uuid LIMIT 1",
+        (task_uuid, *normalized),
+    ).fetchone()
+
+
 def _admission_row(
     connection: sqlite3.Connection,
     task_uuid: str,
@@ -361,6 +390,20 @@ def _insert_or_verify_claim(
 ) -> None:
     """写入或核对独占 claim；参数是任务/节点/作业/物料身份，冲突时失败关闭。"""
 
+    active_foreign_use = connection.execute(
+        "SELECT workflow_task_uuid,workflow_node_job_uuid "
+        "FROM execution_lock_lease "
+        "WHERE material_uuid=? AND deleted_at IS NULL "
+        "AND state IN ('reserved','running','uncertain') "
+        "AND workflow_task_uuid<>? "
+        "ORDER BY acquired_at,uuid LIMIT 1",
+        (material_uuid, task_uuid),
+    ).fetchone()
+    if active_foreign_use is not None:
+        raise StoreConflict(
+            f"物料正在被其他任务的动作使用：{material_uuid} "
+            f"({active_foreign_use['workflow_task_uuid']})"
+        )
     existing = connection.execute(
         """
         SELECT * FROM workflow_task_material_claim
@@ -441,6 +484,7 @@ def _json_text(value: Any, *, field: str) -> str:
 
 
 __all__ = [
+    "find_active_foreign_material_claim",
     "list_blocked_material_task_uuids",
     "read_material_admission",
     "record_admitted_admission",

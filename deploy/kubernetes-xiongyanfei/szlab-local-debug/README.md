@@ -6,8 +6,13 @@ Kubernetes `xiongyanfei` 命名空间中以临时调试模式运行。
 该模式显式使用 `--control_plane local`，并按 Workbench 的正式本地拓扑拆成
 两个进程：`workspace_backend` 提供 FastAPI、Inventory、Scheduler 和本地
 Authority，`edge_runtime` 通过 `edge_control` 注册设备并加载 SZLab 驱动。
-它们不会连接生产 Backend/Scheduler。两个 Deployment 的 `/runtime` 均使用
-`emptyDir`，Pod 重建后本地调试数据库和协议恢复状态会丢失。
+它们不会连接生产 Backend/Scheduler。Backend 的 `/runtime` 使用
+`unilabos-local-debug-runtime` PVC，持久保存 Workflow、Inventory 和 Edge Authority
+数据库；Edge 的 `/runtime` 仍使用 `emptyDir`，Pod 重建后本地协议恢复状态会重新
+注册。Backend 的 SZLab 作者工作区单独使用
+`unilabos-szlab-authoring-workspace` PVC，工作流 Python 源和
+`workflow_publications.json` 可写并跨 Pod 重建保留；Edge 驱动运行目录仍为只读
+镜像内容。
 
 ## 构建
 
@@ -30,28 +35,31 @@ cleanup_build_worktrees() {
 trap cleanup_build_worktrees EXIT
 
 git worktree add --detach "$OS_SOURCE" \
-  1f421617e92603d789a0fb62abd16812bcc29eae
+  e237fb991c538e226198675accecbd7334571437
 git -C /home/xiongyanfei/Uni-Lab-SZLab worktree add --detach "$SZLAB_SOURCE" \
-  8543f1a6ab683ec2c442783a48758f1cb89812b9
+  81215bcb23a61d191a9fa8072b176eda0f1dda92
 
 test "$(git -C "$OS_SOURCE" rev-parse HEAD)" = \
-  1f421617e92603d789a0fb62abd16812bcc29eae
+  e237fb991c538e226198675accecbd7334571437
 test -z "$(git -C "$OS_SOURCE" status --porcelain)"
 test "$(git -C "$SZLAB_SOURCE" rev-parse HEAD)" = \
-  8543f1a6ab683ec2c442783a48758f1cb89812b9
+  81215bcb23a61d191a9fa8072b176eda0f1dda92
 test -z "$(git -C "$SZLAB_SOURCE" status --porcelain)"
 
 nerdctl -n k8s.io build \
   --build-context szlab="$SZLAB_SOURCE" \
-  --build-arg OS_REVISION=1f421617e92603d789a0fb62abd16812bcc29eae \
-  --build-arg SZLAB_REVISION=8543f1a6ab683ec2c442783a48758f1cb89812b9 \
+  --build-arg OS_REVISION=e237fb991c538e226198675accecbd7334571437 \
+  --build-arg SZLAB_REVISION=81215bcb23a61d191a9fa8072b176eda0f1dda92 \
   -f deploy/kubernetes-xiongyanfei/szlab-local-debug/Dockerfile \
-  -t unilabos-szlab-local-debug:1f421617-8543f1a-r2 \
+  -t unilabos-szlab-local-debug:e237fb99-81215bcb-frontend-multipart-nomamba-otel \
   "$OS_SOURCE"
 ```
 
-镜像标签中的两段短 SHA 分别对应 Uni-Lab-OS `1f421617` 与 Uni-Lab-SZLab
-`8543f1a`。
+镜像标签中的两段短 SHA 分别对应 Uni-Lab-OS `e237fb99` 与 Uni-Lab-SZLab
+`81215bcb`；该镜像同时包含内置 console 构建产物、`python-multipart` 和
+OpenTelemetry OTLP/gRPC 导出依赖。构建前需确保节点已有
+`uni-lab-demo-edge:trace-20260802-2`，Dockerfile 会从中复用已验证的 Python
+3.11 OTel wheel 产物。
 
 ## 部署
 
@@ -81,6 +89,12 @@ kubectl apply -f deploy/kubernetes-xiongyanfei/szlab-local-debug/unilabos-local-
 kubectl rollout status deployment/unilabos-local-debug -n xiongyanfei --timeout=10m
 kubectl rollout status deployment/unilabos-local-edge -n xiongyanfei --timeout=10m
 ```
+
+PVC 第一次挂载时，`seed-szlab-authoring-workspace` 初始化容器会从当前镜像复制
+SZLab 领域包；检测到初始化标记后不会再次覆盖，以保护 UI 编辑和发布结果。升级
+镜像中的 SZLab 基线时，应先导出或迁移该 PVC 中的作者数据，再进行受控更新，不能
+直接用新镜像覆盖已有 Python 源。只有 `workspace_backend` 挂载这个可写工作区，
+`edge_runtime` 不挂载它，继续以不可变镜像运行驱动。
 
 按当前部署要求，FastAPI 通过 NodePort 直接暴露到公网：
 

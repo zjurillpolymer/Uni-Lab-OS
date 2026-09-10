@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="troubleshooting.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="API 使用参考" href="api-reference.html"><link rel="prev" title="设备包验收" href="scenario-guide.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="API 使用参考" href="api-reference.html"><link rel="prev" title="工作流发布与任务运行" href="workflows.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>故障排查 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul class="current">
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>故障排查<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>故障排查<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -364,28 +366,28 @@
 </div>
 <p>先判断问题属于页面连接、定义/输入、资源等待、设备执行还是恢复状态。保留任务 UUID、节点 UUID、Job UUID、时间和 Trace ID，再进行操作。</p>
 <section id="id2">
-<h2>安装与本地启动<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>安装与本地启动<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <section id="unilab">
-<h3><code class="docutils literal notranslate"><span class="pre">unilab</span></code> 命令不存在<a class="headerlink" href="#unilab" title="Link to this heading">¶</a></h3>
-<p>先执行 <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">unilabos</span></code>，再检查 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">show</span> <span class="pre">unilabos</span></code>。源码教程还应确认 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/dev_install.py</span> <span class="pre">--use-pip</span></code> 已成功结束。不要在系统 Python 和 Conda Python 之间混装。</p>
+<h3><code class="docutils literal notranslate"><span class="pre">unilab</span></code> 命令不存在<a class="headerlink" href="#unilab" title="链接到此标题。">¶</a></h3>
+<p>先激活安装 Uni-Lab OS 的 Conda 环境，再检查 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">-m</span> <span class="pre">pip</span> <span class="pre">show</span> <span class="pre">unilabos</span></code>。源码安装还应确认 <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> 和 <code class="docutils literal notranslate"><span class="pre">uv</span> <span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-r</span> <span class="pre">unilabos/utils/requirements.txt</span></code> 已成功结束。不要在系统 Python 和 Conda Python 之间混装。</p>
 </section>
 <section id="import-rclpy">
-<h3><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">rclpy</span></code> 失败<a class="headerlink" href="#import-rclpy" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">rclpy</span></code> 失败<a class="headerlink" href="#import-rclpy" title="链接到此标题。">¶</a></h3>
 <p>完整 Uni-Lab OS 即使在 dry-run 中也会初始化 ROS。只创建裸 Python 环境不够；按<a class="reference internal" href="environment.html#conda"><span class="std std-ref">环境与运行配置</span></a>安装 <code class="docutils literal notranslate"><span class="pre">unilabos-env</span></code>、<code class="docutils literal notranslate"><span class="pre">unilabos</span></code> 或 <code class="docutils literal notranslate"><span class="pre">unilabos-full</span></code>。</p>
 </section>
 <section id="import-yaml">
-<h3><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">yaml</span></code> 失败<a class="headerlink" href="#import-yaml" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">import</span> <span class="pre">yaml</span></code> 失败<a class="headerlink" href="#import-yaml" title="链接到此标题。">¶</a></h3>
 <p>Uni-Lab OS 启动时需要导入 <code class="docutils literal notranslate"><span class="pre">PyYAML</span></code>。在已激活环境执行：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"PyYAML&gt;=6"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">&quot;PyYAML&gt;=6&quot;</span>
 </pre></div>
 </div>
 </section>
 <section id="health-console-404">
-<h3>Health 正常但 <code class="docutils literal notranslate"><span class="pre">/console/</span></code> 返回 404<a class="headerlink" href="#health-console-404" title="Link to this heading">¶</a></h3>
+<h3>Health 正常但 <code class="docutils literal notranslate"><span class="pre">/console/</span></code> 返回 404<a class="headerlink" href="#health-console-404" title="链接到此标题。">¶</a></h3>
 <p>干净源码不带已编译 React bundle。在 <code class="docutils literal notranslate"><span class="pre">Uni-Lab</span> <span class="pre">OS/frontend</span></code> 中确认 Node ≥22.13，然后执行 <code class="docutils literal notranslate"><span class="pre">npm</span> <span class="pre">ci</span> <span class="pre">&amp;&amp;</span> <span class="pre">npm</span> <span class="pre">run</span> <span class="pre">build</span></code>；看到 <code class="docutils literal notranslate"><span class="pre">unilabos/app/web/static/console/index.html</span></code> 后重启 Workspace。</p>
 </section>
 <section id="skip-env-check-test-mode">
-<h3><code class="docutils literal notranslate"><span class="pre">--skip_env_check</span></code> 或 <code class="docutils literal notranslate"><span class="pre">--test_mode</span></code> 不识别<a class="headerlink" href="#skip-env-check-test-mode" title="Link to this heading">¶</a></h3>
+<h3><code class="docutils literal notranslate"><span class="pre">--skip_env_check</span></code> 或 <code class="docutils literal notranslate"><span class="pre">--test_mode</span></code> 不识别<a class="headerlink" href="#skip-env-check-test-mode" title="链接到此标题。">¶</a></h3>
 <p>这是旧脚本参数。当前解析器明确拒绝，改用：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--workspace<span class="w"> </span>/absolute/path/to/user-device-package<span class="w"> </span><span class="se">\</span>
@@ -398,7 +400,7 @@
 </div>
 </section>
 <section id="uni-lab-os">
-<h3>Uni-Lab OS 页面可用但设备连接未就绪<a class="headerlink" href="#uni-lab-os" title="Link to this heading">¶</a></h3>
+<h3>Uni-Lab OS 页面可用但设备连接未就绪<a class="headerlink" href="#uni-lab-os" title="链接到此标题。">¶</a></h3>
 <p>网页/API 可用只证明 Uni-Lab OS 的访问入口正常。设备连接未就绪时，读取内部设备运行日志：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>logs<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--workspace<span class="w"> </span>/absolute/path/to/user-device-package<span class="w"> </span><span class="se">\</span>
@@ -410,19 +412,19 @@
 </section>
 </section>
 <section id="id3">
-<h2>快速健康检查<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>快速健康检查<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>管理员可以先从 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">status</span> <span class="pre">--json</span></code> 取得 Uni-Lab OS API 地址，再用以下只读接口检查：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/health"</span>
-curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/readiness"</span>
-curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/edge/readiness"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/health&quot;</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/readiness&quot;</span>
+curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$BACKEND_URL</span><span class="s2">/api/v1/edge/readiness&quot;</span>
 </pre></div>
 </div>
 <p>正常情况下，Uni-Lab OS 和工作流运行时应为 <code class="docutils literal notranslate"><span class="pre">ready</span></code>，设备连接应为 <code class="docutils literal notranslate"><span class="pre">connected:</span> <span class="pre">true</span></code>，且设备数量与本次 启动图 一致。</p>
 </section>
 <section id="id4">
-<h2>连接与页面问题<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>连接与页面问题<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <section id="id5">
-<h3>Uni-Lab OS 页面无法打开<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h3>
+<h3>Uni-Lab OS 页面无法打开<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
 <ol class="arabic simple">
 <li><p>访问 <code class="docutils literal notranslate"><span class="pre">/api/v1/health</span></code>，区分 Runtime 不可用和静态资源问题。</p></li>
 <li><p>确认 URL 以 <code class="docutils literal notranslate"><span class="pre">/console/</span></code> 结尾。</p></li>
@@ -431,23 +433,23 @@ curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span
 </ol>
 </section>
 <section id="id6">
-<h3>页面显示重连中或只读快照<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h3>
+<h3>页面显示重连中或只读快照<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
 <p>不要继续提交写操作。检查 Readiness、网络和 Pod 状态，等页面重新显示在线后刷新数据。只读快照是最后一次成功结果，不代表当前设备/库存事实。</p>
 </section>
 <section id="id7">
-<h3>设备未连接或设备数为 0<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h3>
+<h3>设备未连接或设备数为 0<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
 <p>检查 Uni-Lab OS 运行实例、设备控制连接、活动 启动图 和设备注册错误。设备注册至少需要一台有效设备，并会校验本地 ID、动作和绑定材料唯一性。恢复连接后再次查看在线设备，不要直接重试在途物理动作。</p>
 </section>
 <section id="plc">
-<h3>PLC 仿真器页面可打开，但设备动作没有响应<a class="headerlink" href="#plc" title="Link to this heading">¶</a></h3>
+<h3>PLC 仿真器页面可打开，但设备动作没有响应<a class="headerlink" href="#plc" title="链接到此标题。">¶</a></h3>
 <p>GUI 健康只证明 Web 进程存在。按<a class="reference internal" href="plc-sim.html"><span class="std std-doc">PLC / OPC UA 仿真器</span></a>依次检查 OPC UA Server、可选握手代理和 Uni-Lab OS 设备会话；所需组件必须同时就绪。再确认活动 启动图 使用设备包部署说明提供的协议地址，且对应 PLC 实例在线。</p>
 <p>如果任务已经越过派发边界，不要通过重启 Server/Agent 或重建 Task 来重试。先停止新派发，核对 Job、PLC-Sim 状态和现场/仿真事实，再按原任务的失败或未知结果流程处理。</p>
 </section>
 </section>
 <section id="id8">
-<h2>工作流与预检<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>工作流与预检<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <section id="id9">
-<h3>找不到工作流<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>找不到工作流<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <ul class="simple">
 <li><p>清空搜索条件；</p></li>
 <li><p>确认产品模式下该修订已经发布；</p></li>
@@ -456,93 +458,93 @@ curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span
 </ul>
 </section>
 <section id="python">
-<h3>Python 工作流导入冲突<a class="headerlink" href="#python" title="Link to this heading">¶</a></h3>
+<h3>Python 工作流导入冲突<a class="headerlink" href="#python" title="链接到此标题。">¶</a></h3>
 <p>导入用于创建新定义，同一工作流 UUID、节点 UUID 或作者函数名已存在时会拒绝，不会覆盖。为独立练习生成新 UUID；修改现有定义时使用其 Authoring draft/apply 流程或维护包内源文件。</p>
 </section>
 <section id="id10">
-<h3>导入时报动作或设备类型未知<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h3>
+<h3>导入时报动作或设备类型未知<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h3>
 <p>确认设备类型使用绝对 import，规范 import package 中的 <code class="docutils literal notranslate"><span class="pre">&#64;device</span></code> 已被 Catalog 静态扫描，启动图 <code class="docutils literal notranslate"><span class="pre">class</span></code> 能解析到该定义，并且运行中的 Workspace Catalog 是修改后的同一代。<code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 只登记工作流，不登记设备或资源；导入源码也不会执行 import 来“临时发现”类型。</p>
 </section>
 <section id="id11">
-<h3>“新建工作流”没有打开编辑器<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h3>
+<h3>“新建工作流”没有打开编辑器<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h3>
 <p>这是 Uni-Lab OS 页面的已知边界。使用“实验室操作”画布创建可复用操作，或从 Python/JSON 导入工作流。</p>
 </section>
 <section id="invalid">
-<h3>预检返回 <code class="docutils literal notranslate"><span class="pre">invalid</span></code><a class="headerlink" href="#invalid" title="Link to this heading">¶</a></h3>
+<h3>预检返回 <code class="docutils literal notranslate"><span class="pre">invalid</span></code><a class="headerlink" href="#invalid" title="链接到此标题。">¶</a></h3>
 <p>依次检查公开输入类型、必填值、设备绑定、子操作发布合同、<code class="docutils literal notranslate"><span class="pre">ResourceSlot</span></code>、来源站点重复和工作流诊断。修改定义后需要保存并重新发布。</p>
 </section>
 <section id="temporarily-unavailable">
-<h3>预检返回 <code class="docutils literal notranslate"><span class="pre">temporarily_unavailable</span></code><a class="headerlink" href="#temporarily-unavailable" title="Link to this heading">¶</a></h3>
+<h3>预检返回 <code class="docutils literal notranslate"><span class="pre">temporarily_unavailable</span></code><a class="headerlink" href="#temporarily-unavailable" title="链接到此标题。">¶</a></h3>
 <p>定义本身可能有效。检查设备在线状态、现有执行锁、物料位置、空闲站点、试剂数量预留和 Uni-Lab OS 排空状态。处理后重新预检。</p>
 </section>
 <section id="id12">
-<h3>预检通过但提交失败或进入等待<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h3>
+<h3>预检通过但提交失败或进入等待<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h3>
 <p>预检是零写入快照；另一个任务可能在你提交前占用了资源。以提交时返回和任务阻塞明细为准，不要重复创建任务。</p>
 </section>
 <section id="debug-api-http-410">
-<h3>Debug API 返回 HTTP 410<a class="headerlink" href="#debug-api-http-410" title="Link to this heading">¶</a></h3>
+<h3>Debug API 返回 HTTP 410<a class="headerlink" href="#debug-api-http-410" title="链接到此标题。">¶</a></h3>
 <p>旧 <code class="docutils literal notranslate"><span class="pre">/api/v1/debug/*</span></code> 已退役。创建标准 step Task，并在 <code class="docutils literal notranslate"><span class="pre">develop</span></code> 模式使用暂停、选择节点、执行下一步和继续。</p>
 </section>
 </section>
 <section id="id13">
-<h2>任务与资源<a class="headerlink" href="#id13" title="Link to this heading">¶</a></h2>
+<h2>任务与资源<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h2>
 <section id="id14">
-<h3>第二个开发任务被拒绝<a class="headerlink" href="#id14" title="Link to this heading">¶</a></h3>
+<h3>第二个开发任务被拒绝<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h3>
 <p><code class="docutils literal notranslate"><span class="pre">develop</span></code> 只允许一个开发任务。结束现有任务，或在满足模式切换条件时切到 <code class="docutils literal notranslate"><span class="pre">product</span></code> 再创建并行任务。</p>
 </section>
 <section id="id15">
-<h3>任务长时间等待资源<a class="headerlink" href="#id15" title="Link to this heading">¶</a></h3>
+<h3>任务长时间等待资源<a class="headerlink" href="#id15" title="链接到此标题。">¶</a></h3>
 <p>打开节点和“阻塞与异常”，找到具体设备、物料、工位、库存或前置依赖。正常共享资源等待不需要人工释放。若 holder 对应已结束任务，再由管理员核对持久状态和现场后处理陈旧锁。</p>
 </section>
 <section id="id16">
-<h3>物料位置更新冲突<a class="headerlink" href="#id16" title="Link to this heading">¶</a></h3>
+<h3>物料位置更新冲突<a class="headerlink" href="#id16" title="链接到此标题。">¶</a></h3>
 <p>说明对象修订已经变化。刷新物料详情，确认是其他用户还是任务完成了移动，再基于最新位置操作。不要重复发送旧 revision。</p>
 </section>
 <section id="id17">
-<h3>没有可选择的试剂容器<a class="headerlink" href="#id17" title="Link to this heading">¶</a></h3>
+<h3>没有可选择的试剂容器<a class="headerlink" href="#id17" title="链接到此标题。">¶</a></h3>
 <p>目标物料必须使用带 <code class="docutils literal notranslate"><span class="pre">container</span></code> 标签的模板、尚未绑定试剂，并处于允许登记的状态。先到物料页核对容器和占用。</p>
 </section>
 <section id="id18">
-<h3>无法删除试剂或目录项<a class="headerlink" href="#id18" title="Link to this heading">¶</a></h3>
+<h3>无法删除试剂或目录项<a class="headerlink" href="#id18" title="链接到此标题。">¶</a></h3>
 <p>库存可能被任务预留，或目录项仍被库存引用。先查看消耗/预留和引用关系；不要删除正在被任务使用的数据。</p>
 </section>
 </section>
 <section id="id19">
-<h2>设备和恢复<a class="headerlink" href="#id19" title="Link to this heading">¶</a></h2>
+<h2>设备和恢复<a class="headerlink" href="#id19" title="链接到此标题。">¶</a></h2>
 <section id="id20">
-<h3>物料转移动作失败，现场位置与页面不一致<a class="headerlink" href="#id20" title="Link to this heading">¶</a></h3>
+<h3>物料转移动作失败，现场位置与页面不一致<a class="headerlink" href="#id20" title="链接到此标题。">¶</a></h3>
 <p>停止后继物理动作，现场确认真实站点，然后使用原任务的“物料转移结算”入口选择实际位置并填写原因。不要把物料手工移动到计划目标来掩盖失败。</p>
 </section>
 <section id="execution-unknown">
-<h3>节点显示 <code class="docutils literal notranslate"><span class="pre">execution_unknown</span></code><a class="headerlink" href="#execution-unknown" title="Link to this heading">¶</a></h3>
+<h3>节点显示 <code class="docutils literal notranslate"><span class="pre">execution_unknown</span></code><a class="headerlink" href="#execution-unknown" title="链接到此标题。">¶</a></h3>
 <p>不要重建任务或重发动作。检查机械臂/设备 journal、传感器和现场物体，完成只读对账后，在原任务解决未知结果。</p>
 </section>
 <section id="id21">
-<h3>强制解锁后设备仍在运行<a class="headerlink" href="#id21" title="Link to this heading">¶</a></h3>
+<h3>强制解锁后设备仍在运行<a class="headerlink" href="#id21" title="链接到此标题。">¶</a></h3>
 <p>强制解锁不会控制物理设备。立即按现场安全规程停机/急停，并禁止新任务派发；之后再对账 Job、物料和锁。</p>
 </section>
 <section id="id22">
-<h3>图像设备没有返回文件路径或算法结论<a class="headerlink" href="#id22" title="Link to this heading">¶</a></h3>
+<h3>图像设备没有返回文件路径或算法结论<a class="headerlink" href="#id22" title="链接到此标题。">¶</a></h3>
 <p>先核对设备动作合同：有些动作只表示触发成功，并不承诺返回文件或算法结论。不应通过反复执行解决接口能力缺失。</p>
 </section>
 <section id="id23">
-<h3>投料输出质量与秤读数理解不一致<a class="headerlink" href="#id23" title="Link to this heading">¶</a></h3>
+<h3>投料输出质量与秤读数理解不一致<a class="headerlink" href="#id23" title="链接到此标题。">¶</a></h3>
 <p>先区分“目标/指令质量”和“传感器实测质量”。查看设备包定义的称量历史与最终秤结果，并按工艺容差单独判断。</p>
 </section>
 </section>
 <section id="trace">
-<h2>Trace 与日志<a class="headerlink" href="#trace" title="Link to this heading">¶</a></h2>
+<h2>Trace 与日志<a class="headerlink" href="#trace" title="链接到此标题。">¶</a></h2>
 <section id="id24">
-<h3>任务没有 Trace 链接<a class="headerlink" href="#id24" title="Link to this heading">¶</a></h3>
+<h3>任务没有 Trace 链接<a class="headerlink" href="#id24" title="链接到此标题。">¶</a></h3>
 <p>先确认 Readiness 是否配置 <code class="docutils literal notranslate"><span class="pre">traceUiUrl</span></code>，任务是否有 <code class="docutils literal notranslate"><span class="pre">trace_id</span></code>，追踪服务是否可达。Trace 上报 fail-open；没有 Trace 时仍要查看任务、Job、Uni-Lab OS 和设备日志。</p>
 </section>
 <section id="sse">
-<h3>SSE 断开后状态不更新<a class="headerlink" href="#sse" title="Link to this heading">¶</a></h3>
+<h3>SSE 断开后状态不更新<a class="headerlink" href="#sse" title="链接到此标题。">¶</a></h3>
 <p>任务事件是“需要重新读取”的通知，不是完整状态权威。重新加载 REST 详情；客户端也会使用轮询恢复。不要仅凭丢失的一条 SSE 判定任务没有变化。</p>
 </section>
 </section>
 <section id="id25">
-<h2>提交问题时保留什么<a class="headerlink" href="#id25" title="Link to this heading">¶</a></h2>
+<h2>提交问题时保留什么<a class="headerlink" href="#id25" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>Uni-Lab OS 页面与发生时间；</p></li>
 <li><p>workflow/task/node/job UUID；</p></li>
@@ -570,14 +572,14 @@ curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="scenario-guide.html">
+          <a class="prev-page" href="workflows.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">设备包验收</div>
+                <div class="title">工作流发布与任务运行</div>
                 
               </div>
             </a>
@@ -675,10 +677,10 @@ curl<span class="w"> </span>-fsS<span class="w"> </span><span class="s2">"</span
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

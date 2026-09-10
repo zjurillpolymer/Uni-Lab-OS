@@ -256,12 +256,13 @@ def test_condition_graph_builds_versioned_control_execution_plan() -> None:
     assert plan["capabilities"] == [
         "condition_expression_v1",
         "control_regions_v1",
+        "resource_intervals_v1",
+        "static_resource_dag_v1",
     ]
     planned_nodes = {node["uuid"]: node for node in plan["nodes"]}
     assert planned_nodes[CONDITION_NODE_UUID]["kind"] == "condition"
-    assert (
-        planned_nodes[CONDITION_NODE_UUID]["control_region"]
-        == (planned_nodes[CONDITION_NODE_UUID]["param"])
+    assert planned_nodes[CONDITION_NODE_UUID]["control_region"] == (
+        planned_nodes[CONDITION_NODE_UUID]["param"]
     )
     control_edges = {
         (edge["source_node_uuid"], edge["target_node_uuid"])

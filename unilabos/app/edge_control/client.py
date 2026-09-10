@@ -369,6 +369,16 @@ class EdgeControlClient(BaseCommunicationClient):
             )
         )
 
+    def publish_job_error_decision_required(self, report: dict[str, Any]) -> bool:
+        """把动作异常持久化到工作区后端的人工干预队列。"""
+
+        try:
+            self.data_plane.report_error_decision_required(dict(report))
+        except Exception as error:  # noqa: BLE001 - 由调用方按默认策略收束
+            logger.warning("[EdgeControl] 上报动作异常决策失败：%s", error)
+            return False
+        return True
+
     async def _commit_device_status(
         self,
         device_id: str,
@@ -666,6 +676,7 @@ class EdgeControlClient(BaseCommunicationClient):
         if message_type not in {
             "job.start",
             "job.cancel",
+            "job.error_decision",
             "job.resolve_unknown",
             "material.changed",
         }:
@@ -686,7 +697,7 @@ class EdgeControlClient(BaseCommunicationClient):
         ):
             inserted = self.store.record_command(envelope)
             if (
-                message_type == "job.resolve_unknown"
+                message_type in {"job.resolve_unknown", "job.error_decision"}
                 and not inserted
                 and self.store.command_status(command_uuid) == "completed"
             ):
@@ -699,6 +710,8 @@ class EdgeControlClient(BaseCommunicationClient):
                 await self._accept_unknown_resolution(
                     command_uuid, payload, command_trace
                 )
+            elif message_type == "job.error_decision":
+                await self._accept_error_decision(command_uuid, payload)
             else:
                 self._accept_material_changed(command_uuid, payload, command_trace)
 
@@ -830,6 +843,25 @@ class EdgeControlClient(BaseCommunicationClient):
             {"command_uuid": command_uuid},
             fallback_carrier=command_trace,
         )
+        self.store.mark_command_completed(command_uuid)
+
+    async def _accept_error_decision(
+        self, command_uuid: str, payload: dict[str, Any]
+    ) -> None:
+        """把后端已选择的 retry/skip/abort 精确交给挂起的设备动作。"""
+
+        decision_id = str(payload.get("decision_id") or "")
+        job_id = str(payload.get("job_id") or "")
+        device_id = str(payload.get("device_id") or "")
+        if not decision_id or not job_id or not device_id:
+            raise ValueError("job.error_decision identity is required")
+        host = self._host_node_provider()
+        wrapper = getattr(host, "devices_instances", {}).get(device_id) if host else None
+        node = getattr(wrapper, "_ros_node", None)
+        handle = getattr(node, "handle_action_error_decision", None)
+        if not callable(handle) or not handle(decision_id, job_id, dict(payload)):
+            raise RuntimeError("pending action error decision is unavailable")
+        self._enqueue_event("command.ack", {"command_uuid": command_uuid})
         self.store.mark_command_completed(command_uuid)
 
     async def _accept_job_cancel(
@@ -1385,11 +1417,16 @@ def _event_trace_carrier(event: StoredEvent) -> dict[str, str]:
 
 
 def _message_trace_carrier(message: dict[str, Any]) -> dict[str, str]:
-    return {
-        "trace_id": str(message.get("trace_id") or ""),
+    # 保留控制信封实际携带的字段边界。尤其不能把缺失的 ``trace_id``
+    # 扩写为空字符串，否则重放路径会把“没有该只读投影”误表示为“收到一个
+    # 无效投影”，并让下游载体合同与原始持久命令不一致。
+    carrier = {
         "traceparent": str(message.get("traceparent") or ""),
         "tracestate": str(message.get("tracestate") or ""),
     }
+    if message.get("trace_id"):
+        carrier["trace_id"] = str(message["trace_id"])
+    return carrier
 
 
 def _current_trace_carrier(

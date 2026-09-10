@@ -5,10 +5,10 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="ai-workflow-authoring.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="使用 AI 设备包生成器（实验性）" href="repository-builder-skill.html"><link rel="prev" title="手写并运行第一个工作流（用户设备包 教学）" href="first-workflow.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
-        <title>用 AI 编写工作流（推荐） - Uni-Lab OS 产品使用说明书</title>
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>AI 编写工作流（推荐） - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
-<ul>
-<li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 current has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" checked="" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3 current current-page"><a class="current reference internal" href="#">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="ai">
-<h1>用 AI 编写工作流（推荐）<a class="headerlink" href="#ai" title="Link to this heading">¶</a></h1>
+<h1>AI 编写工作流（推荐）<a class="headerlink" href="#ai" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -363,7 +365,7 @@
 </ul>
 </div>
 <p>本页假设设备包已经能被 Uni-Lab OS 加载，而且你已完成<a class="reference internal" href="workflow-concepts.html"><span class="std std-doc">工作流基础</span></a>、<a class="reference internal" href="first-workflow.html"><span class="std std-doc">用户设备包 手写教程</span></a>和<a class="reference internal" href="workflow-features.html"><span class="std std-doc">编排特性</span></a>。这些基础让你能够审查 AI 生成的 DSL，而不是直接相信生成结果。</p>
-<p>若你还没有 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、设备定义、启动图（Graph JSON）和 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code>，先按<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>完成最小闭环。也可选择本地 Workbench 的<a class="reference internal" href="repository-builder-skill.html"><span class="std std-doc">AI 设备包生成器</span></a>辅助新建、迁移或诊断。</p>
+<p>若你还没有 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、设备定义、启动图（Graph JSON）和 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code>，先按<a class="reference internal" href="workspace.html"><span class="std std-doc">工作区</span></a>完成最小闭环。维护用户自己的设备包时，也可使用<a class="reference internal" href="repository-builder-skill.html"><span class="std std-doc">AI 设备包生成器（实验性）</span></a>，让本地 Coding Agent 协助修改或排查。</p>
 <p>日常工作流创作推荐交给能够读取当前 Uni-Lab OS 与实验室设备包的 AI 编码助手：让它先从 Catalog、设备驱动、资源模板和 用户设备包 已登记流程中取证，再生成静态 Python DSL。人负责确认实验意图、审查证据、批准发布，并决定是否运行。</p>
 <p>这不是“让 AI 猜一段 Python 后直接开设备”。推荐闭环是：</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>实验需求
@@ -385,7 +387,7 @@ AI 只读扫描当前代码与 Catalog ──► 选择 用户设备包 相似�
 </div>
 <p>AI 负责提高创作效率；Uni-Lab OS 的编译器、发布合同、预检、调度和设备执行结果仍是判断“能否进入产品运行链路”的权威。AI 的文字回答或语法高亮不能代替这些检查。</p>
 <section id="id1">
-<h2>当前支持到什么程度<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h2>
+<h2>当前支持到什么程度<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -425,14 +427,14 @@ AI 只读扫描当前代码与 Catalog ──► 选择 用户设备包 相似�
 <p>因此，现阶段最稳妥的组合是“AI 读仓库和写草稿 + Uni-Lab OS 导入与运行”，而不是期待页面内有一个通用的“一键 AI 生成并运行”按钮。</p>
 </section>
 <section id="id2">
-<h2>1. 建立干净基线<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>1. 建立干净基线<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>先完成<a class="reference internal" href="installation.html"><span class="std std-doc">系统安装</span></a>，保持 <code class="docutils literal notranslate"><span class="pre">dry-run</span> <span class="pre">+</span> <span class="pre">develop</span></code>。在让 AI 修改任何内容前运行：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>-C<span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/Uni-Lab OS"</span><span class="w"> </span>status<span class="w"> </span>--short
-git<span class="w"> </span>-C<span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package"</span><span class="w"> </span>status<span class="w"> </span>--short
-git<span class="w"> </span>-C<span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package"</span><span class="w"> </span>ls-files<span class="w"> </span><span class="se">\</span>
-<span class="w">  </span><span class="s1">'example_device_package/workflows/*.py'</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/Uni-Lab OS&quot;</span><span class="w"> </span>status<span class="w"> </span>--short
+git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package&quot;</span><span class="w"> </span>status<span class="w"> </span>--short
+git<span class="w"> </span>-C<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package&quot;</span><span class="w"> </span>ls-files<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="s1">&#39;example_device_package/workflows/*.py&#39;</span>
 
-<span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package"</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package&quot;</span>
 ./scripts/check-package.sh
 mkdir<span class="w"> </span>-p<span class="w"> </span>workflow_drafts
 </pre></div>
@@ -441,32 +443,32 @@ mkdir<span class="w"> </span>-p<span class="w"> </span>workflow_drafts
 <p><code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">ls-files</span></code> 的结果是可作为产品示例的已跟踪流程清单。已跟踪文件本身若出现在 <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">status</span></code> 中，也要先看 diff；需要锁定基线时让 AI 读取 <code class="docutils literal notranslate"><span class="pre">git</span> <span class="pre">show</span> <span class="pre">HEAD:&lt;相对路径&gt;</span></code>，不能把未提交内容冒充版本事实。不要让 AI 把本地未跟踪的验证夹具、临时产物或历史脚本当作产品语法依据。</p>
 </section>
 <section id="id3">
-<h2>2. 写清实验需求卡<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>2. 写清实验需求卡<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>先把需求写成这张卡，再交给 AI。信息不确定时写“待确认”，不要让 AI 自行补成看似合理的设备参数。</p>
-<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">目标</span><span class="p">:</span><span class="w"> </span><span class="s">"这个流程最终完成什么实验结果"</span>
-<span class="nt">流程类型</span><span class="p">:</span><span class="w"> </span><span class="s">"normal</span><span class="nv"> </span><span class="s">或</span><span class="nv"> </span><span class="s">experiment_operation"</span>
+<div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">目标</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;这个流程最终完成什么实验结果&quot;</span>
+<span class="nt">流程类型</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;normal</span><span class="nv"> </span><span class="s">或</span><span class="nv"> </span><span class="s">experiment_operation&quot;</span>
 <span class="nt">公开输入</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"名称</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">类型</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">单位</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">默认值</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">合法范围"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;名称</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">类型</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">单位</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">默认值</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">合法范围&quot;</span>
 <span class="nt">正式输出</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"名称</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">类型</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">来源"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;名称</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">类型</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">来源&quot;</span>
 <span class="nt">步骤</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"按实验语义列出，不要先写代码"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;按实验语义列出，不要先写代码&quot;</span>
 <span class="nt">允许使用的设备</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"设备业务</span><span class="nv"> </span><span class="s">ID；未知时写待扫描"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;设备业务</span><span class="nv"> </span><span class="s">ID；未知时写待扫描&quot;</span>
 <span class="nt">物料与试剂</span><span class="p">:</span>
-<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">"模板、来源工位、保管策略、用量与单位"</span>
-<span class="nt">控制流</span><span class="p">:</span><span class="w"> </span><span class="s">"条件</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">循环上限</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">可并行步骤"</span>
-<span class="nt">共享资源</span><span class="p">:</span><span class="w"> </span><span class="s">"设备、工位或区域互斥要求"</span>
-<span class="nt">人工复核点</span><span class="p">:</span><span class="w"> </span><span class="s">"哪些真实动作下发前必须确认"</span>
-<span class="nt">目标 启动图</span><span class="p">:</span><span class="w"> </span><span class="s">"要在哪一张部署</span><span class="nv"> </span><span class="s">启动图</span><span class="nv"> </span><span class="s">中编译和验收"</span>
-<span class="nt">运行环境</span><span class="p">:</span><span class="w"> </span><span class="s">"dry-run</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">隔离</span><span class="nv"> </span><span class="s">driver-sim</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">真机"</span>
-<span class="nt">验收结果</span><span class="p">:</span><span class="w"> </span><span class="s">"dry-run</span><span class="nv"> </span><span class="s">中应观察到的</span><span class="nv"> </span><span class="s">Task、Job</span><span class="nv"> </span><span class="s">和输出"</span>
+<span class="w">  </span><span class="p p-Indicator">-</span><span class="w"> </span><span class="s">&quot;模板、来源工位、保管策略、用量与单位&quot;</span>
+<span class="nt">控制流</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;条件</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">循环上限</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">可并行步骤&quot;</span>
+<span class="nt">共享资源</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;设备、工位或区域互斥要求&quot;</span>
+<span class="nt">人工复核点</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;哪些真实动作下发前必须确认&quot;</span>
+<span class="nt">目标 启动图</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;要在哪一张部署</span><span class="nv"> </span><span class="s">启动图</span><span class="nv"> </span><span class="s">中编译和验收&quot;</span>
+<span class="nt">运行环境</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dry-run</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">隔离</span><span class="nv"> </span><span class="s">driver-sim</span><span class="nv"> </span><span class="s">/</span><span class="nv"> </span><span class="s">真机&quot;</span>
+<span class="nt">验收结果</span><span class="p">:</span><span class="w"> </span><span class="s">&quot;dry-run</span><span class="nv"> </span><span class="s">中应观察到的</span><span class="nv"> </span><span class="s">Task、Job</span><span class="nv"> </span><span class="s">和输出&quot;</span>
 </pre></div>
 </div>
 <p><code class="docutils literal notranslate"><span class="pre">normal</span></code> 表示可直接创建完整实验 Task；<code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code> 表示先发布，再由其他流程复用。不能确定时，完整实验目标通常选 <code class="docutils literal notranslate"><span class="pre">normal</span></code>，可复用的局部工艺才选 <code class="docutils literal notranslate"><span class="pre">experiment_operation</span></code>。</p>
 </section>
 <section id="id4">
-<h2>3. 让 AI 先理解当前设备包<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>3. 让 AI 先理解当前设备包<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>不要让 AI 根据设备名称猜测动作。应先让它读取用户设备包中本次要用的内容：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -517,7 +519,7 @@ mkdir<span class="w"> </span>-p<span class="w"> </span>workflow_drafts
 <p>如果这些证据不能证明某个动作、参数、输出字段或资源存在，AI 应停在“待确认”，而不是生成猜测代码。</p>
 </section>
 <section id="id5">
-<h2>4. 复制这段提示词<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>4. 复制这段提示词<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>把下面提示词和上一节的需求卡一起交给能访问当前工作区的 AI 编码助手；将 <code class="docutils literal notranslate"><span class="pre">&lt;流程名&gt;</span></code> 换成小写英文文件名。</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>请为当前 user-device-package 工作区编写一个新的 Uni-Lab 静态 Python DSL 工作流。
 代码事实优先级：当前 Uni-Lab OS 编译器 &gt; 用户设备包驱动与 package.yaml &gt;
@@ -551,7 +553,7 @@ mkdir<span class="w"> </span>-p<span class="w"> </span>workflow_drafts
 <p>如果 AI 在阶段 1 就发现需求缺少关键现场值，先回答它的问题。高质量生成的标志不是代码长，而是每个动作和资源选择都能追溯到当前仓库中的事实。</p>
 </section>
 <section id="id6">
-<h2>5. 审查 AI 草稿<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>5. 审查 AI 草稿<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>导入前先逐项确认：</p>
 <ul class="simple">
 <li><p>工作流 UUID、每个节点 UUID 都是唯一的固定字符串，修改代码时不会重新生成；</p></li>
@@ -579,13 +581,13 @@ mkdir<span class="w"> </span>-p<span class="w"> </span>workflow_drafts
 </div>
 </section>
 <section id="id7">
-<h2>6. 用产品导入并验证<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>6. 用产品导入并验证<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <section id="id8">
-<h3>新工作流<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h3>
+<h3>新工作流<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
 <p>在 Uni-Lab OS 的“工作流”页点击“导入 Python”，选择 <code class="docutils literal notranslate"><span class="pre">workflow_drafts/&lt;流程名&gt;.py</span></code>。产品会静态解析文件；完整候选通过后，才把规范源码写入设备包的 <code class="docutils literal notranslate"><span class="pre">workflows/</span></code>（实验操作写入对应目录）并向 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 追加登记。上传文件不会被 Python import 或执行。</p>
 <p>导入要求当前 Workspace 恰好有一个可编辑的设备包源码目标。若返回 <code class="docutils literal notranslate"><span class="pre">source_target_unavailable</span></code>，先通过 <code class="docutils literal notranslate"><span class="pre">GET</span> <span class="pre">/api/v1/workspace/package-mounts</span></code> 检查 package mount 的 <code class="docutils literal notranslate"><span class="pre">editable</span></code> 状态，不要让 AI 猜测应写入哪个包。</p>
 <p>导入成功后回到终端检查产品实际落盘结果：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package&quot;</span>
 git<span class="w"> </span>status<span class="w"> </span>--short
 git<span class="w"> </span>diff<span class="w"> </span>--<span class="w"> </span>package.yaml<span class="w"> </span>example_device_package/workflows
 python<span class="w"> </span>-m<span class="w"> </span>unilabos.app.main<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.
@@ -596,12 +598,12 @@ python<span class="w"> </span>-m<span class="w"> </span>unilabos.app.main<span c
 <p>涉及并行、组合流程、物料链或画布断边时，还要把产品生成的规范 Python 再次编译，并确认第二张图与第一张图语义等价。若出现 round-trip diagnostic，应保留原草稿，只让 AI 根据诊断做最小修复；不要使用 magic comment、空 <code class="docutils literal notranslate"><span class="pre">pass</span></code> 或伪 Fork/Join 绕过。</p>
 </section>
 <section id="id9">
-<h3>修改已有工作流<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h3>
+<h3>修改已有工作流<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
 <p>不要重复导入相同 UUID。先取得现有 authoring 修订和源码，让 AI 生成最小 diff，再通过 Local Authoring 的 draft → candidate → apply 链路提交；该链路使用 draft hash、工作流 revision 和 candidate hash 防止覆盖并发修改。应用后仍要重新运行本节的检查。</p>
 </section>
 </section>
 <section id="id10">
-<h2>7. 人工批准发布和运行<a class="headerlink" href="#id10" title="Link to this heading">¶</a></h2>
+<h2>7. 人工批准发布和运行<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <p>只有下列条件全部满足后才发布：</p>
 <ol class="arabic simple">
 <li><p>AI 的动作证据表已经由人复核；</p></li>
@@ -615,11 +617,11 @@ python<span class="w"> </span>-m<span class="w"> </span>unilabos.app.main<span c
 <p>真机运行是另一项验收。必须重新核对连接、急停、联锁、点位、夹具、载荷、库存、人员和恢复方案，不能因为 AI 生成成功或 dry-run 通过就自动切换到 <code class="docutils literal notranslate"><span class="pre">normal</span></code>。</p>
 </section>
 <section id="ai-workspace-mcp">
-<h2>可选：给 AI 接入 Workspace MCP<a class="headerlink" href="#ai-workspace-mcp" title="Link to this heading">¶</a></h2>
+<h2>可选：给 AI 接入 Workspace MCP<a class="headerlink" href="#ai-workspace-mcp" title="链接到此标题。">¶</a></h2>
 <p>如果使用的 AI 客户端支持 MCP，可在已安装的源码环境中增加可选依赖：</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/Uni-Lab OS"</span>
-python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">".[mcp]"</span>
-unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">"</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package"</span>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/Uni-Lab OS&quot;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s2">&quot;.[mcp]&quot;</span>
+unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$LAB_ROOT</span><span class="s2">/user-device-package&quot;</span>
 </pre></div>
 </div>
 <p>在 AI 客户端中把命令配置为 <code class="docutils literal notranslate"><span class="pre">unilab-mcp</span></code>，参数使用 <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> 和 用户设备包 绝对路径。具体配置文件格式由 AI 客户端决定。它是由本地 MCP Client 拉起的命令型 Server，不是 Uni-Lab 自带的公网 MCP 服务；不要暴露 Workspace Host 端口或本地 token。</p>
@@ -635,7 +637,7 @@ unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class
 </ul>
 </section>
 <section id="id11">
-<h2>推荐的团队交付物<a class="headerlink" href="#id11" title="Link to this heading">¶</a></h2>
+<h2>推荐的团队交付物<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
 <p>每个由 AI 辅助创作的工作流至少保留：</p>
 <ul class="simple">
 <li><p>需求卡；</p></li>
@@ -650,7 +652,7 @@ unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class
 <p>这样后续维护者可以分清“AI 建议了什么”“产品验证了什么”“人批准了什么”和“设备实际执行了什么”。</p>
 </section>
 <section id="id12">
-<h2>后续日常使用<a class="headerlink" href="#id12" title="Link to this heading">¶</a></h2>
+<h2>后续日常使用<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>每次生成前让 AI 重新扫描当前 Catalog、驱动和相似流程，不复用过期动作记忆；</p></li>
 <li><p>用<a class="reference internal" href="workflow-features.html"><span class="std std-doc">工作流编排特性</span></a>作为提示词约束与代码审查手册；</p></li>
@@ -664,8 +666,26 @@ unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class
       <footer>
         
         <div class="related-pages">
-          
-          
+          <a class="next-page" href="repository-builder-skill.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">使用 AI 设备包生成器（实验性）</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="first-workflow.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+
+                <div class="title">手写并运行第一个工作流（用户设备包 教学）</div>
+
+              </div>
+            </a>
         </div>
         <div class="bottom-of-page">
           <div class="left-details">
@@ -697,7 +717,7 @@ unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class
         <div class="toc-tree-container">
           <div class="toc-tree">
             <ul>
-<li><a class="reference internal" href="#">用 AI 编写工作流（推荐）</a><ul>
+<li><a class="reference internal" href="#">AI 编写工作流（推荐）</a><ul>
 <li><a class="reference internal" href="#id1">当前支持到什么程度</a></li>
 <li><a class="reference internal" href="#id2">1. 建立干净基线</a></li>
 <li><a class="reference internal" href="#id3">2. 写清实验需求卡</a></li>
@@ -725,10 +745,10 @@ unilab-mcp<span class="w"> </span>--workspace<span class="w"> </span><span class
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

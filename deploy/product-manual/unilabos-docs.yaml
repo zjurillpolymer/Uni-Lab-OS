@@ -1,0 +1,83 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: unilabos-docs
+  labels:
+    app.kubernetes.io/name: unilabos-docs
+    app.kubernetes.io/component: documentation
+    app.kubernetes.io/version: "2026.09.07"
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: unilabos-docs
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: unilabos-docs
+        app.kubernetes.io/component: documentation
+        app.kubernetes.io/version: "2026.09.07"
+    spec:
+      automountServiceAccountToken: false
+      securityContext:
+        runAsNonRoot: true
+        runAsUser: 101
+        runAsGroup: 101
+        fsGroup: 101
+      containers:
+        - name: nginx
+          image: unilabos-docs:product-manual-20260907-v14
+          imagePullPolicy: Never
+          securityContext:
+            allowPrivilegeEscalation: false
+            readOnlyRootFilesystem: true
+            capabilities:
+              drop: ["ALL"]
+          ports:
+            - name: http
+              containerPort: 8080
+              protocol: TCP
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 2
+            periodSeconds: 10
+          livenessProbe:
+            httpGet:
+              path: /healthz
+              port: http
+            initialDelaySeconds: 10
+            periodSeconds: 20
+          resources:
+            requests:
+              cpu: 10m
+              memory: 32Mi
+            limits:
+              cpu: 200m
+              memory: 128Mi
+          volumeMounts:
+            - name: nginx-tmp
+              mountPath: /tmp
+      volumes:
+        - name: nginx-tmp
+          emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: unilabos-docs
+  labels:
+    app.kubernetes.io/name: unilabos-docs
+    app.kubernetes.io/component: documentation
+spec:
+  type: NodePort
+  selector:
+    app.kubernetes.io/name: unilabos-docs
+  ports:
+    - name: http
+      port: 80
+      targetPort: http
+      nodePort: 30184
+      protocol: TCP

@@ -18,6 +18,9 @@ from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 from typing import Any
 
+from unilabos.utils.log_storage import LogPolicy
+from unilabos.utils.process_output import ProcessOutput, session_log_path
+
 _BACKENDS = frozenset({"ros", "dora", "simple", "automancer"})
 _LOOPBACK_HOSTS = frozenset({"127.0.0.1", "::1", "localhost"})
 _STOP_TIMEOUT_SECONDS = 10.0
@@ -140,9 +143,11 @@ class ManagedRuntimeSupervisor:
         self._token = token
         self._lock = threading.RLock()
         self._worker: subprocess.Popen[bytes] | None = None
-        self._worker_log: Any | None = None
+        self._worker_log: ProcessOutput | None = None
+        self._worker_log_path: Path | None = None
         self._simulator: subprocess.Popen[bytes] | None = None
-        self._simulator_log: Any | None = None
+        self._simulator_log: ProcessOutput | None = None
+        self._simulator_log_path: Path | None = None
         self._last_error: str | None = None
         self._simulator_error: str | None = None
         previous_state = self._load_state()
@@ -180,6 +185,7 @@ class ManagedRuntimeSupervisor:
                 "status": status,
                 "worker": None if worker is None else {"pid": worker.pid},
                 "error": self._last_error,
+                "logPath": None if self._worker_log_path is None else str(self._worker_log_path),
                 "simulator": self._simulator_status_locked(),
             }
 
@@ -195,11 +201,12 @@ class ManagedRuntimeSupervisor:
                 )
 
             executable = self._unilab_executable()
-            log_path = self._state_directory / "edge.log"
+            # 与此 Worker 的应用日志共享 working_dir 清理池，状态文件仍留在 state 目录。
+            log_path = session_log_path(request.working_dir / "logs" / "edge.log")
+            self._worker_log_path = log_path
             self._interrupted = True
             self._last_error = "Runtime Worker 启动尚未完成"
             self._persist_state()
-            self._worker_log = log_path.open("ab", buffering=0)
             command = [
                 str(executable),
                 "--workspace",
@@ -222,12 +229,14 @@ class ManagedRuntimeSupervisor:
                 "--test_mode",
             ]
             try:
+                environment = self._runtime_environment()
+                self._worker_log = ProcessOutput(log_path, LogPolicy.from_env(environment))
                 self._worker = subprocess.Popen(
                     command,
                     cwd=request.workspace_path,
-                    env=self._runtime_environment(),
+                    env=self._worker_log.environment(environment),
                     stdin=subprocess.DEVNULL,
-                    stdout=self._worker_log,
+                    stdout=self._worker_log.stream,
                     stderr=subprocess.STDOUT,
                     start_new_session=os.name != "nt",
                     creationflags=(
@@ -236,9 +245,10 @@ class ManagedRuntimeSupervisor:
                 )
             except BaseException as error:
                 self._close_worker_log_locked()
-                self._last_error = f"Runtime Worker 启动失败：{error}"
+                self._last_error = f"Runtime Worker 启动失败：{error}；日志：{log_path}"
                 self._persist_state_best_effort()
                 raise
+            self._worker_log.close()
             self._last_error = None
             try:
                 self._persist_state()
@@ -297,17 +307,16 @@ class ManagedRuntimeSupervisor:
             self._simulator_interrupted = True
             self._simulator_error = "PLC-Sim 启动尚未完成"
             self._persist_state()
-            self._simulator_log = (self._state_directory / "simulator.log").open(
-                "ab",
-                buffering=0,
-            )
             try:
+                self._simulator_log_path = session_log_path(self._state_directory / "simulator.log")
+                environment = self._runtime_environment()
+                self._simulator_log = ProcessOutput(self._simulator_log_path, LogPolicy.from_env(environment))
                 self._simulator = subprocess.Popen(
                     command,
                     cwd=request.working_directory,
-                    env=self._runtime_environment(),
+                    env=self._simulator_log.environment(environment),
                     stdin=subprocess.DEVNULL,
-                    stdout=self._simulator_log,
+                    stdout=self._simulator_log.stream,
                     stderr=subprocess.STDOUT,
                     start_new_session=os.name != "nt",
                     creationflags=(
@@ -316,9 +325,10 @@ class ManagedRuntimeSupervisor:
                 )
             except BaseException as error:
                 self._close_simulator_log_locked()
-                self._simulator_error = f"PLC-Sim 启动失败：{error}"
+                self._simulator_error = f"PLC-Sim 启动失败：{error}；日志：{self._simulator_log_path}"
                 self._persist_state_best_effort()
                 raise
+            self._simulator_log.close()
             self._simulator_error = None
             try:
                 self._persist_state()
@@ -459,6 +469,7 @@ class ManagedRuntimeSupervisor:
             ),
             "pid": None if simulator is None else simulator.pid,
             "error": self._simulator_error,
+            "logPath": None if self._simulator_log_path is None else str(self._simulator_log_path),
         }
 
     def _load_state(self) -> dict[str, object]:
@@ -590,12 +601,19 @@ class ManagedRuntimeSupervisor:
 
     def _close_worker_log_locked(self) -> None:
         if self._worker_log is not None:
-            self._worker_log.close()
+            try:
+                self._worker_log.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                # 遗留子孙进程可能仍持有写端，接收器会独立继续排空。
+                pass
             self._worker_log = None
 
     def _close_simulator_log_locked(self) -> None:
         if self._simulator_log is not None:
-            self._simulator_log.close()
+            try:
+                self._simulator_log.wait(timeout=1.0)
+            except subprocess.TimeoutExpired:
+                pass
             self._simulator_log = None
 
 

@@ -13,6 +13,7 @@ from unilabos.workflow.authoring_graph import build_candidate_graph
 from unilabos.workflow.authoring_kernel import AuthoringCatalogSnapshot
 from unilabos.workflow.execution_plan import ExecutionPlanBuilder
 from unilabos.workflow.models import CandidateCompilation
+from unilabos.workflow.resource_lock_key import named_resource_lock_key
 
 from .test_authoring_engine import WORKFLOW_UUID, _applied_graph, _template
 
@@ -138,6 +139,69 @@ def _compile(device_identity: str | None) -> CandidateCompilation:
         source_uri="package://lab/workflows/fixed_executor_projection.py",
         applied_graph=_applied_graph(),
     )
+
+
+def test_candidate_graph_preserves_authoritative_resource_bindings() -> None:
+    """源码重建图时不得丢失已应用图中的工站资源实例绑定。"""
+
+    applied = _applied_graph()
+    applied["workflow"]["meta_data"]["unilab"] = {"resource_bindings": {
+        "station_mutex": {
+            "kind": "device",
+            "instance_uuid": DEVICE_MATERIAL_UUID,
+            "canonical_key": f"/devices/{DEVICE_MATERIAL_UUID}",
+        }
+    }}
+    program = parse_authoring_source(
+        python_source=_source(None),
+        expected_workflow_uuid=WORKFLOW_UUID,
+    )
+
+    graph, _changeset = build_candidate_graph(
+        program=program,
+        catalog=_catalog(),
+        applied_graph=applied,
+    )
+
+    actual = graph["workflow"]["meta_data"]["unilab"]["resource_bindings"]
+    expected = applied["workflow"]["meta_data"]["unilab"]["resource_bindings"]
+    assert actual == expected
+    assert actual is not expected
+
+
+def test_authoring_root_resource_reaches_bound_execution_plan_as_named_mutex() -> None:
+    """Python 根 resources 必须贯通 Candidate Graph 与 bound ResourcePlan。"""
+
+    source = _source(None).replace(
+        '    displayname="Fixed executor projection",\n',
+        '    displayname="Fixed executor projection",\n'
+        '    resources=("station_mutex",),\n',
+    )
+    program = parse_authoring_source(
+        python_source=source,
+        expected_workflow_uuid=WORKFLOW_UUID,
+    )
+    graph, _changeset = build_candidate_graph(
+        program=program,
+        catalog=_catalog(),
+        applied_graph=_applied_graph(),
+    )
+
+    plan = ExecutionPlanBuilder._resource_plan(
+        graph=graph,
+        planned_nodes=graph["nodes"],
+        planned_edges=graph["edges"],
+    )
+
+    assert graph["workflow"]["meta_data"]["unilab"]["resources"] == [
+        "station_mutex"
+    ]
+    assert plan is not None and plan.binding_state == "bound"
+    assert next(
+        resource.canonical_key
+        for resource in plan.resources
+        if resource.alias == "station_mutex"
+    ) == named_resource_lock_key("station_mutex")
 
 
 def test_fixed_device_material_identity_projects_to_both_candidate_fields() -> None:

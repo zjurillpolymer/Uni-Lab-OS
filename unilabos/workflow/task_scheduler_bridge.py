@@ -6,7 +6,7 @@ import hashlib
 import json
 import logging
 import threading
-from collections.abc import Callable, Mapping
+from collections.abc import Callable, Mapping, Sequence
 from copy import deepcopy
 from datetime import datetime, timedelta, timezone
 from typing import Any
@@ -44,6 +44,7 @@ from unilabos.workflow.execution_lock_lease import (
 from unilabos.workflow.execution_restart_recovery import (
     EXECUTION_PROCESS_RESTARTED,
     TASK_ABORTED_BY_RUNTIME_RESTART,
+    restart_retained_uncertain_job_uuids,
 )
 from unilabos.workflow.manual_confirmation import ManualConfirmationStore
 from unilabos.workflow.material_aliquot_settlement import MaterialAliquotSettlement
@@ -55,6 +56,7 @@ from unilabos.workflow.physical_settlement_policy import (
     MATERIAL_TRANSFER_RECONCILIATION_REQUIRED,
 )
 from unilabos.workflow.quantity_inventory import WorkflowQuantityInventory
+from unilabos.workflow.resource_lock_key import device_lock_key
 from unilabos.workflow.store import StoreConflict, StoreNotFound, WorkflowStore
 from unilabos.workflow.task_runtime_projection import (
     CLEANUP_STATUSES_SETTLEABLE_AFTER_TERMINAL,
@@ -74,6 +76,46 @@ _DEFAULT_CANCEL_COMPLETE_TIMEOUT_SECONDS = 60.0
 _SUBMISSION_PHASE_SCHEDULER = "scheduler_submit"
 _SUBMISSION_PHASE_PRE_DISPATCH = "pre_dispatch"
 _SUBMISSION_PHASE_LOCAL_CONTROL = "local_control"
+
+
+def _retained_interval_ids_for_result(
+    task: Mapping[str, Any],
+    job: Mapping[str, Any],
+    completed_nodes: Sequence[str | Mapping[str, Any]] = (),
+) -> tuple[str, ...]:
+    """返回正常连续持有或异常闩锁后仍须保留的资源区间。"""
+
+    control_data = job.get("control_data")
+    if not isinstance(control_data, Mapping):
+        return ()
+    raw_ids = control_data.get("resource_interval_ids")
+    if not isinstance(raw_ids, (list, tuple, set, frozenset)):
+        return ()
+    interval_ids = {str(value).strip() for value in raw_ids if str(value).strip()}
+    if not interval_ids:
+        return ()
+    execution_plan = task.get("execution_plan")
+    if not isinstance(execution_plan, Mapping):
+        return ()
+    from unilabos.workflow.resource_lock_plan import retained_resource_interval_ids
+
+    jobs = completed_nodes if completed_nodes and isinstance(completed_nodes[0], Mapping) else ()
+    if jobs:
+        return retained_resource_interval_ids(
+            execution_plan,
+            interval_ids,
+            job,
+            jobs,
+        )
+    from unilabos.workflow.resource_lock_plan import continuing_resource_interval_ids
+
+    return continuing_resource_interval_ids(
+        execution_plan,
+        interval_ids,
+        str(job.get("workflow_node_uuid") or ""),
+        completed_nodes,
+        current_completed=job.get("status") == "succeeded",
+    )
 
 
 class TaskSchedulerBridgeError(RuntimeError):
@@ -174,6 +216,10 @@ class TaskSchedulerBridge:
         self._admission_pending_tasks: set[str] = set(
             TaskRuntimeProjection(store).list_blocked_material_tasks()
         )
+        # Workflow 终态与 Edge/Inventory 清理跨越多个权威，不能依赖下一次
+        # restart 通知仍携带相同 Job UUID。首次清理失败后在本进程内保留 Task
+        # 身份；持久跨进程补偿仍由 ``_recover_terminal_inventory_cleanup`` 承担。
+        self._runtime_restart_cleanup_pending_tasks: set[str] = set()
         self._closed = False
         scheduler.add_admission_retry_listener(self._retry_pending_admissions)
         scheduler.bind_dispatch_admission_authority(self._on_job_pre_dispatch)
@@ -363,6 +409,11 @@ class TaskSchedulerBridge:
             # 自动物料来源（MaterialSource）的准入结果已原子写入既有动作作业参数；
             # 重新读取同一作业身份后再编译，禁止派发准入前的空参数快照。
             jobs = self._store.list_jobs(task_uuid)
+            if persisted_task.get("execution_plan", {}).get("inventory_resource_binding") == "pending":
+                self._projection.bind_inventory_resource_plan(
+                    task_uuid, self._scheduler.station_resource_inventory,
+                )
+                persisted_task = self._store.get_task(task_uuid)
             spec = self._compiler.compile(persisted_task, jobs)
             if not spec.nodes:
                 # 仅来源任务没有普通作业可触发调度器终态清理；协调器必须在返回成功
@@ -446,6 +497,104 @@ class TaskSchedulerBridge:
         self._scheduler.reschedule()
         return self._aggregate(normalized_uuid)
 
+    def reschedule(self) -> None:
+        """在人工释放持久执行锁后唤醒共享调度器。"""
+
+        if self._closed:
+            raise TaskSchedulerBridgeError("工作流任务调度桥已经关闭")
+        self._scheduler.reschedule()
+
+    def unlock_resources(
+        self,
+        task_uuid: str,
+        *,
+        command_uuid: str,
+        reason: str,
+    ) -> dict[str, Any]:
+        """在操作员已确认现场安全后整组释放异常终态 Task 资源。
+
+        参数：Task/Command 身份和现场处置说明均由应用服务验证。
+        返回各类释放计数与最终清理状态。异常：任务非异常终态，或仍有
+        已派发/运行中的 Job、
+        库存权威不支持整组释放或持久事实冲突时抛出稳定桥接错误。
+
+        跨库无法使用单一 SQLite 事务；因此严格按库存 Permit → 任务级
+        预留 → 工作流持久锁 → Scheduler 内存的单向、幂等顺序释放。
+        中途失败只会留下过度约束，不会让内存先于持久门禁放行。
+        """
+
+        if self._closed:
+            raise TaskSchedulerBridgeError("工作流任务调度桥已经关闭")
+        normalized_uuid = self._required_text(task_uuid, field="task_uuid")
+        normalized_command_uuid = self._required_text(
+            command_uuid,
+            field="command_uuid",
+        )
+        normalized_reason = self._required_text(reason, field="reason")
+        task = self._store.get_task(normalized_uuid)
+        jobs = self._store.list_jobs(normalized_uuid)
+        if task.get("status") not in {"failed", "canceled", "timeout"}:
+            raise TaskSchedulerBridgeError("任务尚未进入异常终态")
+        if any(job.get("status") in {"dispatched", "running"} for job in jobs):
+            raise TaskSchedulerBridgeError("任务仍有已派发或运行中的作业")
+
+        try:
+            station_inventory = self._scheduler.station_resource_inventory
+            if (
+                station_inventory is None
+                and self._scheduler.physical_dispatch_enabled
+            ):
+                raise TaskSchedulerBridgeError(
+                    "物理调度未装配库存权威，拒绝人工释放"
+                )
+            if station_inventory is not None:
+                release_permits = getattr(
+                    station_inventory,
+                    "release_task_dispatch_permits",
+                    None,
+                )
+                if not callable(release_permits):
+                    raise TaskSchedulerBridgeError(
+                        "库存权威不支持终态任务整组释放"
+                    )
+                release_permits(task_uuid=normalized_uuid)
+            if self._quantity_inventory is not None:
+                self._quantity_inventory.release_task(
+                    normalized_uuid,
+                    reason="operator_resource_unlock",
+                )
+            if any(job.get("executor_kind") == "material_source" for job in jobs):
+                self._material_sources.release_terminal_reservations(
+                    normalized_uuid,
+                    reason="operator_resource_unlock",
+                )
+            result = self._projection.release_operator_confirmed_task_resources(
+                normalized_uuid,
+                command_uuid=normalized_command_uuid,
+                reason=normalized_reason,
+            )
+            self._scheduler.release_terminal_workflow_resources(normalized_uuid)
+        except TaskSchedulerBridgeError:
+            raise
+        except (StoreConflict, StoreNotFound, ValueError) as error:
+            raise TaskSchedulerBridgeError(str(error)) from error
+
+        for job in jobs:
+            job_uuid = str(job.get("uuid") or "")
+            self._task_by_job.pop(job_uuid, None)
+            self._cancel_cancel_timer(job_uuid)
+            self._cancel_manual_confirmation_timer(job_uuid)
+        self._submitted_tasks.discard(normalized_uuid)
+        self._admission_pending_tasks.discard(normalized_uuid)
+        with self._submission_phase_lock:
+            self._retryable_scheduler_runs.discard(normalized_uuid)
+        try:
+            self._scheduler.reschedule()
+        except Exception:
+            # 全部资源释放事实已单向提交；下次调度轮会重新发现等待者。
+            logger.warning("人工释放任务资源后调度器唤醒失败", exc_info=True)
+        return result
+
     def step(
         self,
         task_uuid: str,
@@ -488,9 +637,9 @@ class TaskSchedulerBridge:
     ) -> dict[str, Any]:
         """持久化取消请求并请求本地执行器安全停止设备作业。
 
-        参数：``task_uuid`` 是已提交任务身份；``command_uuid`` 是公开幂等控制命令
+        参数：``task_uuid`` 是已创建任务身份；``command_uuid`` 是公开幂等控制命令
         身份，直接调用时自动生成。返回取消受理后的任务/作业聚合。异常：桥关闭、
-        任务未提交或投影冲突时抛稳定错误。
+        任务既未进入物料准入也未提交调度器，或投影冲突时抛稳定错误。
 
         未发送作业同步取消；设备在途作业保持 ``cancel_requested`` 和执行锁，等待
         执行器受理及明确终态。取消请求成功不等于设备已经安全停止。
@@ -499,8 +648,6 @@ class TaskSchedulerBridge:
         if self._closed:
             raise TaskSchedulerBridgeError("工作流任务调度桥已经关闭")
         normalized_uuid = self._required_text(task_uuid, field="task_uuid")
-        if self._scheduler.workflow_snapshot(normalized_uuid) is None:
-            raise TaskSchedulerBridgeError("工作流任务尚未提交到本地调度器")
         normalized_command_uuid = self._required_text(
             command_uuid or str(uuid4()),
             field="command_uuid",
@@ -510,6 +657,13 @@ class TaskSchedulerBridge:
         complete_deadline = now + timedelta(
             seconds=self._cancel_complete_timeout_seconds
         )
+        scheduler_snapshot = self._scheduler.workflow_snapshot(normalized_uuid)
+        admission = self._projection.get_material_admission(normalized_uuid)
+        admission_pending = normalized_uuid in self._admission_pending_tasks or (
+            admission is not None and admission.get("status") == "blocked"
+        )
+        if scheduler_snapshot is None and not admission_pending:
+            raise TaskSchedulerBridgeError("工作流任务尚未提交到本地调度器")
         self._projection.project_cancel_requested(
             normalized_uuid,
             command_uuid=normalized_command_uuid,
@@ -520,7 +674,9 @@ class TaskSchedulerBridge:
         # 外部 Task Cancel 可能关闭当前最早的人工确认；立即重排唯一计时器，
         # 不让已关闭的 deadline 长时间占据唤醒槽。
         self._schedule_manual_confirmation_timeout()
-        if not self._scheduler.cancel_workflow(normalized_uuid):
+        if scheduler_snapshot is not None and not self._scheduler.cancel_workflow(
+            normalized_uuid
+        ):
             raise TaskSchedulerBridgeError("工作流任务尚未提交到本地调度器")
         self._store.stop_debug(normalized_uuid)
         self._admission_pending_tasks.discard(normalized_uuid)
@@ -816,9 +972,10 @@ class TaskSchedulerBridge:
     def recover_active_tasks(self) -> list[dict[str, Any]]:
         """在 runtime 重启后失败所有未终态工作流任务。
 
-        已完成 Job 保持现状；在途 Job 失败；未开始 Job 取消且不恢复
-        派发。任务的数量预留、实例物料预留和旧 Claim/Fence 一并释放。
-        返回已收敛的标准任务聚合；单任务故障不阻止其他任务处理。
+        已完成 Job 保持现状；在途 Job 失败；未开始 Job 取消且不恢复派发。普通
+        任务的数量预留、实例物料预留和旧 Claim/Fence 一并释放；已有物理对账
+        及其 preheld provider 保持冻结。返回已收敛的标准任务聚合；单任务故障
+        不阻止其他任务处理。
         """
 
         if self._closed:
@@ -847,14 +1004,18 @@ class TaskSchedulerBridge:
         recovered: list[dict[str, Any]] = []
         # 按 create_time/uuid 稳定扫描，不重建内存 DAG，保证重启后没有
         # pending 或 step-paused 任务以原身份继续派发。
-        for task in self._store.list_recoverable_tasks():
+        for task in self._store.list_execution_restart_candidates():
             try:
                 task_uuid = self._required_text(task.get("uuid"), field="task.uuid")
                 aggregate = self._projection.project_execution_process_restarted(
                     task_uuid
                 )
                 if aggregate is not None:
+                    # Workflow 终态先提交，Inventory/Edge 清理随后跨权威执行。
+                    # 先登记补偿身份，异常时由同一进程收到的空 restart 事件重试。
+                    self._runtime_restart_cleanup_pending_tasks.add(task_uuid)
                     self._release_runtime_restart_resources(aggregate)
+                    self._runtime_restart_cleanup_pending_tasks.discard(task_uuid)
             except Exception:  # 单任务损坏不影响其他恢复
                 logger.exception(
                     "活动工作流任务无法按重启策略收敛：%s",
@@ -890,15 +1051,20 @@ class TaskSchedulerBridge:
                 for task in task_page["items"]:
                     task_uuid = str(task["uuid"])
                     jobs = self._store.list_jobs(task_uuid)
-                    task_errors = task.get("error_info")
-                    if (
-                        isinstance(task_errors, list)
-                        and any(
-                            isinstance(item, Mapping)
-                            and item.get("code") == EXECUTION_PROCESS_RESTARTED
-                            for item in task_errors
+                    from unilabos.workflow.resource_lock_plan import (
+                        failed_explicit_resource_interval_ids,
+                    )
+
+                    failure_latched = bool(
+                        failed_explicit_resource_interval_ids(
+                            task.get("execution_plan", {}),
+                            jobs,
                         )
-                    ):
+                    )
+                    restart_cleanup_required = (
+                        self._requires_runtime_restart_cleanup(task, jobs)
+                    )
+                    if restart_cleanup_required:
                         self._release_runtime_restart_resources(
                             {"task": task, "jobs": jobs}
                         )
@@ -918,12 +1084,12 @@ class TaskSchedulerBridge:
                     ):
                         continue
                     reason = f"workflow_{status}_recovery"
-                    if self._quantity_inventory is not None:
+                    if self._quantity_inventory is not None and not failure_latched:
                         self._quantity_inventory.release_task(
                             task_uuid,
                             reason=reason,
                         )
-                    if any(
+                    if not failure_latched and any(
                         job.get("executor_kind") == "material_source" for job in jobs
                     ):
                         self._material_sources.release_terminal_reservations(
@@ -932,6 +1098,7 @@ class TaskSchedulerBridge:
                         )
                     if (
                         status != "succeeded"
+                        and not failure_latched
                         and task.get("cleanup_status")
                         in CLEANUP_STATUSES_SETTLEABLE_AFTER_TERMINAL
                     ):
@@ -958,6 +1125,11 @@ class TaskSchedulerBridge:
         for job in jobs:
             if not isinstance(job, Mapping):
                 continue
+            uncertainty_reason = str(job.get("uncertainty_reason") or "").strip()
+            if not uncertainty_reason:
+                # 同一终态任务通常还包含 workflow_input、本地控制和此前已成功的
+                # 作业；这些作业从未签发物理 Claim，恢复时不得把它们误判为损坏。
+                continue
             job_uuid = self._required_text(job.get("uuid"), field="job.uuid")
             claim = self._projection.get_execution_claim(job_uuid)
             if claim is None:
@@ -970,11 +1142,7 @@ class TaskSchedulerBridge:
                 continue
             inventory.transition_dispatch_permit(
                 str(claim["claim_uuid"]),
-                target_state=(
-                    "uncertain"
-                    if str(job.get("uncertainty_reason") or "").strip()
-                    else "released"
-                ),
+                target_state="uncertain",
             )
 
     def _register_active_recovery_routes(self) -> None:
@@ -1042,12 +1210,15 @@ class TaskSchedulerBridge:
         self,
         job_uuids: tuple[str, ...],
     ) -> None:
-        """把动作进程重启收敛成受影响任务的失败终态。
+        """把动作进程重启收敛成全部非终态任务的失败终态。
 
         参数：``job_uuids`` 是动作账本保留下来的结果不确定作业。返回无。异常：
         单项投影故障在其余任务全部处理后聚合为 ``TaskSchedulerBridgeError``；陈旧
-        终态任务幂等跳过。每个任务只投影一次；运行中作业进入失败，尚未物理
-        执行的节点进入取消，Claim/Fence 与任务预留全部释放。
+        终态任务幂等跳过。Runtime 崩溃证明该进程承载的物理动作均已停止，因此
+        不只处理账本列出的在途作业：每个非终态任务都只投影一次，运行中作业进入
+        失败，尚未物理执行的节点进入取消。无库存变化的 Claim/Fence 与任务预留
+        释放；转运/分装以及重启前已经等待物理对账的 Job 和其 preheld provider
+        占用保持 uncertain。
         """
 
         task_uuids: list[str] = []
@@ -1065,6 +1236,17 @@ class TaskSchedulerBridge:
                 )
             if task_uuid not in task_uuids:
                 task_uuids.append(task_uuid)
+        directly_affected_task_uuids = set(task_uuids)
+        retry_pending_task_uuids = set(
+            self._runtime_restart_cleanup_pending_tasks
+        )
+        for task_uuid in sorted(retry_pending_task_uuids):
+            if task_uuid not in task_uuids:
+                task_uuids.append(task_uuid)
+        for task in self._store.list_execution_restart_candidates():
+            task_uuid = self._required_text(task.get("uuid"), field="task.uuid")
+            if task_uuid not in task_uuids:
+                task_uuids.append(task_uuid)
         failures: list[tuple[str, Exception]] = []
         for task_uuid in task_uuids:
             try:
@@ -1077,13 +1259,44 @@ class TaskSchedulerBridge:
                 logger.exception("动作进程重启收敛任务失败：%s", task_uuid)
                 continue
             if aggregate is None:
+                # Workflow 终态先于跨库/Edge 清理提交；若第一次清理瞬时失败，
+                # 相同 restart 事件重放必须继续幂等补偿，不能因投影已终态而跳过。
+                if task_uuid in (
+                    directly_affected_task_uuids | retry_pending_task_uuids
+                ):
+                    try:
+                        replay_task = self._store.get_task(task_uuid)
+                        replay_jobs = self._store.list_jobs(task_uuid)
+                    except Exception as error:
+                        failures.append((task_uuid, error))
+                        logger.exception(
+                            "动作进程重启读取待补偿任务失败：%s",
+                            task_uuid,
+                        )
+                        continue
+                    if self._requires_runtime_restart_cleanup(
+                        replay_task,
+                        replay_jobs,
+                    ):
+                        aggregate = {"task": replay_task, "jobs": replay_jobs}
+                    else:
+                        self._runtime_restart_cleanup_pending_tasks.discard(
+                            task_uuid
+                        )
+            if aggregate is None:
                 logger.info(
                     "动作进程重启跳过无需变化的陈旧任务：%s",
                     task_uuid,
                 )
                 continue
+            # 先登记再触发外部副作用；任一步失败都让下一次 restart 通知继续重试。
+            self._runtime_restart_cleanup_pending_tasks.add(task_uuid)
             try:
                 self._release_runtime_restart_resources(aggregate)
+                if task_uuid not in directly_affected_task_uuids:
+                    # 底层调度器只会自动移除账本点名作业所属的运行。其余运行也属于
+                    # 同一已崩溃 Runtime；持久终态提交后可直接撤销，不发送物理取消。
+                    self._scheduler.release_terminal_workflow_resources(task_uuid)
             except Exception as error:
                 failures.append((task_uuid, error))
                 logger.exception(
@@ -1091,6 +1304,7 @@ class TaskSchedulerBridge:
                     task_uuid,
                 )
                 continue
+            self._runtime_restart_cleanup_pending_tasks.discard(task_uuid)
             logger.error(
                 "工作流任务 %s 因动作执行进程重启整体失败，未开始节点不再推进",
                 task_uuid,
@@ -1105,35 +1319,111 @@ class TaskSchedulerBridge:
         self,
         aggregate: Mapping[str, Any],
     ) -> None:
-        """runtime 重启终止任务后，释放其全部任务级资源。"""
+        """runtime 重启终止任务后，释放本次中断的资源。
+
+        重启前已终态且仍需物理对账/交接的 Job，以及本次中断后实际物料位置
+        未知的转运/分装 Job，其 Inventory/Workflow Claim 必须继续阻断其他 Task。
+        """
 
         task = aggregate.get("task")
         jobs = aggregate.get("jobs")
-        if not isinstance(task, Mapping) or not isinstance(jobs, list):
+        if (
+            not isinstance(task, Mapping)
+            or not isinstance(jobs, list)
+            or any(not isinstance(job, Mapping) for job in jobs)
+        ):
             raise StoreConflict("重启失败聚合结构非法")
         task_uuid = self._required_text(task.get("uuid"), field="task.uuid")
         inventory = self._scheduler.station_resource_inventory
+        from unilabos.workflow.resource_lock_plan import (
+            failed_explicit_resource_interval_ids,
+        )
+
+        failure_latched_interval_ids = set(
+            failed_explicit_resource_interval_ids(
+                task.get("execution_plan", {}),
+                jobs,
+            )
+        )
+        retained_uncertain_job_uuids = restart_retained_uncertain_job_uuids(jobs)
+        if (
+            retained_uncertain_job_uuids
+            and inventory is None
+            and self._scheduler.physical_dispatch_enabled
+        ):
+            raise StoreConflict("物理部署缺少库存 DispatchPermit 权威")
+        retained_task_resources = bool(
+            str(task.get("attention_reason") or "").strip()
+            or task.get("cleanup_status") == "requires_attention"
+            or retained_uncertain_job_uuids
+        )
+        restarted_job_uuids: list[str] = []
         for job in jobs:
             if not isinstance(job, Mapping):
                 continue
             job_uuid = self._required_text(job.get("uuid"), field="job.uuid")
             claim = self._projection.get_execution_claim(job_uuid)
+            if (
+                job_uuid in retained_uncertain_job_uuids
+                and claim is None
+                and self._scheduler.physical_dispatch_enabled
+            ):
+                raise StoreConflict(f"等待物理结算的作业缺少库存 Claim：{job_uuid}")
+            aborted_by_restart = self._was_aborted_by_runtime_restart(job)
+            if (
+                aborted_by_restart
+                and job.get("status") == "failed"
+                and job_uuid not in restarted_job_uuids
+            ):
+                restarted_job_uuids.append(job_uuid)
             if claim is not None and inventory is not None:
-                inventory.transition_dispatch_permit(
-                    str(claim["claim_uuid"]),
-                    target_state="released",
+                control_data = job.get("control_data")
+                interval_map = (
+                    control_data.get("resource_interval_ids_by_lock", {})
+                    if isinstance(control_data, Mapping)
+                    else {}
                 )
+                keep_lock_keys = tuple(
+                    str(lock_key)
+                    for lock_key, raw_ids in interval_map.items()
+                    if isinstance(raw_ids, (list, tuple, set, frozenset))
+                    and {str(value) for value in raw_ids}
+                    & failure_latched_interval_ids
+                )
+                if keep_lock_keys:
+                    inventory.retain_dispatch_permit_resources(
+                        str(claim["claim_uuid"]),
+                        keep_lock_keys=keep_lock_keys,
+                    )
+                    retained_task_resources = True
+                else:
+                    inventory.transition_dispatch_permit(
+                        str(claim["claim_uuid"]),
+                        target_state=(
+                            "uncertain"
+                            if job_uuid in retained_uncertain_job_uuids
+                            else "released"
+                        ),
+                    )
+            if job_uuid in retained_uncertain_job_uuids:
+                retained_task_resources = True
+            elif (
+                not aborted_by_restart
+                and isinstance(claim, Mapping)
+                and claim.get("state") in {"reserved", "running", "uncertain"}
+            ):
+                retained_task_resources = True
             self._task_by_job.pop(job_uuid, None)
             self._cancel_cancel_timer(job_uuid)
             self._cancel_manual_confirmation_timer(job_uuid)
         self._submitted_tasks.discard(task_uuid)
         self._admission_pending_tasks.discard(task_uuid)
-        if self._quantity_inventory is not None:
+        if self._quantity_inventory is not None and not retained_task_resources:
             self._quantity_inventory.release_task(
                 task_uuid,
                 reason="runtime_restarted",
             )
-        if any(
+        if not retained_task_resources and any(
             isinstance(job, Mapping)
             and job.get("executor_kind") == "material_source"
             for job in jobs
@@ -1142,13 +1432,21 @@ class TaskSchedulerBridge:
                 task_uuid,
                 reason="runtime_restarted",
             )
-        restarted_job_uuids = [
-            str(job["uuid"])
-            for job in jobs
-            if isinstance(job, Mapping) and str(job.get("status") or "") == "failed"
-        ]
         if restarted_job_uuids:
             self._scheduler.fail_restarted_jobs(restarted_job_uuids)
+        if (
+            not retained_task_resources
+            and task.get("status") in {"failed", "canceled", "timeout"}
+            and task.get("cleanup_status")
+            in CLEANUP_STATUSES_SETTLEABLE_AFTER_TERMINAL
+            and all(
+                job.get("status") in {"succeeded", "failed", "canceled", "timeout"}
+                for job in jobs
+            )
+        ):
+            # 实际库存对账可能已经提交，而 Permit 释放在跨库窗口中失败。
+            # 幂等补偿全部完成后再提交 settled，释放任务独占物料 Claim。
+            self._projection.project_cleanup_settled(task_uuid)
 
     def _recover_running_task(
         self,
@@ -1284,6 +1582,27 @@ class TaskSchedulerBridge:
         for job in recoverable_jobs:
             job_uuid = self._required_text(job.get("uuid"), field="job.uuid")
             self._task_by_job[job_uuid] = task_uuid
+        restored_interval_handoffs = []
+        for job in ordinary_jobs:
+            if job.get("status") != "succeeded":
+                continue
+            control_data = job.get("control_data")
+            if not isinstance(control_data, Mapping):
+                continue
+            interval_ids = control_data.get("resource_interval_ids")
+            interval_map = control_data.get("resource_interval_ids_by_lock")
+            if not isinstance(interval_ids, (list, tuple, set, frozenset)):
+                continue
+            if not interval_ids or not isinstance(interval_map, Mapping):
+                continue
+            restored_interval_handoffs.append(
+                {
+                    "node_id": str(job.get("workflow_node_uuid") or ""),
+                    "job_id": str(job.get("uuid") or ""),
+                    "resource_interval_ids": list(interval_ids),
+                    "resource_interval_ids_by_lock": dict(interval_map),
+                }
+            )
         self._submitted_tasks.add(task_uuid)
         try:
             restored = self._scheduler.restore_workflow(
@@ -1291,6 +1610,7 @@ class TaskSchedulerBridge:
                 completed_results,
                 [],
                 skipped_nodes,
+                restored_interval_handoffs,
             )
             self._project_scheduler_trace_context(
                 task_uuid,
@@ -1382,6 +1702,7 @@ class TaskSchedulerBridge:
         self._task_by_job.clear()
         self._submitted_tasks.clear()
         self._admission_pending_tasks.clear()
+        self._runtime_restart_cleanup_pending_tasks.clear()
         with self._cancel_timer_lock:
             timers = tuple(self._cancel_timers.values())
             self._cancel_timers.clear()
@@ -1515,8 +1836,8 @@ class TaskSchedulerBridge:
                 raise StoreConflict(f"派发作业原位操作条件不是对象：{job_uuid}")
             required_device_tenancy = {
                 "material_uuid": str(raw_operate.get("material_uuid") or ""),
-                "device_lock_key": (
-                    "/devices/" + str(raw_operate.get("device_material_uuid") or "")
+                "device_lock_key": device_lock_key(
+                    str(raw_operate.get("device_material_uuid") or "")
                 ),
             }
         actual_executor = dispatching.get("actual_executor")
@@ -1535,9 +1856,7 @@ class TaskSchedulerBridge:
                     for candidate in dispatch_candidates:
                         candidate_args = candidate.get("resolved_args")
                         candidate_locks = candidate.get("execution_locks")
-                        candidate_transfer = candidate.get(
-                            "transfer_dispatch_condition"
-                        )
+                        candidate_transfer = candidate.get("transfer_dispatch_condition")
                         if (
                             not isinstance(candidate_args, Mapping)
                             or not isinstance(candidate_locks, list)
@@ -1559,12 +1878,8 @@ class TaskSchedulerBridge:
                         tuple(requests)
                     )
                     selected_index = decision.selected_candidate_index
-                    if decision.acquired and not (
-                        0 <= selected_index < len(dispatch_candidates)
-                    ):
-                        raise StoreConflict(
-                            f"库存权威返回了非法派发候选索引：{job_uuid}"
-                        )
+                    if decision.acquired and not (0 <= selected_index < len(dispatch_candidates)):
+                        raise StoreConflict(f"库存权威返回了非法派发候选索引：{job_uuid}")
                     if decision.acquired:
                         selected = dispatch_candidates[selected_index]
                         dispatching.update(selected)
@@ -1612,6 +1927,22 @@ class TaskSchedulerBridge:
             projection_kwargs: dict[str, Any] = {}
             if required_device_tenancy is not None:
                 projection_kwargs["required_device_tenancy"] = required_device_tenancy
+            for field in (
+                "resource_plan_id",
+                "resource_interval_ids",
+                "resource_acquire_set_id",
+                "resource_interval_ids_by_lock",
+            ):
+                value = dispatching.get(field)
+                if value:
+                    projection_kwargs[field] = value
+            for source, target in (
+                ("resource_preheld_lock_keys", "preheld_lock_keys"),
+                ("resource_preheld_job_uuids", "preheld_job_uuids"),
+            ):
+                value = dispatching.get(source)
+                if value:
+                    projection_kwargs[target] = value
             if "manual_confirmation" in dispatching:
                 manual_config = dispatching.get("manual_confirmation")
                 if not isinstance(manual_config, Mapping):
@@ -1662,13 +1993,43 @@ class TaskSchedulerBridge:
                     permit.claim_uuid,
                     target_state="reserved",
                 )
+                preheld_jobs = tuple(
+                    sorted(
+                        {
+                            str(value)
+                            for value in (dispatching.get("resource_preheld_job_uuids") or [])
+                            if str(value).strip()
+                        }
+                    )
+                )
+                preheld_keys = tuple(
+                    sorted(
+                        {
+                            str(value)
+                            for value in (dispatching.get("resource_preheld_lock_keys") or [])
+                            if str(value).strip()
+                        }
+                    )
+                )
+                preheld_jobs = tuple(
+                    job for job in preheld_jobs if self._store.get_job(job)["status"] == "succeeded"
+                )
+                if preheld_jobs:
+                    release_preheld = getattr(
+                        inventory_authority,
+                        "release_preheld_dispatch_claims",
+                        None,
+                    )
+                    if not callable(release_preheld):
+                        raise StoreConflict("库存权威不支持安全的连续 Claim 交接")
+                    release_preheld(
+                        task_uuid=task_uuid,
+                        job_uuids=preheld_jobs,
+                        lock_keys=preheld_keys,
+                    )
                 permit_committed = True
         except BaseException:
-            if (
-                inventory_authority is not None
-                and permit is not None
-                and not permit_committed
-            ):
+            if inventory_authority is not None and permit is not None and not permit_committed:
                 if permit_projected:
                     freeze_projected_dispatch_permit(
                         inventory=inventory_authority,
@@ -1789,7 +2150,8 @@ class TaskSchedulerBridge:
             ):
                 raise StoreConflict("派发转运条件字段不完整")
             transfer = TransferDispatchCondition(
-                **{field: str(raw_transfer[field]).strip() for field in required}
+                **{field: str(raw_transfer[field]).strip() for field in required},
+                allow_held_material=bool(dispatching.get("transfer_place_step")),
             )
             expected_change_set = {
                 "kind": "material_transfer",
@@ -1813,9 +2175,7 @@ class TaskSchedulerBridge:
                     raise StoreConflict("派发库位选择审计字段不完整")
                 selection_site_uuids = raw_site_selection.get("site_uuids")
                 selection_group = str(raw_site_selection.get("group_key") or "")
-                requested_reference = str(
-                    raw_site_selection.get("requested_reference") or ""
-                )
+                requested_reference = str(raw_site_selection.get("requested_reference") or "")
                 if (
                     raw_site_selection.get("version") != 1
                     or str(raw_site_selection.get("strategy") or "") != "sort_order"
@@ -1879,6 +2239,20 @@ class TaskSchedulerBridge:
                 "source_material_uuid": source_uuid,
                 "target_material_uuids": list(targets),
             }
+        reserved_targets = []
+        task = self._store.get_task(task_uuid)
+        resource_plan = (task.get("execution_plan") or {}).get("resource_plan") or {}
+        by_alias = {r["alias"]: r["canonical_key"] for r in resource_plan.get("resources", [])}
+        for pair in (resource_plan.get("metadata") or {}).get("transfers", []):
+            if pair["pick_node_uuid"] != job["workflow_node_uuid"]:
+                continue
+            key = by_alias.get(pair["target_site"], "")
+            resource = next(
+                (r for r in resources if r.lock_key == key and r.scope == "material_site"), None
+            )
+            if resource is None:
+                raise StoreConflict("拆分搬运目标 Site 未绑定到完整执行资源集")
+            reserved_targets.append(resource.site_uuid)
         return DispatchAdmissionRequest(
             effect_uuid=effect_uuid,
             task_uuid=task_uuid,
@@ -1887,6 +2261,26 @@ class TaskSchedulerBridge:
             parameter_hash=parameter_hash,
             expected_change_set=expected_change_set,
             resources=tuple(resources),
+            reserved_target_site_uuids=tuple(reserved_targets),
+            shared_scope_lock_keys=tuple(dispatching.get("resource_shared_scope_keys") or ()),
+            preheld_lock_keys=tuple(
+                sorted(
+                    {
+                        str(value)
+                        for value in (dispatching.get("resource_preheld_lock_keys") or [])
+                        if str(value).strip()
+                    }
+                )
+            ),
+            preheld_job_uuids=tuple(
+                sorted(
+                    {
+                        str(value)
+                        for value in (dispatching.get("resource_preheld_job_uuids") or [])
+                        if str(value).strip()
+                    }
+                )
+            ),
             transfer=transfer,
             operate_in_place=operate_in_place,
             aliquot=aliquot,
@@ -1927,7 +2321,13 @@ class TaskSchedulerBridge:
             wait_resources.append(
                 {
                     key: str(resource[key]).strip()
-                    for key in ("scope", "device_id", "material_uuid", "site_uuid")
+                    for key in (
+                        "scope",
+                        "lock_key",
+                        "device_id",
+                        "material_uuid",
+                        "site_uuid",
+                    )
                     if key in resource and resource[key] not in (None, "")
                 }
             )
@@ -2001,10 +2401,38 @@ class TaskSchedulerBridge:
         self._projection.project_dispatch_accepted(job_uuid)
 
     def _on_manual_continuation_dispatching(self, job_uuid: str) -> None:
-        """在人工批准后、物理调用前提交同一 Job 的派发意图。"""
+        """在人工批准后复验双库 Permit，再提交同一 Job 的派发意图。"""
 
         if job_uuid not in self._task_by_job:
             raise StoreConflict(f"人工确认继续作业不属于当前运行：{job_uuid}")
+        job = self._store.get_job(job_uuid)
+        claim = self._projection.require_dispatchable_execution_claim(job_uuid)
+        inventory_authority = self._scheduler.station_resource_inventory
+        if inventory_authority is None:
+            if self._scheduler.physical_dispatch_enabled:
+                raise StoreConflict("人工确认物理派发缺少库存 Permit 权威")
+        else:
+            validator = getattr(
+                inventory_authority,
+                "validate_active_dispatch_permit",
+                None,
+            )
+            if not callable(validator):
+                raise StoreConflict("人工确认物理派发缺少库存 Permit 复验能力")
+            validator(
+                effect_uuid=str(job.get("dispatch_effect_uuid") or ""),
+                claim_uuid=str(claim["claim_uuid"]),
+                task_uuid=str(job["workflow_task_uuid"]),
+                job_uuid=job_uuid,
+                attempt=int(job["attempt"]),
+                parameter_hash=str(job.get("dispatch_parameter_hash") or ""),
+                expected_change_set=job.get("expected_change_set", {}),
+                resource_keys=claim["resource_keys"],
+                fences={
+                    str(fence["lock_key"]): int(fence["fencing_token"])
+                    for fence in claim["fences"]
+                },
+            )
         self._projection.project_manual_continuation_dispatching(
             job_uuid,
             dispatched_at=self._format_time(self._clock()),
@@ -2319,7 +2747,7 @@ class TaskSchedulerBridge:
                         if str(error) == "workflow_job_budget_exceeded"
                         else "repeat_iteration_materialization_failed"
                     )
-                    self._projection.project_repeat_evaluation(
+                    aggregate = self._projection.project_repeat_evaluation(
                         control_job_uuid=job_uuid,
                         iteration_index=iteration_index,
                         condition_result=None,
@@ -2331,6 +2759,10 @@ class TaskSchedulerBridge:
                         next_carry=None,
                         error_code=error_code,
                         error_message=str(error),
+                    )
+                    self._reconcile_inventory_resource_intervals(
+                        task_uuid=task_uuid,
+                        aggregate=aggregate,
                     )
                     event["phase"] = "evaluate"
                     event["condition_result"] = None
@@ -2359,7 +2791,7 @@ class TaskSchedulerBridge:
                 not isinstance(item, Mapping) for item in raw_skipped_jobs
             ):
                 raise TaskSchedulerBridgeError("循环结算 skipped_jobs 结构非法")
-            self._projection.project_repeat_evaluation(
+            aggregate = self._projection.project_repeat_evaluation(
                 control_job_uuid=job_uuid,
                 iteration_index=iteration_index,
                 condition_result=(
@@ -2378,6 +2810,10 @@ class TaskSchedulerBridge:
                     )
                     for item in raw_skipped_jobs
                 ],
+            )
+            self._reconcile_inventory_resource_intervals(
+                task_uuid=task_uuid,
+                aggregate=aggregate,
             )
             if event.get("error") or event.get("condition_result") is True:
                 self._task_by_job.pop(job_uuid, None)
@@ -2406,6 +2842,10 @@ class TaskSchedulerBridge:
             error_code=(str(event["error"]) if event.get("error") else None),
             error_message=(str(event["message"]) if event.get("message") else None),
         )
+        self._reconcile_inventory_resource_intervals(
+            task_uuid=task_uuid,
+            aggregate=aggregate,
+        )
         self._task_by_job.pop(job_uuid, None)
         for skipped_uuid in skipped_job_uuids:
             self._task_by_job.pop(skipped_uuid, None)
@@ -2425,12 +2865,22 @@ class TaskSchedulerBridge:
                     reason="workflow_succeeded",
                 )
         elif terminal_status == "failed":
+            from unilabos.workflow.resource_lock_plan import (
+                failed_explicit_resource_interval_ids,
+            )
+
+            failure_latched = bool(
+                failed_explicit_resource_interval_ids(
+                    aggregate["task"].get("execution_plan", {}),
+                    aggregate["jobs"],
+                )
+            )
             scheduler_snapshot = self._scheduler.snapshot()
             active_for_task = any(
                 inflight.get("workflow_id") == task_uuid
                 for inflight in scheduler_snapshot.get("inflight_jobs", {}).values()
             )
-            if not active_for_task:
+            if not active_for_task and not failure_latched:
                 if self._quantity_inventory is not None:
                     self._quantity_inventory.release_task(
                         task_uuid,
@@ -2611,6 +3061,24 @@ class TaskSchedulerBridge:
         )
 
     @staticmethod
+    def _requires_runtime_restart_cleanup(
+        task: Mapping[str, Any],
+        jobs: Sequence[Mapping[str, Any]],
+    ) -> bool:
+        """判断终态聚合是否仍属于 runtime restart 跨权威补偿。"""
+
+        task_errors = task.get("error_info")
+        task_was_aborted = isinstance(task_errors, list) and any(
+            isinstance(item, Mapping)
+            and item.get("code") == EXECUTION_PROCESS_RESTARTED
+            for item in task_errors
+        )
+        return task_was_aborted or any(
+            TaskSchedulerBridge._was_aborted_by_runtime_restart(job)
+            for job in jobs
+        )
+
+    @staticmethod
     def _was_aborted_by_runtime_restart(job: Mapping[str, Any]) -> bool:
         """判断 Job 终态是否由 runtime 重启策略冻结。"""
 
@@ -2652,22 +3120,57 @@ class TaskSchedulerBridge:
             error_info=error_info,
             manual_confirmation_status=manual_confirmation_status,
         )
-        settled_job = next(
-            item for item in aggregate["jobs"] if item["uuid"] == job_uuid
+        settled_job = next(item for item in aggregate["jobs"] if item["uuid"] == job_uuid)
+        continuing_interval_ids = _retained_interval_ids_for_result(
+            aggregate["task"],
+            settled_job,
+            aggregate["jobs"],
         )
         inventory_claim_state = (
-            "uncertain"
-            if str(settled_job.get("uncertainty_reason") or "").strip()
-            else "released"
+            "uncertain" if str(settled_job.get("uncertainty_reason") or "").strip() else "released"
         )
         inventory_authority = self._scheduler.station_resource_inventory
         if inventory_authority is not None and claim is not None:
-            inventory_authority.transition_dispatch_permit(
-                str(claim["claim_uuid"]),
-                target_state=inventory_claim_state,
-            )
+            if continuing_interval_ids and inventory_claim_state != "uncertain":
+                control_data = settled_job.get("control_data")
+                interval_map = (
+                    control_data.get("resource_interval_ids_by_lock", {})
+                    if isinstance(control_data, Mapping)
+                    else {}
+                )
+                keep_lock_keys = tuple(
+                    sorted(
+                        str(lock_key)
+                        for lock_key, raw_ids in interval_map.items()
+                        if isinstance(raw_ids, (list, tuple, set, frozenset))
+                        and set(str(value) for value in raw_ids) & set(continuing_interval_ids)
+                    )
+                )
+                if not keep_lock_keys:
+                    raise StoreConflict("连续区间结果缺少可保留的物理资源映射")
+                retain = getattr(
+                    inventory_authority,
+                    "retain_dispatch_permit_resources",
+                    None,
+                )
+                if not callable(retain):
+                    raise StoreConflict("库存权威不支持连续区间的部分 Claim 释放")
+                retain(
+                    str(claim["claim_uuid"]),
+                    keep_lock_keys=keep_lock_keys,
+                )
+            else:
+                inventory_authority.transition_dispatch_permit(
+                    str(claim["claim_uuid"]),
+                    target_state=inventory_claim_state,
+                )
         elif self._scheduler.physical_dispatch_enabled:
             raise StoreConflict(f"物理作业结果缺少库存 Claim：{job_uuid}")
+        self._reconcile_inventory_resource_intervals(
+            task_uuid=task_uuid,
+            aggregate=aggregate,
+            exclude_job_uuid=job_uuid,
+        )
         self._cancel_cancel_timer(job_uuid)
         self._cancel_manual_confirmation_timer(job_uuid)
         terminal_status = aggregate["task"]["status"]
@@ -2685,6 +3188,53 @@ class TaskSchedulerBridge:
                 task_uuid,
                 reason="workflow_succeeded",
             )
+
+    def _reconcile_inventory_resource_intervals(
+        self,
+        *,
+        task_uuid: str,
+        aggregate: Mapping[str, Any],
+        exclude_job_uuid: str = "",
+    ) -> None:
+        """按最新投影释放历史物理 Job 已结束区间的库存 Claim。"""
+
+        inventory_authority = self._scheduler.station_resource_inventory
+        if inventory_authority is None:
+            return
+        jobs = aggregate["jobs"]
+        for previous in jobs:
+            if (
+                previous["uuid"] == exclude_job_uuid
+                or previous["status"]
+                not in {"succeeded", "failed", "canceled", "timeout"}
+                or previous.get("uncertainty_reason")
+            ):
+                continue
+            previous_control = previous.get("control_data") or {}
+            interval_map = previous_control.get(
+                "resource_interval_ids_by_lock", {}
+            )
+            if not previous_control.get("resource_interval_ids") or not interval_map:
+                continue
+            if self._projection.get_execution_claim(previous["uuid"]) is None:
+                continue
+            remaining = set(
+                _retained_interval_ids_for_result(
+                    aggregate["task"], previous, jobs
+                )
+            )
+            keep = {
+                key
+                for key, interval_ids in interval_map.items()
+                if remaining & set(interval_ids)
+            }
+            release_keys = tuple(sorted(set(interval_map) - keep))
+            if release_keys:
+                inventory_authority.release_preheld_dispatch_claims(
+                    task_uuid=task_uuid,
+                    job_uuids=(previous["uuid"],),
+                    lock_keys=release_keys,
+                )
 
     def _on_job_settled(
         self,
@@ -2751,27 +3301,32 @@ class TaskSchedulerBridge:
                 for inflight in scheduler_snapshot.get("inflight_jobs", {}).values()
             )
             unsettled_jobs = [
-                job
-                for job in aggregate["jobs"]
-                if str(job.get("uncertainty_reason") or "").strip()
+                job for job in aggregate["jobs"] if str(job.get("uncertainty_reason") or "").strip()
             ]
             if not active_for_task and not unsettled_jobs:
-                if self._quantity_inventory is not None:
-                    self._quantity_inventory.release_task(
-                        task_uuid,
-                        reason=f"workflow_{aggregate['task']['status']}",
-                    )
-                if any(
-                    job.get("executor_kind") == "material_source"
+                retained_intervals = any(
+                    _retained_interval_ids_for_result(aggregate["task"], job, aggregate["jobs"])
                     for job in aggregate["jobs"]
-                ):
-                    self._material_sources.release_terminal_reservations(
-                        task_uuid,
-                        reason=f"workflow_{aggregate['task']['status']}",
-                    )
-                # ``settled`` 是两类库存预留均已安全释放后的最终承诺。任何释放
-                # 失败都会保留非 settled 状态，供恢复扫描以同一身份幂等重试。
-                self._projection.project_cleanup_settled(task_uuid)
+                )
+                if retained_intervals:
+                    # 投影会记录待人工交接；不得先释放任务级物料预留。
+                    self._projection.project_cleanup_settled(task_uuid)
+                else:
+                    if self._quantity_inventory is not None:
+                        self._quantity_inventory.release_task(
+                            task_uuid,
+                            reason=f"workflow_{aggregate['task']['status']}",
+                        )
+                    if any(
+                        job.get("executor_kind") == "material_source" for job in aggregate["jobs"]
+                    ):
+                        self._material_sources.release_terminal_reservations(
+                            task_uuid,
+                            reason=f"workflow_{aggregate['task']['status']}",
+                        )
+                    # ``settled`` 是两类库存预留均已安全释放后的最终承诺。任何释放
+                    # 失败都会保留非 settled 状态，供恢复扫描以同一身份幂等重试。
+                    self._projection.project_cleanup_settled(task_uuid)
         if task_uuid not in self._task_by_job.values():
             self._submitted_tasks.discard(task_uuid)
         if replayed_without_runtime:
@@ -2784,12 +3339,34 @@ class TaskSchedulerBridge:
         """在显式物理结算完成后推进父任务资源清理。
 
         参数：``job_uuid`` 是刚刚清除不确定事实的失败作业。返回无；复用标准
-        settled 回调以统一释放任务级预留和调度容量。异常原样传播。
+        settled 回调以统一释放任务级预留和调度容量；Task 真正 settled 后同步
+        释放其全部 Inventory Permit，包括曾为该 Job 提供 preheld 连续锁的
+        provider。异常原样传播，跨库失败由终态恢复扫描幂等补偿。
         """
 
         task_uuid = str(self._store.get_job(job_uuid)["workflow_task_uuid"])
         self._task_by_job.setdefault(job_uuid, task_uuid)
         self._on_job_settled(job_uuid, False, None, "physical_settlement")
+        if self._store.get_task(task_uuid).get("cleanup_status") != "settled":
+            return
+        inventory = self._scheduler.station_resource_inventory
+        if inventory is None:
+            return
+        for job in self._store.list_jobs(task_uuid):
+            candidate_job_uuid = self._required_text(
+                job.get("uuid"), field="job.uuid"
+            )
+            if candidate_job_uuid == job_uuid:
+                # 调用方在进入本收尾前已经释放刚结算 Job 的 Inventory Permit。
+                continue
+            claim = self._projection.get_execution_claim(
+                candidate_job_uuid
+            )
+            if claim is not None:
+                inventory.transition_dispatch_permit(
+                    str(claim["claim_uuid"]),
+                    target_state="released",
+                )
 
     @staticmethod
     def _normalize_actual_material_change_set(

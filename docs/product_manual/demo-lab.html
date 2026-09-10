@@ -1,0 +1,1075 @@
+<!doctype html>
+<html class="no-js" lang="zh-CN" data-content_root="./">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="alternate" type="text/markdown" href="demo-lab.md">
+<link rel="describedby" type="text/plain" href="llms.txt">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="系统安装" href="installation.html"><link rel="prev" title="Uni-Lab OS 快速上手" href="console.html">
+
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
+        <title>demo-lab 演示说明 - Uni-Lab OS 产品使用说明书</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="_static/styles/furo-extensions.css?v=8dab3a3b" />
+    <link rel="stylesheet" type="text/css" href="_static/custom.css?v=35d0322d" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  --color-brand-primary: #2757dd;
+  --color-brand-content: #2757dd;
+  --color-sidebar-background: #f8f9fb;
+  --color-sidebar-background-border: #eeebee;
+  --color-admonition-background: #f8f9fb;
+  --font-stack: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+  --font-stack--monospace: SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", monospace;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #5ca5ff;
+  --color-brand-content: #5ca5ff;
+  --color-background-primary: #131416;
+  --color-background-secondary: #1a1c1e;
+  --color-sidebar-background: #1a1c1e;
+  --color-sidebar-background-border: #303335;
+  --color-admonition-background: #1a1c1e;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  --color-brand-primary: #5ca5ff;
+  --color-brand-content: #5ca5ff;
+  --color-background-primary: #131416;
+  --color-background-secondary: #1a1c1e;
+  --color-sidebar-background: #1a1c1e;
+  --color-sidebar-background-border: #303335;
+  --color-admonition-background: #1a1c1e;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="index.html"><div class="brand">Uni-Lab OS 产品使用说明书</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="index.html">
+  
+  <span class="sidebar-brand-text">Uni-Lab OS 产品使用说明书</span>
+  
+</a><form class="sidebar-search-container" method="get" action="search.html" role="search">
+  <input class="sidebar-search" placeholder="搜索" name="q" aria-label="搜索">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">认识与快速上手</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
+<li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">示例设备包</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
+<li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
+<ul>
+<li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
+<li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plc-station.html">PLC 控制的工站</a></li>
+<li class="toctree-l3"><a class="reference internal" href="serial-network.html">串口／网络连接</a></li>
+<li class="toctree-l3"><a class="reference internal" href="host-api.html">上位机 API 接入</a></li>
+<li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
+<li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
+<li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="container-template.html">容器（Container）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="vial-rack.html">小瓶载架</a></li>
+<li class="toctree-l3"><a class="reference internal" href="magazine.html">弹夹</a></li>
+<li class="toctree-l3"><a class="reference internal" href="sheet-battery.html">片状物料与组装成品</a></li>
+<li class="toctree-l3"><a class="reference internal" href="material-state.html">物料状态、条码与内容物</a></li>
+<li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
+</ul>
+</li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
+<li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
+<li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">参考</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="troubleshooting.html">故障排查</a></li>
+<li class="toctree-l1"><a class="reference internal" href="api-reference.html">API 使用参考</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          
+<div class="ai-docs-toolbar" data-ai-docs-toolbar
+     data-markdown-url="demo-lab.md"
+     data-llms-url="llms.txt"
+     data-llms-full-url="llms-full.txt">
+  <div class="ai-docs-menu-shell">
+    <div class="ai-docs-split">
+      <button class="ai-docs-copy-primary" type="button" data-ai-docs-copy
+              aria-disabled="true" disabled>
+        <svg aria-hidden="true" viewBox="0 0 24 24" width="16" height="16">
+          <path d="M9 5h6m-6 4h6m-6 4h4M8 3h8a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2Z"/>
+        </svg>
+        <span data-ai-docs-trigger-label>复制页面</span>
+      </button>
+      <button class="ai-docs-trigger" type="button" aria-expanded="false"
+              aria-controls="ai-docs-menu-demo-lab" aria-label="打开 AI 文档菜单">
+        <svg class="ai-docs-chevron" aria-hidden="true" viewBox="0 0 24 24" width="14" height="14">
+          <path d="m7 10 5 5 5-5"/>
+        </svg>
+      </button>
+    </div>
+    <div class="ai-docs-popover" id="ai-docs-menu-demo-lab" hidden>
+      <button class="ai-docs-menu-item" type="button" data-ai-docs-copy
+              aria-disabled="true" disabled>
+        <span class="ai-docs-item-icon" aria-hidden="true">⧉</span>
+        <span><strong>复制页面</strong><small data-ai-docs-copy-help>正在准备本页 Markdown</small></span>
+      </button>
+      <a class="ai-docs-menu-item" href="demo-lab.md" target="_blank" rel="noopener noreferrer">
+        <span class="ai-docs-item-icon" aria-hidden="true">M↓</span>
+        <span><strong>以 Markdown 格式查看 <span aria-hidden="true">↗</span></strong><small>打开本页纯文本版本</small></span>
+      </a>
+      <a class="ai-docs-menu-item" href="llms.txt" target="_blank" rel="noopener noreferrer">
+        <span class="ai-docs-item-icon" aria-hidden="true">AI</span>
+        <span><strong>LLMs.txt <span aria-hidden="true">↗</span></strong><small>让 AI 按主题发现全部文档</small></span>
+      </a>
+      <a class="ai-docs-menu-item" href="llms-full.txt" target="_blank" rel="noopener noreferrer">
+        <span class="ai-docs-item-icon" aria-hidden="true">≡</span>
+        <span><strong>LLMs-full.txt <span aria-hidden="true">↗</span></strong><small>获取整本说明书的 Markdown</small></span>
+      </a>
+    </div>
+  </div>
+  <span class="ai-docs-status" role="status" aria-live="polite"></span>
+</div>
+<section id="demo-lab">
+<h1>demo-lab 演示说明<a class="headerlink" href="#demo-lab" title="链接到此标题。">¶</a></h1>
+<div class="note admonition">
+<p class="admonition-title">示例文件下载</p>
+<ul class="simple">
+<li><p><a class="reference download internal" download="" href="_downloads/3339ce2e9d110c18ee21fd1e53af38a8/README.md"><code class="xref download docutils literal notranslate"><span class="pre">下载</span> <span class="pre">README.md</span></code></a></p></li>
+<li><p><a class="reference download internal" download="" href="_downloads/41598cb0e91c04cd5c90f9d12ca905e7/demo-lab.zip"><code class="xref download docutils literal notranslate"><span class="pre">下载</span> <span class="pre">demo-lab.zip</span></code></a></p></li>
+</ul>
+</div>
+<p>这个文件夹是一套<strong>演示示例</strong>。业务是「标准样品称量分装」：取母液 → 称量 → 分装到空瓶 → 封盖 → 成品回 <code class="docutils literal notranslate"><span class="pre">F01</span></code>，母液回 <code class="docutils literal notranslate"><span class="pre">U01</span></code>。</p>
+<p>全程是电脑里的模拟设备，<strong>不接真实仪器，也不需要 PLC</strong>。下面每一步都是真实的 <code class="docutils literal notranslate"><span class="pre">unilab</span></code> 命令和接口。</p>
+<p>操作顺序固定为：</p>
+<ol class="arabic simple">
+<li><p>启动工作区</p></li>
+<li><p>查询有哪些工作流</p></li>
+<li><p>选一个工作流，指定实验参数、物料、库位</p></li>
+<li><p>系统做执行前预检查，并给出检查结果</p></li>
+<li><p>物料不足或库位被占用时，按给出的办法自行处理后，再预检</p></li>
+<li><p>预检查通过后启动工作流，并查看执行结果</p></li>
+</ol>
+<section id="id1">
+<h2>开始前确认这两件事<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h2>
+<ol class="arabic simple">
+<li><p>这台电脑已经装好 <strong>Uni-Lab OS</strong>。还没有的话，先按<a class="reference internal" href="installation.html"><span class="std std-doc">系统安装</span></a>完成 Conda 环境、<code class="docutils literal notranslate"><span class="pre">unilabos-env</span></code> 和 Uni-Lab OS 源码安装。</p></li>
+</ol>
+<p>装好后先确认命令可用：输入 <code class="docutils literal notranslate"><span class="pre">unilab</span></code> 再按回车，应看到命令说明。找不到命令时执行 <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">unilab</span></code>（或 <code class="docutils literal notranslate"><span class="pre">mamba</span> <span class="pre">activate</span> <span class="pre">unilab</span></code>），再试一次。</p>
+<ol class="arabic simple" start="2">
+<li><p>进入本演示目录：</p></li>
+</ol>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>/path/to/demo-lab
+</pre></div>
+</div>
+</section>
+<section id="id2">
+<h2>1. 安装并启动工作区<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span>.
+unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>./dist/inspect
+
+unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/dry-run.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--runtime-mode<span class="w"> </span>normal<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--startup-mode<span class="w"> </span>develop<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wait<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--runtime-mode</span> <span class="pre">normal</span></code> 会调用本包的 Python 模拟设备。称量结果应是 <code class="docutils literal notranslate"><span class="pre">12.5</span></code> 克，分装体积等于任务里填的微升数。改成 <code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 时任务也能成功，但这两个数会是 <code class="docutils literal notranslate"><span class="pre">0</span></code>。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class="w"> </span>--workspace<span class="w"> </span>.<span class="w"> </span>--json
+</pre></div>
+</div>
+<p>记下 Backend 的 <code class="docutils literal notranslate"><span class="pre">address</span></code>，端口每次启动可能不同。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">API</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span>unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class="w"> </span>--workspace<span class="w"> </span>.<span class="w"> </span>--json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import json,sys; print(json.load(sys.stdin)[&quot;components&quot;][&quot;backend&quot;][&quot;address&quot;])&#39;</span><span class="k">)</span><span class="s2">/api/v1&quot;</span>
+<span class="nb">echo</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$API</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+</section>
+<section id="id3">
+<h2>2. 查询有哪些工作流<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">with urllib.request.urlopen(f&quot;{os.environ[&#39;API&#39;]}/workflows?page=1&amp;page_size=100&quot;) as r:</span>
+<span class="s">    items = json.load(r)[&quot;data&quot;][&quot;items&quot;]</span>
+<span class="s">print(&quot;工作流数量&quot;, len(items))</span>
+<span class="s">for item in items:</span>
+<span class="s">    print({</span>
+<span class="s">        &quot;uuid&quot;: item.get(&quot;uuid&quot;),</span>
+<span class="s">        &quot;名称&quot;: item.get(&quot;name&quot;),</span>
+<span class="s">        &quot;状态&quot;: item.get(&quot;status&quot;),</span>
+<span class="s">        &quot;类型&quot;: item.get(&quot;workflow_type&quot;),</span>
+<span class="s">        &quot;修订&quot;: item.get(&quot;revision&quot;),</span>
+<span class="s">    })</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>这套演示里通常只有一条：<strong>标准样品称量分装</strong><br />
+<code class="docutils literal notranslate"><span class="pre">7e2a9c14-6b5d-4f81-a3c0-91d8e4b2f6a5</span></code>。</p>
+<p><code class="docutils literal notranslate"><span class="pre">status=source</span></code> 表示还不能建实验任务，先发布：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">WF</span><span class="o">=</span><span class="s2">&quot;7e2a9c14-6b5d-4f81-a3c0-91d8e4b2f6a5&quot;</span>
+python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">api, wf = os.environ[&quot;API&quot;], os.environ[&quot;WF&quot;]</span>
+
+<span class="s">def get(path):</span>
+<span class="s">    with urllib.request.urlopen(f&quot;{api}{path}&quot;) as r:</span>
+<span class="s">        return json.load(r)[&quot;data&quot;]</span>
+
+<span class="s">workflow = get(f&quot;/workflows/{wf}&quot;)</span>
+<span class="s">authoring = get(f&quot;/workflows/{wf}/authoring&quot;)</span>
+<span class="s">print(&quot;当前&quot;, workflow[&quot;status&quot;], &quot;修订&quot;, workflow[&quot;revision&quot;], &quot;创作&quot;, authoring[&quot;state&quot;], authoring[&quot;workflow_revision&quot;])</span>
+<span class="s">if workflow.get(&quot;status&quot;) != &quot;published&quot;:</span>
+<span class="s">    req = urllib.request.Request(</span>
+<span class="s">        f&quot;{api}/workflows/{wf}/publications&quot;,</span>
+<span class="s">        data=json.dumps({&quot;revision&quot;: int(authoring[&quot;workflow_revision&quot;])}).encode(&quot;utf-8&quot;),</span>
+<span class="s">        headers={&quot;Content-Type&quot;: &quot;application/json&quot;},</span>
+<span class="s">        method=&quot;POST&quot;,</span>
+<span class="s">    )</span>
+<span class="s">    with urllib.request.urlopen(req) as r:</span>
+<span class="s">        print(&quot;发布&quot;, json.load(r).get(&quot;code&quot;))</span>
+<span class="s">    print(&quot;发布后&quot;, get(f&quot;/workflows/{wf}&quot;)[&quot;status&quot;])</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>发布后列表里应变为 <code class="docutils literal notranslate"><span class="pre">published</span></code>，才能进入下一步。</p>
+</section>
+<section id="id4">
+<h2>3. 选择工作流，指定实验参数、物料、库位<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
+<p>选定上面的 <code class="docutils literal notranslate"><span class="pre">WF</span></code> 后，先看这条工作流要哪些输入，再看现场物料和库位。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">with urllib.request.urlopen(f&quot;{os.environ[&#39;API&#39;]}/workflows/{os.environ[&#39;WF&#39;]}&quot;) as r:</span>
+<span class="s">    data = json.load(r)[&quot;data&quot;]</span>
+<span class="s">print(&quot;已选&quot;, data.get(&quot;name&quot;), data.get(&quot;uuid&quot;), data.get(&quot;status&quot;))</span>
+<span class="s">print(&quot;说明&quot;, data.get(&quot;description&quot;))</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<section id="id5">
+<h3>3.1 实验参数、物料、库位怎么填<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
+<p>建任务时全部放在 <code class="docutils literal notranslate"><span class="pre">input</span></code> 里。</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>字段</p></th>
+<th class="head"><p>类别</p></th>
+<th class="head"><p>含义</p></th>
+<th class="head"><p>本演示可填值</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">sample_id</span></code></p></td>
+<td><p>实验参数</p></td>
+<td><p>样品编号，出现在封盖结果里</p></td>
+<td><p>任意字符串，默认 <code class="docutils literal notranslate"><span class="pre">ASSAY-2026-001</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">target_aliquot_volume_ul</span></code></p></td>
+<td><p>实验参数</p></td>
+<td><p>分装体积</p></td>
+<td><p>整数 1–5000，默认 <code class="docutils literal notranslate"><span class="pre">200</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">source_stock_site</span></code></p></td>
+<td><p>库位</p></td>
+<td><p>母液从哪取</p></td>
+<td><p>目前只能 <code class="docutils literal notranslate"><span class="pre">S01</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">source_empty_site</span></code></p></td>
+<td><p>库位</p></td>
+<td><p>空瓶从哪取</p></td>
+<td><p>目前只能 <code class="docutils literal notranslate"><span class="pre">E01</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">tip_box_site</span></code></p></td>
+<td><p>库位</p></td>
+<td><p>吸头从哪取</p></td>
+<td><p>目前只能 <code class="docutils literal notranslate"><span class="pre">T01</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">used_stock_target_site</span></code></p></td>
+<td><p>库位</p></td>
+<td><p>用过的母液放哪</p></td>
+<td><p>目前只能 <code class="docutils literal notranslate"><span class="pre">U01</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">product_vial_target_site</span></code></p></td>
+<td><p>库位</p></td>
+<td><p>成品放哪</p></td>
+<td><p>目前只能 <code class="docutils literal notranslate"><span class="pre">F01</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>物料不是在任务里填瓶子 UUID。工作流按<strong>库位 + 类型</strong>取当时占着那个格子的瓶子：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">S01</span></code> 上必须是母液瓶（<code class="docutils literal notranslate"><span class="pre">stock_vial</span></code>）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">E01</span></code> 上必须是空分装瓶（<code class="docutils literal notranslate"><span class="pre">aliquot_vial</span></code>）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">T01</span></code> 上必须是吸头盒（<code class="docutils literal notranslate"><span class="pre">tip_box</span></code>）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">U01</span></code> / <code class="docutils literal notranslate"><span class="pre">F01</span></code> / <code class="docutils literal notranslate"><span class="pre">BAL1</span></code> / <code class="docutils literal notranslate"><span class="pre">PIP_S</span></code> / <code class="docutils literal notranslate"><span class="pre">PIP_T</span></code> / <code class="docutils literal notranslate"><span class="pre">CAP1</span></code> / <code class="docutils literal notranslate"><span class="pre">GRIPPER</span></code> 启动时应为空</p></li>
+</ul>
+<p>换一瓶同类型的瓶子：把新瓶放到对应格子即可，不用改工作流。换库位名（例如改成 <code class="docutils literal notranslate"><span class="pre">S02</span></code>）要改源码和图，见第 6 节。</p>
+</section>
+<section id="id6">
+<h3>3.2 先看现场有没有料、格子空不空<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">with urllib.request.urlopen(f&quot;{os.environ[&#39;API&#39;]}/materials/graph&quot;) as r:</span>
+<span class="s">    nodes = json.load(r)[&quot;data&quot;][&quot;nodes&quot;]</span>
+<span class="s">names = {n[&quot;material&quot;][&quot;uuid&quot;]: n[&quot;material&quot;][&quot;name&quot;] for n in nodes}</span>
+<span class="s">print(&quot;库位占用：&quot;)</span>
+<span class="s">for n in nodes:</span>
+<span class="s">    for site in n.get(&quot;sites&quot;) or []:</span>
+<span class="s">        occ = site.get(&quot;occupied_material_uuid&quot;)</span>
+<span class="s">        print(f&quot;  {site.get(&#39;name&#39;)}: {names[occ] if occ else &#39;空&#39;}&quot;)</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>启动后第一次应看到：<code class="docutils literal notranslate"><span class="pre">S01</span></code> 母液、<code class="docutils literal notranslate"><span class="pre">E01</span></code> 空瓶、<code class="docutils literal notranslate"><span class="pre">T01</span></code> 吸头盒，其余为空。前端物料/布局页看的是同一份数据。</p>
+<p>把这次实验要跑的参数写成文件：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">SAMPLE_ID</span><span class="o">=</span><span class="s2">&quot;ASSAY-2026-001&quot;</span>
+<span class="nb">export</span><span class="w"> </span><span class="nv">VOLUME_UL</span><span class="o">=</span><span class="m">200</span>
+
+python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os</span>
+<span class="s">from pathlib import Path</span>
+<span class="s">Path(&quot;/tmp/demo-lab-input.json&quot;).write_text(json.dumps({</span>
+<span class="s">    &quot;sample_id&quot;: os.environ[&quot;SAMPLE_ID&quot;],</span>
+<span class="s">    &quot;target_aliquot_volume_ul&quot;: int(os.environ[&quot;VOLUME_UL&quot;]),</span>
+<span class="s">    &quot;source_stock_site&quot;: &quot;S01&quot;,</span>
+<span class="s">    &quot;source_empty_site&quot;: &quot;E01&quot;,</span>
+<span class="s">    &quot;tip_box_site&quot;: &quot;T01&quot;,</span>
+<span class="s">    &quot;used_stock_target_site&quot;: &quot;U01&quot;,</span>
+<span class="s">    &quot;product_vial_target_site&quot;: &quot;F01&quot;,</span>
+<span class="s">}, ensure_ascii=False, indent=2), encoding=&quot;utf-8&quot;)</span>
+<span class="s">print(Path(&quot;/tmp/demo-lab-input.json&quot;).read_text())</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>称量结果在这套演示里固定是 <code class="docutils literal notranslate"><span class="pre">12.5</span></code> 克，改体积不会改变它。</p>
+</section>
+</section>
+<section id="id7">
+<h2>4. 执行前预检查<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">from pathlib import Path</span>
+
+<span class="s">payload = {&quot;run_mode&quot;: &quot;normal&quot;, &quot;input&quot;: json.loads(Path(&quot;/tmp/demo-lab-input.json&quot;).read_text())}</span>
+<span class="s">req = urllib.request.Request(</span>
+<span class="s">    f&quot;{os.environ[&#39;API&#39;]}/workflows/{os.environ[&#39;WF&#39;]}/run-preflight&quot;,</span>
+<span class="s">    data=json.dumps(payload).encode(&quot;utf-8&quot;),</span>
+<span class="s">    headers={&quot;Content-Type&quot;: &quot;application/json&quot;},</span>
+<span class="s">    method=&quot;POST&quot;,</span>
+<span class="s">)</span>
+<span class="s">with urllib.request.urlopen(req) as r:</span>
+<span class="s">    data = json.load(r)[&quot;data&quot;]</span>
+
+<span class="s">print(&quot;预检状态&quot;, data.get(&quot;status&quot;))</span>
+<span class="s">print(&quot;能否现在跑&quot;, data.get(&quot;can_run&quot;))</span>
+<span class="s">print(&quot;摘要&quot;, data.get(&quot;summary&quot;))</span>
+<span class="s">print(&quot;检查项：&quot;)</span>
+<span class="s">for item in data.get(&quot;checks&quot;) or []:</span>
+<span class="s">    print({</span>
+<span class="s">        &quot;类型&quot;: item.get(&quot;type&quot;),</span>
+<span class="s">        &quot;结果&quot;: item.get(&quot;status&quot;),</span>
+<span class="s">        &quot;代码&quot;: item.get(&quot;code&quot;),</span>
+<span class="s">        &quot;说明&quot;: item.get(&quot;message&quot;),</span>
+<span class="s">        &quot;是否阻断&quot;: item.get(&quot;blocking&quot;),</span>
+<span class="s">        &quot;节点&quot;: item.get(&quot;node_name&quot;),</span>
+<span class="s">    })</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>预检 <code class="docutils literal notranslate"><span class="pre">status</span></code></p></th>
+<th class="head"><p>含义</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">runnable_now</span></code></p></td>
+<td><p>当前检查通过，可以建任务</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">temporarily_unavailable</span></code></p></td>
+<td><p>有阻断项，先处理再预检</p></td>
+</tr>
+<tr class="row-even"><td><p>检查项 <code class="docutils literal notranslate"><span class="pre">passed</span></code></p></td>
+<td><p>这项没问题</p></td>
+</tr>
+<tr class="row-odd"><td><p>检查项 <code class="docutils literal notranslate"><span class="pre">deferred</span></code></p></td>
+<td><p>这项会在建任务/派发时再核一次</p></td>
+</tr>
+<tr class="row-even"><td><p>检查项 <code class="docutils literal notranslate"><span class="pre">blocked</span></code></p></td>
+<td><p>这项不过，不能建任务</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>物料来源在这套系统里常常标成 <code class="docutils literal notranslate"><span class="pre">deferred</span></code>（准入时再解析），所以<strong>预检通过不等于原料区一定有瓶子</strong>。预检之后再看一遍第 3.2 节的库位占用。出现下面情况时，不要建任务，先做第 5 节：</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">S01</span></code> / <code class="docutils literal notranslate"><span class="pre">E01</span></code> / <code class="docutils literal notranslate"><span class="pre">T01</span></code> 为空（物料不足，或上一遍已经搬走）</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">U01</span></code> / <code class="docutils literal notranslate"><span class="pre">F01</span></code> 或工艺位上有东西（回库位/工艺位被占用）</p></li>
+<li><p>预检 <code class="docutils literal notranslate"><span class="pre">can_run=false</span></code>，或检查项 <code class="docutils literal notranslate"><span class="pre">blocked</span></code></p></li>
+</ul>
+</section>
+<section id="id8">
+<h2>5. 预检未通过时自行处理<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
+<p>按检查结果和库位占用选一种办法，做完再回到第 4 节预检。</p>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>现象</p></th>
+<th class="head"><p>原因</p></th>
+<th class="head"><p>自己可以做的处理</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">S01</span></code> / <code class="docutils literal notranslate"><span class="pre">E01</span></code> / <code class="docutils literal notranslate"><span class="pre">T01</span></code> 为空</p></td>
+<td><p>上一遍已跑完，瓶子到了 <code class="docutils literal notranslate"><span class="pre">U01</span></code> / <code class="docutils literal notranslate"><span class="pre">F01</span></code></p></td>
+<td><p>整盘恢复，或人工把原瓶放回去</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">F01</span></code> / <code class="docutils literal notranslate"><span class="pre">U01</span></code> / <code class="docutils literal notranslate"><span class="pre">BAL1</span></code> 等被占用</p></td>
+<td><p>回库位或工艺位上有上一遍留下的瓶子</p></td>
+<td><p>先把占用取下，或整盘恢复</p></td>
+</tr>
+<tr class="row-even"><td><p>想换一瓶同类型的料</p></td>
+<td><p>格子上不是你要的那瓶</p></td>
+<td><p>下料后把新瓶放到同一格子</p></td>
+</tr>
+<tr class="row-odd"><td><p>想改用别的库位名</p></td>
+<td><p>源码只允许 <code class="docutils literal notranslate"><span class="pre">S01</span></code> 等字面量</p></td>
+<td><p>改载架、启动图、工作流后重启并重新发布</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<section id="a">
+<h3>办法 A：按启动图整盘恢复（最常用）<a class="headerlink" href="#a" title="链接到此标题。">¶</a></h3>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>reset-local<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/dry-run.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--runtime-mode<span class="w"> </span>normal<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--yes
+
+unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--workspace<span class="w"> </span>.<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/dry-run.json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--runtime-mode<span class="w"> </span>normal<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--startup-mode<span class="w"> </span>develop<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span>--wait<span class="w"> </span><span class="m">300</span>
+</pre></div>
+</div>
+<p>复位后 Backend 地址可能变，重新设置 <code class="docutils literal notranslate"><span class="pre">$API</span></code>。<code class="docutils literal notranslate"><span class="pre">reset-local</span></code> 会把工作流打回 <code class="docutils literal notranslate"><span class="pre">source</span></code>，必须先按第 2 节重新发布，再从第 3.2 节看库位并预检。有未结束的任务时复位会失败，先取消任务。</p>
+</section>
+<section id="b">
+<h3>办法 B：人工把已有瓶子放到指定空位<a class="headerlink" href="#b" title="链接到此标题。">¶</a></h3>
+<p>目标格必须是空的。例如把母液放回 <code class="docutils literal notranslate"><span class="pre">S01</span></code>、空瓶放回 <code class="docutils literal notranslate"><span class="pre">E01</span></code>、吸头放回 <code class="docutils literal notranslate"><span class="pre">T01</span></code>：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+
+<span class="s">api = os.environ[&quot;API&quot;]</span>
+
+<span class="s">def get(path):</span>
+<span class="s">    with urllib.request.urlopen(f&quot;{api}{path}&quot;) as r:</span>
+<span class="s">        return json.load(r)[&quot;data&quot;]</span>
+
+<span class="s">def put(path, body):</span>
+<span class="s">    req = urllib.request.Request(</span>
+<span class="s">        f&quot;{api}{path}&quot;,</span>
+<span class="s">        data=json.dumps(body).encode(&quot;utf-8&quot;),</span>
+<span class="s">        headers={&quot;Content-Type&quot;: &quot;application/json&quot;},</span>
+<span class="s">        method=&quot;PUT&quot;,</span>
+<span class="s">    )</span>
+<span class="s">    with urllib.request.urlopen(req) as r:</span>
+<span class="s">        return json.load(r)</span>
+
+<span class="s">nodes = get(&quot;/materials/graph&quot;)[&quot;nodes&quot;]</span>
+<span class="s">site_by_name, material_by_name = {}, {}</span>
+<span class="s">for n in nodes:</span>
+<span class="s">    material_by_name[n[&quot;material&quot;][&quot;name&quot;]] = n[&quot;material&quot;][&quot;uuid&quot;]</span>
+<span class="s">    for site in n.get(&quot;sites&quot;) or []:</span>
+<span class="s">        site_by_name[site.get(&quot;name&quot;)] = {</span>
+<span class="s">            &quot;uuid&quot;: site[&quot;uuid&quot;],</span>
+<span class="s">            &quot;occupied&quot;: site.get(&quot;occupied_material_uuid&quot;),</span>
+<span class="s">        }</span>
+
+<span class="s">for material_name, site_name in (</span>
+<span class="s">    (&quot;标准样品母液 001&quot;, &quot;S01&quot;),</span>
+<span class="s">    (&quot;空分装瓶 001&quot;, &quot;E01&quot;),</span>
+<span class="s">    (&quot;吸头盒 001&quot;, &quot;T01&quot;),</span>
+<span class="s">):</span>
+<span class="s">    site = site_by_name[site_name]</span>
+<span class="s">    material_uuid = material_by_name[material_name]</span>
+<span class="s">    if site[&quot;occupied&quot;] == material_uuid:</span>
+<span class="s">        print(material_name, &quot;已经在&quot;, site_name)</span>
+<span class="s">        continue</span>
+<span class="s">    if site[&quot;occupied&quot;]:</span>
+<span class="s">        raise SystemExit(f&quot;{site_name} 已被占用，先下料或改用 reset-local&quot;)</span>
+<span class="s">    result = put(f&quot;/materials/{material_uuid}&quot;, {</span>
+<span class="s">        &quot;site_placement&quot;: {&quot;action&quot;: &quot;place&quot;, &quot;site_uuid&quot;: site[&quot;uuid&quot;]},</span>
+<span class="s">    })</span>
+<span class="s">    print(&quot;上料&quot;, material_name, &quot;-&gt;&quot;, site_name, &quot;code&quot;, result.get(&quot;code&quot;))</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>只下料、不删瓶子：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">api = os.environ[&quot;API&quot;]</span>
+<span class="s">with urllib.request.urlopen(f&quot;{api}/materials/graph&quot;) as r:</span>
+<span class="s">    nodes = json.load(r)[&quot;data&quot;][&quot;nodes&quot;]</span>
+<span class="s">stock = next(n[&quot;material&quot;][&quot;uuid&quot;] for n in nodes if n[&quot;material&quot;][&quot;name&quot;] == &quot;标准样品母液 001&quot;)</span>
+<span class="s">req = urllib.request.Request(</span>
+<span class="s">    f&quot;{api}/materials/{stock}&quot;,</span>
+<span class="s">    data=json.dumps({&quot;site_placement&quot;: {&quot;action&quot;: &quot;remove&quot;}}).encode(&quot;utf-8&quot;),</span>
+<span class="s">    headers={&quot;Content-Type&quot;: &quot;application/json&quot;},</span>
+<span class="s">    method=&quot;PUT&quot;,</span>
+<span class="s">)</span>
+<span class="s">with urllib.request.urlopen(req) as r:</span>
+<span class="s">    print(&quot;下料&quot;, json.load(r).get(&quot;code&quot;))</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+</section>
+<section id="c">
+<h3>办法 C：换一瓶同类型物料（库位名不变）<a class="headerlink" href="#c" title="链接到此标题。">¶</a></h3>
+<p>工作流认格子上的类型，不认某一个 UUID。把旧瓶 <code class="docutils literal notranslate"><span class="pre">remove</span></code>，<code class="docutils literal notranslate"><span class="pre">POST</span> <span class="pre">/materials</span></code> 建新瓶，再 <code class="docutils literal notranslate"><span class="pre">place</span></code> 到空的 <code class="docutils literal notranslate"><span class="pre">S01</span></code> / <code class="docutils literal notranslate"><span class="pre">E01</span></code> / <code class="docutils literal notranslate"><span class="pre">T01</span></code>。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+
+<span class="s">api = os.environ[&quot;API&quot;]</span>
+
+<span class="s">def get(path):</span>
+<span class="s">    with urllib.request.urlopen(f&quot;{api}{path}&quot;) as r:</span>
+<span class="s">        return json.load(r)[&quot;data&quot;]</span>
+
+<span class="s">def call(method, path, body=None):</span>
+<span class="s">    req = urllib.request.Request(</span>
+<span class="s">        f&quot;{api}{path}&quot;,</span>
+<span class="s">        data=None if body is None else json.dumps(body).encode(&quot;utf-8&quot;),</span>
+<span class="s">        headers={&quot;Content-Type&quot;: &quot;application/json&quot;} if body is not None else {},</span>
+<span class="s">        method=method,</span>
+<span class="s">    )</span>
+<span class="s">    with urllib.request.urlopen(req) as r:</span>
+<span class="s">        return json.load(r)</span>
+
+<span class="s">templates = get(&quot;/resource-templates?page=1&amp;page_size=100&quot;)</span>
+<span class="s">items = templates.get(&quot;items&quot;) if isinstance(templates, dict) else templates</span>
+<span class="s">stock_tpl = next(</span>
+<span class="s">    t for t in items</span>
+<span class="s">    if t.get(&quot;name&quot;) in {&quot;stock_vial&quot;, &quot;标准样品母液瓶&quot;}</span>
+<span class="s">    or &quot;stock_vial&quot; in str(t.get(&quot;class&quot;) or t.get(&quot;name&quot;) or &quot;&quot;)</span>
+<span class="s">)</span>
+<span class="s">nodes = get(&quot;/materials/graph&quot;)[&quot;nodes&quot;]</span>
+<span class="s">s01 = next(site for n in nodes for site in (n.get(&quot;sites&quot;) or []) if site.get(&quot;name&quot;) == &quot;S01&quot;)</span>
+<span class="s">if s01.get(&quot;occupied_material_uuid&quot;):</span>
+<span class="s">    call(&quot;PUT&quot;, f&quot;/materials/{s01[&#39;occupied_material_uuid&#39;]}&quot;, {&quot;site_placement&quot;: {&quot;action&quot;: &quot;remove&quot;}})</span>
+<span class="s">created = call(&quot;POST&quot;, &quot;/materials&quot;, {</span>
+<span class="s">    &quot;resource_template_uuid&quot;: stock_tpl[&quot;uuid&quot;],</span>
+<span class="s">    &quot;name&quot;: &quot;标准样品母液 002&quot;,</span>
+<span class="s">    &quot;barcode&quot;: &quot;ASSAY-STOCK-002&quot;,</span>
+<span class="s">})[&quot;data&quot;]</span>
+<span class="s">placed = call(&quot;PUT&quot;, f&quot;/materials/{created[&#39;uuid&#39;]}&quot;, {</span>
+<span class="s">    &quot;site_placement&quot;: {&quot;action&quot;: &quot;place&quot;, &quot;site_uuid&quot;: s01[&quot;uuid&quot;]},</span>
+<span class="s">})</span>
+<span class="s">print(&quot;已换料到 S01&quot;, created[&quot;name&quot;], &quot;code&quot;, placed.get(&quot;code&quot;))</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">E01</span></code> 对应 <code class="docutils literal notranslate"><span class="pre">aliquot_vial</span></code>，<code class="docutils literal notranslate"><span class="pre">T01</span></code> 对应 <code class="docutils literal notranslate"><span class="pre">tip_box</span></code>。</p>
+</section>
+<section id="d">
+<h3>办法 D：更换工作流使用的库位名<a class="headerlink" href="#d" title="链接到此标题。">¶</a></h3>
+<p>任务 <code class="docutils literal notranslate"><span class="pre">input</span></code> 里把 <code class="docutils literal notranslate"><span class="pre">source_stock_site</span></code> 改成 <code class="docutils literal notranslate"><span class="pre">S02</span></code> 现在会失败，因为源码是 <code class="docutils literal notranslate"><span class="pre">Literal[&quot;S01&quot;]</span></code>。要同时改：</p>
+<ol class="arabic simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">demo_lab/resources/carriers.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">available_sites</span></code>（必须是字面量数组）和 <code class="docutils literal notranslate"><span class="pre">_rack</span></code> 格子</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">scripts/write_simulation_graph.py</span></code>，然后 <code class="docutils literal notranslate"><span class="pre">python</span> <span class="pre">scripts/write_simulation_graph.py</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo_lab/workflows/weigh_aliquot.py</span></code> 的 <code class="docutils literal notranslate"><span class="pre">Literal</span></code> 和默认值</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">stop</span></code> → <code class="docutils literal notranslate"><span class="pre">reset-local</span></code> → <code class="docutils literal notranslate"><span class="pre">start</span></code> → 重新发布</p></li>
+</ol>
+<p>工艺位 <code class="docutils literal notranslate"><span class="pre">BAL1</span></code> / <code class="docutils literal notranslate"><span class="pre">PIP_S</span></code> / <code class="docutils literal notranslate"><span class="pre">PIP_T</span></code> / <code class="docutils literal notranslate"><span class="pre">CAP1</span></code> 写在搬运步骤里，不是任务参数。</p>
+</section>
+</section>
+<section id="id9">
+<h2>6. 预检查通过后启动工作流<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
+<p>确认预检是 <code class="docutils literal notranslate"><span class="pre">runnable_now</span></code>，并且 <code class="docutils literal notranslate"><span class="pre">S01</span></code> / <code class="docutils literal notranslate"><span class="pre">E01</span></code> / <code class="docutils literal notranslate"><span class="pre">T01</span></code> 有料、回库位为空，再创建任务：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, time, urllib.request</span>
+<span class="s">from pathlib import Path</span>
+
+<span class="s">api, wf = os.environ[&quot;API&quot;], os.environ[&quot;WF&quot;]</span>
+<span class="s">payload = {</span>
+<span class="s">    &quot;workflow_uuid&quot;: wf,</span>
+<span class="s">    &quot;run_mode&quot;: &quot;normal&quot;,</span>
+<span class="s">    &quot;priority&quot;: &quot;normal&quot;,</span>
+<span class="s">    &quot;input&quot;: json.loads(Path(&quot;/tmp/demo-lab-input.json&quot;).read_text()),</span>
+<span class="s">    &quot;inventory_bindings&quot;: [],</span>
+<span class="s">    &quot;description&quot;: f&quot;标准样品称量分装-{os.environ[&#39;SAMPLE_ID&#39;]}&quot;,</span>
+<span class="s">}</span>
+<span class="s">req = urllib.request.Request(</span>
+<span class="s">    f&quot;{api}/workflow-tasks&quot;,</span>
+<span class="s">    data=json.dumps(payload).encode(&quot;utf-8&quot;),</span>
+<span class="s">    headers={&quot;Content-Type&quot;: &quot;application/json&quot;},</span>
+<span class="s">    method=&quot;POST&quot;,</span>
+<span class="s">)</span>
+<span class="s">with urllib.request.urlopen(req) as r:</span>
+<span class="s">    task = json.load(r)[&quot;data&quot;]</span>
+<span class="s">print(&quot;任务&quot;, task[&quot;uuid&quot;], &quot;初始状态&quot;, task[&quot;status&quot;])</span>
+
+<span class="s">done = {&quot;succeeded&quot;, &quot;failed&quot;, &quot;cancelled&quot;, &quot;canceled&quot;, &quot;aborted&quot;}</span>
+<span class="s">for _ in range(90):</span>
+<span class="s">    with urllib.request.urlopen(f&quot;{api}/workflow-tasks/{task[&#39;uuid&#39;]}&quot;) as r:</span>
+<span class="s">        current = json.load(r)[&quot;data&quot;]</span>
+<span class="s">    print(&quot;进度&quot;, current[&quot;status&quot;])</span>
+<span class="s">    if current[&quot;status&quot;] in done:</span>
+<span class="s">        output = current.get(&quot;output&quot;) or {}</span>
+<span class="s">        print(&quot;执行结果&quot;)</span>
+<span class="s">        print(&quot;  称量&quot;, output.get(&quot;measured_mass_g&quot;), &quot;克&quot;)</span>
+<span class="s">        print(&quot;  分装体积&quot;, output.get(&quot;commanded_volume_ul&quot;), &quot;微升&quot;)</span>
+<span class="s">        print(&quot;  封盖说明&quot;, output.get(&quot;message&quot;))</span>
+<span class="s">        print(&quot;  成品&quot;, output.get(&quot;product_vial&quot;))</span>
+<span class="s">        print(&quot;  已用母液&quot;, output.get(&quot;used_stock_vial&quot;))</span>
+<span class="s">        print(&quot;  错误&quot;, current.get(&quot;error_info&quot;))</span>
+<span class="s">        break</span>
+<span class="s">    time.sleep(1)</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>成功时 <code class="docutils literal notranslate"><span class="pre">status=succeeded</span></code>。<code class="docutils literal notranslate"><span class="pre">normal</span></code> 下称量应是 <code class="docutils literal notranslate"><span class="pre">12.5</span></code>，分装体积等于你填的数。</p>
+<p>看每一步：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-<span class="w"> </span><span class="s">&lt;&lt;&#39;PY&#39;</span>
+<span class="s">import json, os, urllib.request</span>
+<span class="s">with urllib.request.urlopen(f&quot;{os.environ[&#39;API&#39;]}/workflow-tasks&quot;) as r:</span>
+<span class="s">    items = json.load(r)[&quot;data&quot;][&quot;items&quot;]</span>
+<span class="s">task = items[0][&quot;uuid&quot;]</span>
+<span class="s">with urllib.request.urlopen(f&quot;{os.environ[&#39;API&#39;]}/workflow-tasks/{task}/jobs&quot;) as r:</span>
+<span class="s">    raw = json.load(r)[&quot;data&quot;]</span>
+<span class="s">jobs = raw if isinstance(raw, list) else (raw or {}).get(&quot;items&quot;) or []</span>
+<span class="s">print(&quot;作业数&quot;, len(jobs))</span>
+<span class="s">for job in jobs:</span>
+<span class="s">    print(job.get(&quot;executor_kind&quot;), job.get(&quot;status&quot;))</span>
+<span class="s">PY</span>
+</pre></div>
+</div>
+<p>再看一遍库位：成品应在 <code class="docutils literal notranslate"><span class="pre">F01</span></code>，母液应在 <code class="docutils literal notranslate"><span class="pre">U01</span></code>。这时不要直接再创建任务，先按第 5 节恢复原料区，再从第 3.2 节重新指定参数并预检。</p>
+<p>停止工作区：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>stop<span class="w"> </span>--workspace<span class="w"> </span>.
+</pre></div>
+</div>
+</section>
+<section id="id10">
+<h2>打开前端<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
+<p>页面跟着工作区走，不用另装前端。本包默认不自动弹浏览器。</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class="w"> </span>--workspace<span class="w"> </span>.<span class="w"> </span>--json<span class="w"> </span><span class="se">\</span>
+<span class="w">  </span><span class="p">|</span><span class="w"> </span>python<span class="w"> </span>-c<span class="w"> </span><span class="s1">&#39;import json,sys,webbrowser; url=json.load(sys.stdin)[&quot;components&quot;][&quot;backend&quot;][&quot;address&quot;]+&quot;/console/&quot;; print(url); webbrowser.open(url)&#39;</span>
+</pre></div>
+</div>
+<p>页面上的按钮名和接口文档不完全一样，按这个点：</p>
+<ol class="arabic simple">
+<li><p>左侧 <strong>工作流</strong> → 目录里选「标准样品称量分装」。状态是 <code class="docutils literal notranslate"><span class="pre">source</span></code> 时点 <strong>发布</strong>。</p></li>
+<li><p>点 <strong>进入运行准备</strong>。来源库位是下拉框，<strong>只列出当前有对应物料的格子</strong>（例如 <code class="docutils literal notranslate"><span class="pre">原料载架</span> <span class="pre">/</span> <span class="pre">S01</span> <span class="pre">·</span> <span class="pre">标准样品母液</span> <span class="pre">001</span></code>）。<code class="docutils literal notranslate"><span class="pre">S01</span></code> / <code class="docutils literal notranslate"><span class="pre">E01</span></code> 为空时会出现「没有符合要求的有料库位」，这时不要提交，先按第 5 节恢复。</p></li>
+<li><p>点 <strong>运行 Preflight</strong>。通过后底部会显示「当前可提交，派发时仍会复核」。</p></li>
+<li><p>点 <strong>提交任务</strong>。页面会跳到 <strong>任务</strong>，等 14 个节点变绿。点最后的 <strong>结果汇总</strong>，<code class="docutils literal notranslate"><span class="pre">measured_mass_g</span></code> 应是 <code class="docutils literal notranslate"><span class="pre">12.5</span></code>，<code class="docutils literal notranslate"><span class="pre">commanded_volume_ul</span></code> 等于你填的体积。</p></li>
+<li><p>看占用：打开 <strong>物料</strong>，先点开 <strong>主工作台</strong>，再看原料载架 / 成品区 / 已用母液区 / 吸头仓。</p></li>
+</ol>
+<p>侧栏可能仍写着「深圳实验室 / SZLab Edge」，总监控里的工站图也不是这套演示的 <code class="docutils literal notranslate"><span class="pre">S01</span></code>/<code class="docutils literal notranslate"><span class="pre">E01</span></code>。以工作流、物料、任务三页为准。</p>
+</section>
+<section id="id11">
+<h2>这套演示里有什么<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>名称</p></th>
+<th class="head"><p>可以把它理解成</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>搬运机器人</p></td>
+<td><p>在各个工位之间搬瓶子</p></td>
+</tr>
+<tr class="row-odd"><td><p>天平工站</p></td>
+<td><p>称母液瓶</p></td>
+</tr>
+<tr class="row-even"><td><p>移液工站</p></td>
+<td><p>按体积分装</p></td>
+</tr>
+<tr class="row-odd"><td><p>封盖工站</p></td>
+<td><p>给分装瓶盖盖</p></td>
+</tr>
+<tr class="row-even"><td><p>母液瓶 / <code class="docutils literal notranslate"><span class="pre">S01</span></code></p></td>
+<td><p>标准样品来源</p></td>
+</tr>
+<tr class="row-odd"><td><p>空分装瓶 / <code class="docutils literal notranslate"><span class="pre">E01</span></code></p></td>
+<td><p>用来接收分装液体</p></td>
+</tr>
+<tr class="row-even"><td><p>吸头盒 / <code class="docutils literal notranslate"><span class="pre">T01</span></code></p></td>
+<td><p>移液用的耗材</p></td>
+</tr>
+<tr class="row-odd"><td><p>成品区 / <code class="docutils literal notranslate"><span class="pre">F01</span></code></p></td>
+<td><p>封盖后的瓶子放这里</p></td>
+</tr>
+<tr class="row-even"><td><p>已用区 / <code class="docutils literal notranslate"><span class="pre">U01</span></code></p></td>
+<td><p>用过的母液放这里</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p>启动图 <code class="docutils literal notranslate"><span class="pre">deployment/graphs/dry-run.json</span></code> 里的 <code class="docutils literal notranslate"><span class="pre">occupied_by</span></code> 决定第一次启动时瓶子在哪。</p>
+</section>
+<section id="id12">
+<h2>常见情况<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
+<div class="table-wrapper colwidths-auto docutils container">
+<table class="docutils align-default">
+<thead>
+<tr class="row-odd"><th class="head"><p>你看到的</p></th>
+<th class="head"><p>怎么处理</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p>找不到 <code class="docutils literal notranslate"><span class="pre">unilab</span></code></p></td>
+<td><p>先 <code class="docutils literal notranslate"><span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">unilab</span></code>，再输入 <code class="docutils literal notranslate"><span class="pre">unilab</span></code></p></td>
+</tr>
+<tr class="row-odd"><td><p>工作流是 <code class="docutils literal notranslate"><span class="pre">source</span></code></p></td>
+<td><p>按第 2 节发布后再选它建任务；<code class="docutils literal notranslate"><span class="pre">reset-local</span></code> 之后也会变回 <code class="docutils literal notranslate"><span class="pre">source</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>预检 <code class="docutils literal notranslate"><span class="pre">can_run=false</span></code> 或原料区为空</p></td>
+<td><p>按第 5 节恢复或上料，再预检</p></td>
+</tr>
+<tr class="row-odd"><td><p>想换瓶子或换格子</p></td>
+<td><p>换瓶用第 5 节办法 C；换库位名用办法 D</p></td>
+</tr>
+<tr class="row-even"><td><p>分装体积报错</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">target_aliquot_volume_ul</span></code> 只能是 1 到 5000 的整数</p></td>
+</tr>
+<tr class="row-odd"><td><p>启动很久没有就绪</p></td>
+<td><p><code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">stop</span> <span class="pre">--workspace</span> <span class="pre">.</span></code> 后再 <code class="docutils literal notranslate"><span class="pre">workspace</span> <span class="pre">start</span></code></p></td>
+</tr>
+<tr class="row-even"><td><p>页面连不上</p></td>
+<td><p>工作区没启动，或复位后端口变了，重新看 <code class="docutils literal notranslate"><span class="pre">workspace</span> <span class="pre">status</span></code></p></td>
+</tr>
+</tbody>
+</table>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">.unilabos</span></code> 是本机运行记录，拷贝仓库时不用带上。</p>
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="installation.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">系统安装</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="console.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">Uni-Lab OS 快速上手</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, Uni-Lab
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            <div class="last-updated">
+              Last updated on 2026-09-08</div>
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">demo-lab 演示说明</a><ul>
+<li><a class="reference internal" href="#id1">开始前确认这两件事</a></li>
+<li><a class="reference internal" href="#id2">1. 安装并启动工作区</a></li>
+<li><a class="reference internal" href="#id3">2. 查询有哪些工作流</a></li>
+<li><a class="reference internal" href="#id4">3. 选择工作流，指定实验参数、物料、库位</a><ul>
+<li><a class="reference internal" href="#id5">3.1 实验参数、物料、库位怎么填</a></li>
+<li><a class="reference internal" href="#id6">3.2 先看现场有没有料、格子空不空</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id7">4. 执行前预检查</a></li>
+<li><a class="reference internal" href="#id8">5. 预检未通过时自行处理</a><ul>
+<li><a class="reference internal" href="#a">办法 A：按启动图整盘恢复（最常用）</a></li>
+<li><a class="reference internal" href="#b">办法 B：人工把已有瓶子放到指定空位</a></li>
+<li><a class="reference internal" href="#c">办法 C：换一瓶同类型物料（库位名不变）</a></li>
+<li><a class="reference internal" href="#d">办法 D：更换工作流使用的库位名</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id9">6. 预检查通过后启动工作流</a></li>
+<li><a class="reference internal" href="#id10">打开前端</a></li>
+<li><a class="reference internal" href="#id11">这套演示里有什么</a></li>
+<li><a class="reference internal" href="#id12">常见情况</a></li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="_static/documentation_options.js?v=4041f460"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
+    <script src="_static/ai-docs.js?v=118f57a4"></script>
+    </body>
+</html>

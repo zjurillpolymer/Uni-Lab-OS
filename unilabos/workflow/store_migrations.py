@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import sqlite3
 
+from unilabos.workflow.resource_lock_key import parse_canonical_resource_lock_key
+
 
 def _execute_script_in_transaction(
     connection: sqlite3.Connection,
@@ -171,6 +173,56 @@ def ensure_workflow_task_control_schema(connection: sqlite3.Connection) -> None:
             SET execution_mode = 'step'
             WHERE run_mode = 'step'
             """
+        )
+
+
+def ensure_task_resource_unlock_command_schema(
+    connection: sqlite3.Connection,
+) -> None:
+    """为旧工作流库开放异常终态 Task 人工释放命令。
+
+    参数：``connection`` 是 WorkflowStore 初始化事务。返回无。异常：
+    建表合同不是精确旧版或新版时失败关闭，避免宽松改写未知 Schema。
+    SQLite 不支持直接修改 CHECK，因此保持表、索引和外键原样，只替换
+    ``workflow_task_command.type`` 的精确约束片段。
+    """
+
+    old = "type IN ('step', 'pause', 'resume', 'cancel')"
+    new = "type IN ('step', 'pause', 'resume', 'cancel', 'unlock_resources')"
+    row = connection.execute(
+        "SELECT sql FROM sqlite_schema "
+        "WHERE type='table' AND name='workflow_task_command'"
+    ).fetchone()
+    table_sql = str(row["sql"] or "") if row is not None else ""
+    if new in table_sql and old not in table_sql:
+        return
+    if table_sql.count(old) != 1 or new in table_sql:
+        raise sqlite3.OperationalError(
+            "workflow_task_command 定义无法安全增加人工释放命令"
+        )
+    schema_version = int(connection.execute("PRAGMA schema_version").fetchone()[0])
+    connection.execute("PRAGMA writable_schema = ON")
+    try:
+        changed = connection.execute(
+            "UPDATE sqlite_schema SET sql=replace(sql, ?, ?) "
+            "WHERE type='table' AND name='workflow_task_command' "
+            "AND instr(sql, ?) > 0",
+            (old, new, old),
+        ).rowcount
+        if changed != 1:
+            raise sqlite3.OperationalError(
+                "workflow_task_command 人工释放命令迁移未命中"
+            )
+        connection.execute(f"PRAGMA schema_version = {schema_version + 1}")
+    finally:
+        connection.execute("PRAGMA writable_schema = OFF")
+    migrated = connection.execute(
+        "SELECT sql FROM sqlite_schema "
+        "WHERE type='table' AND name='workflow_task_command'"
+    ).fetchone()
+    if migrated is None or new not in str(migrated["sql"] or ""):
+        raise sqlite3.OperationalError(
+            "workflow_task_command 人工释放命令迁移未生效"
         )
 
 
@@ -440,7 +492,7 @@ def ensure_execution_lock_schema(connection: sqlite3.Connection) -> None:
             workflow_node_job_uuid TEXT NOT NULL,
             lock_key TEXT NOT NULL,
             scope TEXT NOT NULL
-                CHECK (scope IN ('device', 'material', 'material_site')),
+                CHECK (scope IN ('device', 'material', 'material_site', 'resource')),
             material_uuid TEXT,
             site_uuid TEXT,
             state TEXT NOT NULL
@@ -477,7 +529,7 @@ def ensure_execution_lock_schema(connection: sqlite3.Connection) -> None:
             workflow_node_job_uuid TEXT NOT NULL,
             lock_key TEXT NOT NULL,
             scope TEXT NOT NULL
-                CHECK (scope IN ('device', 'material', 'material_site')),
+                CHECK (scope IN ('device', 'material', 'material_site', 'resource')),
             material_uuid TEXT,
             site_uuid TEXT,
             state TEXT NOT NULL CHECK (state IN ('waiting', 'released')),
@@ -589,6 +641,8 @@ def ensure_execution_lock_schema(connection: sqlite3.Connection) -> None:
         END;
         """,
     )
+    _ensure_execution_lock_resource_scope(connection)
+    _backfill_execution_lock_identities(connection)
     lease_columns = {
         str(row["name"])
         for row in connection.execute(
@@ -609,6 +663,161 @@ def ensure_execution_lock_schema(connection: sqlite3.Connection) -> None:
         ON execution_lock_lease(claim_uuid, fencing_token)
         """
     )
+    _execute_script_in_transaction(
+        connection,
+        """
+        CREATE TABLE IF NOT EXISTS execution_lock_operator_action (
+            uuid TEXT PRIMARY KEY,
+            create_time TEXT NOT NULL,
+            update_time TEXT NOT NULL,
+            workflow_task_uuid TEXT NOT NULL,
+            workflow_node_job_uuid TEXT NOT NULL,
+            lease_uuid TEXT NOT NULL,
+            claim_uuid TEXT NOT NULL,
+            expected_claim_uuid TEXT NOT NULL,
+            expected_fencing_token INTEGER NOT NULL CHECK (expected_fencing_token > 0),
+            action TEXT NOT NULL CHECK (action IN ('force_release')),
+            result TEXT NOT NULL CHECK (result IN ('released', 'already_released')),
+            reason TEXT NOT NULL,
+            physical_settlement_confirmed INTEGER NOT NULL
+                CHECK (physical_settlement_confirmed IN (0, 1)),
+            released_lock_uuids TEXT NOT NULL DEFAULT '[]',
+            meta_data TEXT NOT NULL DEFAULT '{}',
+            FOREIGN KEY(workflow_task_uuid) REFERENCES workflow_task(uuid),
+            FOREIGN KEY(workflow_node_job_uuid) REFERENCES workflow_node_job(uuid),
+            FOREIGN KEY(lease_uuid) REFERENCES execution_lock_lease(uuid)
+        );
+        CREATE INDEX IF NOT EXISTS ix_execution_lock_operator_action_task
+            ON execution_lock_operator_action(workflow_task_uuid, create_time, uuid);
+        """,
+    )
+
+
+def _backfill_execution_lock_identities(connection: sqlite3.Connection) -> None:
+    """由规范键补齐旧 Lease 的冗余身份，并拒绝损坏的活动事实。"""
+
+    rows = connection.execute(
+        "SELECT uuid,lock_key,scope,material_uuid,site_uuid,state "
+        "FROM execution_lock_lease WHERE deleted_at IS NULL ORDER BY uuid"
+    ).fetchall()
+    active_states = {"reserved", "running", "uncertain"}
+    for row in rows:
+        identity = parse_canonical_resource_lock_key(row["lock_key"])
+        scope = str(row["scope"] or "")
+        material_uuid = str(row["material_uuid"] or "").strip() or None
+        site_uuid = str(row["site_uuid"] or "").strip() or None
+        invalid = (
+            identity is None
+            or identity.scope != scope
+            or (
+                material_uuid is not None
+                and material_uuid != identity.material_uuid
+            )
+            or (site_uuid is not None and site_uuid != identity.site_uuid)
+        )
+        if invalid:
+            if str(row["state"]) in active_states:
+                raise sqlite3.IntegrityError(
+                    "活动执行锁租约包含非规范或不一致的资源身份"
+                )
+            continue
+        if (
+            material_uuid != identity.material_uuid
+            or site_uuid != identity.site_uuid
+        ):
+            connection.execute(
+                "UPDATE execution_lock_lease SET material_uuid=?,site_uuid=? "
+                "WHERE uuid=?",
+                (identity.material_uuid, identity.site_uuid, row["uuid"]),
+            )
+
+
+def _ensure_execution_lock_resource_scope(connection: sqlite3.Connection) -> None:
+    """原地放宽旧锁表 scope CHECK，保持行、索引、触发器与反向外键不变。"""
+
+    tables = ("execution_lock_lease", "execution_lock_waiter")
+    old = "scope IN ('device', 'material', 'material_site')"
+    new = "scope IN ('device', 'material', 'material_site', 'resource')"
+    legacy_tables: list[str] = []
+    for table in tables:
+        row = connection.execute(
+            "SELECT sql FROM sqlite_schema WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        sql = str(row["sql"] or "") if row is not None else ""
+        if new in sql and old not in sql:
+            continue
+        if sql.count(old) == 1 and new not in sql:
+            legacy_tables.append(table)
+            continue
+        raise sqlite3.OperationalError(f"{table} 定义无法安全增加通用资源 scope")
+    if legacy_tables:
+        schema_version = int(connection.execute("PRAGMA schema_version").fetchone()[0])
+        connection.execute("PRAGMA writable_schema = ON")
+        try:
+            for table in legacy_tables:
+                cursor = connection.execute(
+                    "UPDATE sqlite_schema SET sql=replace(sql, ?, ?) "
+                    "WHERE type='table' AND name=? AND instr(sql, ?) > 0",
+                    (old, new, table, old),
+                )
+                if cursor.rowcount != 1:
+                    raise sqlite3.OperationalError(f"{table} 通用资源 scope 迁移未命中")
+            connection.execute(f"PRAGMA schema_version = {schema_version + 1}")
+        finally:
+            connection.execute("PRAGMA writable_schema = OFF")
+    for table in tables:
+        row = connection.execute(
+            "SELECT sql FROM sqlite_schema WHERE type='table' AND name=?",
+            (table,),
+        ).fetchone()
+        if row is None or new not in str(row["sql"] or ""):
+            raise sqlite3.OperationalError(f"{table} 通用资源 scope 迁移未生效")
+    integrity = connection.execute("PRAGMA integrity_check").fetchone()
+    if integrity is None or str(integrity[0]).lower() != "ok":
+        raise sqlite3.IntegrityError("执行锁 scope 迁移后完整性检查失败")
+    if connection.execute("PRAGMA foreign_key_check").fetchall():
+        raise sqlite3.IntegrityError("执行锁 scope 迁移后外键检查失败")
+
+
+def ensure_workflow_runtime_journal_schema(connection: sqlite3.Connection) -> None:
+    """为运行日志增加人工执行锁释放事件类型，并兼容既有数据库。"""
+
+    row = connection.execute(
+        "SELECT sql FROM sqlite_schema "
+        "WHERE type = 'table' AND name = 'workflow_runtime_journal'"
+    ).fetchone()
+    table_sql = str(row["sql"] or "") if row is not None else ""
+    if "'lock_operator_released'" in table_sql:
+        return
+    old = "'uncertainty_resolved',\n            'startup_recovered'"
+    new = "'uncertainty_resolved',\n            'lock_operator_released',\n            'startup_recovered'"
+    if old not in table_sql:
+        raise sqlite3.OperationalError(
+            "workflow_runtime_journal 定义无法安全增加人工锁事件类型"
+        )
+    schema_version = int(connection.execute("PRAGMA schema_version").fetchone()[0])
+    connection.execute("PRAGMA writable_schema = ON")
+    try:
+        connection.execute(
+            """
+            UPDATE sqlite_schema
+            SET sql = replace(sql, ?, ?)
+            WHERE type = 'table' AND name = 'workflow_runtime_journal'
+            """,
+            (old, new),
+        )
+        connection.execute(f"PRAGMA schema_version = {schema_version + 1}")
+    finally:
+        connection.execute("PRAGMA writable_schema = OFF")
+    refreshed = connection.execute(
+        "SELECT sql FROM sqlite_schema "
+        "WHERE type = 'table' AND name = 'workflow_runtime_journal'"
+    ).fetchone()
+    if refreshed is None or "'lock_operator_released'" not in str(refreshed["sql"]):
+        raise sqlite3.OperationalError(
+            "workflow_runtime_journal 人工锁事件类型迁移未生效"
+        )
 
 
 def ensure_local_cancellation_schema(connection: sqlite3.Connection) -> None:
@@ -745,6 +954,8 @@ __all__ = [
     "ensure_execution_lock_schema",
     "ensure_local_cancellation_schema",
     "ensure_task_material_admission_schema",
+    "ensure_task_resource_unlock_command_schema",
+    "ensure_workflow_runtime_journal_schema",
     "ensure_workflow_task_control_schema",
     "ensure_workflow_inventory_schema",
 ]

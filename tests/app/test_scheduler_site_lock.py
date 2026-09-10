@@ -329,6 +329,64 @@ def test_exact_site_selection_defers_occupancy_to_bound_gate7_authority(
     assert len(admissions) == 1
 
 
+def test_deferred_site_selection_still_respects_busy_device(
+    inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
+) -> None:
+    """候选 Site 交给 Gate 7 选择时，设备互斥仍必须在本地生效。"""
+
+    _store, service, identities = inventory
+    dispatcher = RecordingDispatcher()
+    scheduler = EdgeScheduler(
+        dispatcher=dispatcher,
+        station_resources=service.station_resources,
+    )
+    admissions: list[dict[str, Any]] = []
+    scheduler.submit_workflow(
+        WorkflowSpec(
+            workflow_id="wf-device-owner",
+            nodes=[
+                WorkflowNode(
+                    id="owner",
+                    device_id="device-a",
+                    action_name="run",
+                    action_type="goal",
+                    param={},
+                )
+            ],
+        )
+    )
+    scheduler.bind_dispatch_admission_authority(
+        lambda dispatching: admissions.append(dispatching) or False
+    )
+    waiter = _node(
+        "waiter",
+        device_id="device-a",
+        resource_uuid=identities["first"],
+        owner_uuid=identities["owner"],
+    )
+    waiter.always_free = False
+    waiter.execution_policy = {
+        "target_site_group": [_SITE_UUID_A, _SITE_UUID_B],
+        "target_site_selection": {
+            "version": 1,
+            "owner_material_uuid": identities["owner"],
+            "group_key": "process_input",
+            "requested_reference": "",
+            "strategy": "sort_order",
+            "site_uuids": [_SITE_UUID_A, _SITE_UUID_B],
+            "fingerprint": "sha256:busy-device-selection",
+        },
+    }
+
+    result = scheduler.submit_workflow(
+        WorkflowSpec(workflow_id="wf-device-waiter", nodes=[waiter])
+    )
+
+    assert [item["node_id"] for item in dispatcher.dispatched] == ["owner"]
+    assert result["dispatched"] == []
+    assert admissions == []
+
+
 def test_transfer_source_arguments_are_injected_from_site_occupancy(
     inventory: tuple[InventoryStore, InventoryService, dict[str, str]],
 ) -> None:

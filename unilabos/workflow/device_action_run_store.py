@@ -52,6 +52,7 @@ class DeviceActionRunStore:
         created = False
         task_uuid = str(task["uuid"])
         job_uuid = str(job["uuid"])
+        executor_kind = str(job.get("executor_kind") or "device_action")
         try:
             with self._workflow_store.transaction() as connection:
                 existing = connection.execute(
@@ -79,7 +80,7 @@ class DeviceActionRunStore:
                     ).fetchall()
                     if (
                         len(job_rows) != 1
-                        or job_rows[0]["executor_kind"] != "device_action"
+                        or job_rows[0]["executor_kind"] != executor_kind
                     ):
                         raise StoreConflict("设备单动作任务没有唯一设备作业")
                     job_uuid = str(job_rows[0]["uuid"])
@@ -161,7 +162,7 @@ class DeviceActionRunStore:
                 status, attempt, param, feedback_data, return_info,
                 control_data, error_info
             ) VALUES (?, ?, ?, NULL, NULL, '{}', ?, ?, ?, 0, 0,
-                      'device_action', ?, ?, 'pending', 1, ?, '{}', '{}',
+                      ?, ?, ?, 'pending', 1, ?, '{}', '{}',
                       '{}', '[]')
             """,
             (
@@ -171,6 +172,7 @@ class DeviceActionRunStore:
                 task["uuid"],
                 job["workflow_node_uuid"],
                 job["material_uuid"],
+                str(job.get("executor_kind") or "device_action"),
                 _json(policy),
                 int(policy.get("execution_timeout_seconds") or 0),
                 _json(job["param"]),

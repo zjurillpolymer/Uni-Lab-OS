@@ -2,10 +2,13 @@
 
 from __future__ import annotations
 
+import json
+
 import pytest
 
 from tests.scheduler_core.conftest import CoreRuntime, stable_uuid
 from unilabos.app.scheduler.dispatch import CancelDispatchState, CommittedJobOutcome
+from unilabos.workflow.task_runtime_projection import TaskRuntimeProjection
 from unilabos.workflow.task_scheduler_bridge import TaskSchedulerBridgeError
 
 
@@ -54,6 +57,92 @@ def test_terminal_failure_stops_successors_and_releases_permit(
     assert core_runtime.inventory_store.query_all(
         "SELECT state FROM station_execution_claim ORDER BY job_uuid"
     ) == [{"state": "released"}]
+
+
+def test_restart_keeps_prior_failed_transfer_reconciliation_claim(
+    core_runtime: CoreRuntime,
+) -> None:
+    """兄弟 Job 崩溃不能释放此前失败转运仍待对账的资源。"""
+
+    task_name = "restart-with-transfer-reconciliation"
+    aggregate = core_runtime.submit(
+        task_name=task_name,
+        devices=["reactor-a", "reactor-b"],
+    )
+    task_uuid = str(aggregate["task"]["uuid"])
+    transfer_job_uuid = stable_uuid(f"job:{task_name}:0")
+    sibling_job_uuid = stable_uuid(f"job:{task_name}:1")
+    with core_runtime.workflow_store.transaction() as connection:
+        connection.execute(
+            """
+            UPDATE workflow_node_job
+            SET executor_kind='material_transfer', expected_change_set=?
+            WHERE uuid=?
+            """,
+            (
+                json.dumps(
+                    {
+                        "kind": "material_transfer",
+                        "material_uuid": core_runtime.device_materials["reactor-a"],
+                        "source_site_uuid": "source-site",
+                        "target_site_uuid": "target-site",
+                    }
+                ),
+                transfer_job_uuid,
+            ),
+        )
+
+    core_runtime.scheduler.on_job_outcome(transfer_job_uuid, outcome("failed"))
+
+    projection = TaskRuntimeProjection(core_runtime.workflow_store)
+    assert core_runtime.workflow_store.get_task(task_uuid)["status"] == "failed"
+    assert core_runtime.workflow_store.get_job(sibling_job_uuid)["status"] == "running"
+    assert core_runtime.workflow_store.get_job(transfer_job_uuid)[
+        "uncertainty_reason"
+    ] == "material_transfer_inventory_reconciliation_required"
+    assert projection.get_execution_claim(transfer_job_uuid)["state"] == "uncertain"
+    assert core_runtime.inventory_store.query_one(
+        "SELECT state FROM station_execution_claim WHERE job_uuid=?",
+        (transfer_job_uuid,),
+    ) == {"state": "uncertain"}
+
+    core_runtime.scheduler.on_execution_process_restarted((sibling_job_uuid,))
+
+    failed_task = core_runtime.workflow_store.get_task(task_uuid)
+    assert failed_task["cleanup_status"] == "requires_attention"
+    assert failed_task["control_status"] == "waiting_reconciliation"
+    assert failed_task["attention_reason"] == (
+        "material_transfer_inventory_reconciliation_required"
+    )
+    assert core_runtime.workflow_store.get_job(sibling_job_uuid)["error_info"][0][
+        "code"
+    ] == "execution_process_restarted"
+    assert projection.get_execution_claim(transfer_job_uuid)["state"] == "uncertain"
+    assert {
+        lock["state"] for lock in projection.list_execution_locks(transfer_job_uuid)
+    } == {"uncertain"}
+    assert projection.get_execution_claim(sibling_job_uuid)["state"] == "released"
+    assert core_runtime.inventory_store.query_one(
+        "SELECT state FROM station_execution_claim WHERE job_uuid=?",
+        (transfer_job_uuid,),
+    ) == {"state": "uncertain"}
+    assert core_runtime.inventory_store.query_one(
+        "SELECT state FROM station_execution_claim WHERE job_uuid=?",
+        (sibling_job_uuid,),
+    ) == {"state": "released"}
+
+    blocked = core_runtime.submit(
+        task_name="restart-transfer-reconciliation-waiter",
+        devices=["reactor-a"],
+    )
+    blocked_job_uuid = stable_uuid("job:restart-transfer-reconciliation-waiter:0")
+    assert next(job for job in blocked["jobs"] if job["uuid"] == blocked_job_uuid)[
+        "status"
+    ] == "pending"
+    assert core_runtime.bridge.active_or_uncertain_job_ids() == {transfer_job_uuid}
+    assert core_runtime.scheduler.begin_drain()["active_device_job_ids"] == [
+        transfer_job_uuid
+    ]
 
 
 def test_unknown_then_certain_result_never_replays_physical_dispatch(

@@ -1,4 +1,4 @@
-# 4. 工作流
+# 4. 工作流运行
 
 :::{admonition} 阅读角色
 - **业务负责人**：确认实验目的、输入输出、参数单位、成功标准和失败处理。
@@ -9,9 +9,12 @@
 ```{toctree}
 :maxdepth: 1
 
-workflow-features
-experiment-operations
-complete-workflow
+先理解工作流 <workflow-concepts>
+工作流编排特性 <workflow-features>
+实验操作 <experiment-operations>
+完整工作流 <complete-workflow>
+手写并运行第一个工作流 <first-workflow>
+AI 编写工作流（推荐） <ai-workflow-authoring>
 ```
 
 工作流把业务人员描述的实验步骤转换成 Uni-Lab OS 能检查、调度和追踪的流程。它只能使用用户设备包中已经登记的设备动作、物料模板和启动图（Graph JSON）实例，不能在工作流里重新实现设备通信。

@@ -291,22 +291,60 @@ class ExecutionPlanGraphNormalizer:
                 )
             # 透传值仍须等待内部物理动作完成，不能只按原始值提供者提前放行。
             for completion in completion_sources:
+                completion_source_uuid = self._mapped_identity(
+                    completion, "workflow_node_uuid", nodes
+                )
+                # 组合调用的完成来源可能位于 repeat_until/condition 的内部成员。
+                # 内部成员会在执行计划收缩时被控制区域拥有；若直接把跨层边接到
+                # 成员，contract_edges 会过滤掉该边，组合调用也就失去完成屏障。
+                control_region_uuid = self._control_region_owner(
+                    completion_source_uuid, nodes
+                )
                 generated.append(
                     self._rewired_edge(
                         invocation_uuid=invocation_uuid,
                         label="completion",
                         source_edge=edge,
-                        source_node_uuid=self._mapped_identity(
-                            completion, "workflow_node_uuid", nodes
-                        ),
-                        source_handle_uuid=self._mapped_handle(
-                            completion, "source_handle_uuid", handles
+                        source_node_uuid=control_region_uuid or completion_source_uuid,
+                        source_handle_uuid=(
+                            ""
+                            if control_region_uuid
+                            else self._mapped_handle(
+                                completion, "source_handle_uuid", handles
+                            )
                         ),
                         target_node_uuid=str(edge.get("target_node_uuid") or ""),
                         target_handle_uuid=str(edge.get("target_handle_uuid") or ""),
                     )
                 )
         return self._deduplicate_edges([*retained, *generated])
+
+    @staticmethod
+    def _control_region_owner(
+        node_uuid: str, nodes: Mapping[str, Mapping[str, Any]]
+    ) -> str:
+        """返回节点所属的最近控制区域；没有控制区域时返回空字符串。"""
+
+        current = node_uuid
+        visited: set[str] = set()
+        while current not in visited:
+            visited.add(current)
+            node = nodes.get(current)
+            if not isinstance(node, Mapping):
+                return ""
+            parent_uuid = str(node.get("parent_uuid") or "")
+            if not parent_uuid:
+                return ""
+            parent = nodes.get(parent_uuid)
+            if not isinstance(parent, Mapping):
+                return ""
+            if executor_kind(str(parent.get("type") or "")) in {
+                "repeat_until",
+                "condition",
+            }:
+                return parent_uuid
+            current = parent_uuid
+        return ""
 
     @staticmethod
     def _value_provider_edges(

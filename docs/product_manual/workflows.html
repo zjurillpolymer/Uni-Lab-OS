@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="workflows.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="运行模式、安全与恢复" href="runtime-safety.html"><link rel="prev" title="完整工作流" href="complete-workflow.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="故障排查" href="troubleshooting.html"><link rel="prev" title="运行模式、安全与恢复" href="runtime-safety.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>工作流发布与任务运行 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
 <ul>
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul class="current">
-<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1"><a class="reference internal" href="scenario-guide.html">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1 current current-page"><a class="current reference internal" href="#">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>工作流发布与任务运行<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>工作流发布与任务运行<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -366,7 +368,7 @@
 <p>本页解释已经进入产品目录的工作流怎样发布、预检和运行。第一次创作应先完成<a class="reference internal" href="workflow-concepts.html"><span class="std std-doc">工作流基础</span></a>、<a class="reference internal" href="first-workflow.html"><span class="std std-doc">用户设备包 手写教程</span></a>和<a class="reference internal" href="workflow-features.html"><span class="std std-doc">编排特性</span></a>，之后日常创作推荐使用<a class="reference internal" href="ai-workflow-authoring.html"><span class="std std-doc">AI 辅助方式</span></a>。</p>
 <p>开始实际运行前，还应准备<a class="reference internal" href="materials.html"><span class="std std-doc">物料</span></a>与<a class="reference internal" href="reagents.html"><span class="std std-doc">试剂</span></a>，发布被引用的<a class="reference internal" href="experiment-operations.html"><span class="std std-doc">实验操作（子工作流）</span></a>，并理解<a class="reference internal" href="runtime-safety.html"><span class="std std-doc">运行模式、安全与恢复</span></a>。</p>
 <section id="id2">
-<h2>两种创作入口<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>两种创作入口<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p><strong>AI 辅助创作（推荐）</strong>：AI 先读取当前 Catalog、驱动、资源与 用户设备包 已跟踪流程，生成静态 Python DSL 草稿；人审查后通过“导入 Python”创建，再检查、发布和运行。</p></li>
 <li><p><strong>人工创作</strong>：作者直接编写静态 Python DSL，适合学习最小语法、修复诊断和审查 AI 结果。</p></li>
@@ -375,7 +377,7 @@
 <p>当前“新建工作流”按钮只是入口占位，不能从空白画布创建普通工作流；Uni-Lab OS 页面也没有通用的一键 AI 生成入口。AI 的推荐接入方式与安全边界见<a class="reference internal" href="ai-workflow-authoring.html"><span class="std std-doc">用 AI 编写工作流</span></a>，完整语法和约束见<a class="reference internal" href="workflow-features.html"><span class="std std-doc">工作流编排特性</span></a>。</p>
 </section>
 <section id="id3">
-<h2>查找和理解工作流<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>查找和理解工作流<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <p>进入“工作流”页后：</p>
 <ol class="arabic simple">
 <li><p>按名称或关键词搜索。</p></li>
@@ -388,7 +390,7 @@
 <p>工作流可以从 Python 或 JSON 导入。Python 文件只进入静态 AST 编译器，不会作为普通程序执行；导入用于创建新身份，不覆盖已经存在的工作流 UUID。</p>
 </section>
 <section id="id4">
-<h2>发布修订<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>发布修订<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>产品模式只运行已发布内容。发布前应确认：</p>
 <ul class="simple">
 <li><p>节点与连线完整；</p></li>
@@ -401,7 +403,7 @@
 <p>发布形成不可变修订。已经创建的任务持有自己的冻结执行图和源码快照，之后编辑或发布新版本不会改变它。</p>
 </section>
 <section id="id5">
-<h2>准备一次运行<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>准备一次运行<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <p>打开“运行准备”，完成以下内容：</p>
 <ol class="arabic simple">
 <li><p>选择已发布修订。</p></li>
@@ -415,7 +417,7 @@
 <p>优先级只影响可调度节点之间的选择，不会绕过设备锁、工位锁、库存预留或安全条件。</p>
 </section>
 <section id="id6">
-<h2>运行前检查<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>运行前检查<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>预检可能给出三类结果：</p>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
@@ -444,7 +446,7 @@
 <p>预检是零写入操作：不会创建 Task、Job、执行锁或库存预留。任务提交会重新检查并原子地建立需要的运行状态，因此“刚才预检通过”不保证此刻一定立即运行。</p>
 </section>
 <section id="id7">
-<h2>普通运行与单步运行<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>普通运行与单步运行<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p><strong>普通运行</strong>按依赖和资源条件持续调度，适合已验证流程。</p></li>
 <li><p><strong>单步运行</strong>创建标准 step Task，初始或切换后由操作员选择下一个可执行节点，适合开发模式验证。</p></li>
@@ -452,11 +454,11 @@
 <p>旧的 <code class="docutils literal notranslate"><span class="pre">/api/v1/debug/*</span></code> 断点调试接口已经固定返回 HTTP 410。不要使用旧 CLI、MCP 或 Workbench 中仍指向该接口的“debug launch/breakpoint”；当前正确路径是标准 step Task。</p>
 </section>
 <section id="id8">
-<h2>组合工作流<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>组合工作流<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>工作流可以引用已发布实验操作。调度器在运行计划中原子展开组合调用，同时保留合同版本、参数、设备绑定和物料依赖。不要依赖“子操作最新版本”这种隐式行为；每次修改后应重新检查并发布上层工作流。</p>
 </section>
 <section id="id9">
-<h2>提交后的去向<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>提交后的去向<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <p>创建成功后转到“任务”页。任务会经历等待资源、运行、暂停、需要人工处理、成功、失败或取消等状态。继续按<a class="reference internal" href="tasks.html"><span class="std std-doc">任务运行、并行调度与异常处理</span></a>查看节点、理解等待、处理人工确认并核对结果。</p>
 </section>
 </section>
@@ -466,23 +468,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="runtime-safety.html">
+          <a class="next-page" href="troubleshooting.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">运行模式、安全与恢复</div>
+                <div class="title">故障排查</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="complete-workflow.html">
+          <a class="prev-page" href="runtime-safety.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">完整工作流</div>
+                <div class="title">运行模式、安全与恢复</div>
                 
               </div>
             </a>
@@ -538,10 +540,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

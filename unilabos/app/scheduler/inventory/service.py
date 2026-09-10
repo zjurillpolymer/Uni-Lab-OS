@@ -46,11 +46,17 @@ from unilabos.app.scheduler.inventory.station_resource import (
     StationResourceError,
     StationResourceInventory,
 )
-from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.app.scheduler.inventory.store import (
+    InventoryStore,
+    SiteOccupancyConflict,
+    clear_site_occupancy,
+    set_site_occupancy,
+)
 from unilabos.app.scheduler.inventory.workflow_quantity import (
     WorkflowQuantityInventoryAuthority,
 )
 from unilabos.utils.tracing import add_event, inject_trace_context, span
+from unilabos.workflow.resource_lock_key import site_lock_key
 
 _ACTIVE_STATES_TUPLE = tuple(s.value for s in ACTIVE_INSTANCE_STATES)
 
@@ -1001,6 +1007,21 @@ class InventoryService:
                     raise InsufficientStock(
                         f"instance {inst['edge_uuid']} not in warehouse (status={inst['status']})"
                     )
+                active_foreign_use = conn.execute(
+                    "SELECT claim.task_uuid,claim.job_uuid "
+                    "FROM station_execution_lock_lease AS lease "
+                    "JOIN station_execution_claim AS claim USING(claim_uuid) "
+                    "WHERE lease.material_uuid=? "
+                    "AND lease.state IN ('prepared','reserved','running','uncertain') "
+                    "AND claim.task_uuid<>? "
+                    "ORDER BY lease.acquired_at,lease.claim_uuid LIMIT 1",
+                    (inst["edge_uuid"], workflow_id),
+                ).fetchone()
+                if active_foreign_use is not None:
+                    raise InsufficientStock(
+                        f"instance {inst['edge_uuid']} has an active action in task "
+                        f"{active_foreign_use['task_uuid']}"
+                    )
                 inst = self._tx_set_instance_status(conn, inst, InstanceState.RESERVED)
                 amounts["instances"].append(inst["edge_uuid"])
                 self._emit(
@@ -1502,20 +1523,69 @@ class InventoryService:
         parent_uuid），relation 只补充「父物料的哪个具名位」（slot_id = PLR site
         名，↔ 云端 sites.label；uuid 仅后端索引）。每次 upsert 同步父列。
         """
-        current = conn.execute(
-            "SELECT version FROM resource_relation WHERE child_uuid = ?",
-            (child_uuid,),
+        parent = conn.execute(
+            "SELECT uuid FROM material WHERE uuid=? AND deleted_at IS NULL",
+            (parent_uuid,),
         ).fetchone()
-        version = int(current["version"]) + 1 if current is not None else 1
-        if current is not None:
+        if parent is None:
+            # 兼容旧 Inventory API：历史调用允许先引用尚未同步的父资源。只在
+            # 兼容层创建隐藏占位父物料；SiteOccupancy 仍统一走下方原子 API。
             conn.execute(
-                "DELETE FROM resource_relation WHERE child_uuid = ?", (child_uuid,)
+                "INSERT INTO material_instance("
+                "edge_uuid,legacy_cloud_id,lot_id,template_id,barcode,status,"
+                "parent_uuid,version) VALUES (?,?,?,?,?,?,?,1)",
+                (parent_uuid, "", "", "", "", InstanceState.WAREHOUSE.value, ""),
             )
-        conn.execute(
-            "INSERT INTO resource_relation(parent_uuid, slot_id, child_uuid, version) "
-            "VALUES (?,?,?,?)",
-            (parent_uuid, slot_id, child_uuid, version),
-        )
+            conn.execute(
+                "UPDATE material SET description=?,meta_data=?,name=? WHERE uuid=?",
+                (
+                    "Edge legacy parent placeholder",
+                    json.dumps(
+                        {"unilab_edge_placeholder": True},
+                        separators=(",", ":"),
+                    ),
+                    f"__edge_placeholder__:{parent_uuid}",
+                    parent_uuid,
+                ),
+            )
+        if slot_id:
+            target = conn.execute(
+                "SELECT uuid FROM site WHERE material_uuid=? "
+                "AND LOWER(name)=LOWER(?) AND deleted_at IS NULL",
+                (parent_uuid, slot_id),
+            ).fetchone()
+            if target is None:
+                conn.execute(
+                    "INSERT INTO site("
+                    "create_time,update_time,deleted_at,description,meta_data,"
+                    "material_uuid,name,sort_order,allowed_resource_template_uuids,"
+                    "occupied_material_uuid,position_x,position_y,position_z,"
+                    "depth,length,width"
+                    ") VALUES ("
+                    "strftime('%Y-%m-%dT%H:%M:%fZ','now'),"
+                    "strftime('%Y-%m-%dT%H:%M:%fZ','now'),NULL,NULL,'{}',"
+                    "?,?,0,'[]',NULL,0,0,0,0,0,0)",
+                    (parent_uuid, slot_id),
+                )
+                target = conn.execute(
+                    "SELECT uuid FROM site WHERE material_uuid=? "
+                    "AND LOWER(name)=LOWER(?) AND deleted_at IS NULL",
+                    (parent_uuid, slot_id),
+                ).fetchone()
+            if target is None:  # pragma: no cover - INSERT/约束异常会先终止事务。
+                raise CommandRejected(f"site {parent_uuid}.{slot_id} was not created")
+            try:
+                set_site_occupancy(
+                    conn,
+                    site_uuid=str(target["uuid"]),
+                    material_uuid=child_uuid,
+                )
+            except SiteOccupancyConflict as error:
+                raise CommandRejected(
+                    f"site {parent_uuid}.{slot_id} is occupied or invalid: {error}"
+                ) from error
+        else:
+            clear_site_occupancy(conn, material_uuid=child_uuid)
         conn.execute(
             "UPDATE material_instance SET parent_uuid = ? WHERE edge_uuid = ?",
             (parent_uuid, child_uuid),
@@ -1718,9 +1788,9 @@ class InventoryService:
         # 来源库位；也可能已经取起而停在夹爪库位。允许操作员在派发时已经由
         # 同一 Claim/Fence 保护的任一库位上结算，但禁止借对账接口写入未声明
         # 的库位。这样既能表达真实物理位置，也不扩大原派发凭据的写权限。
-        actual_site_lock = (
-            f"material/{command.target_owner_material_uuid}/site/"
-            f"{command.target_site_uuid}/exclusive"
+        actual_site_lock = site_lock_key(
+            command.target_owner_material_uuid,
+            command.target_site_uuid,
         )
         if actual_site_lock not in fences:
             raise StationResourceError(
@@ -2149,9 +2219,7 @@ class InventoryService:
                 ),
             )
             if old is not None:
-                conn.execute(
-                    "DELETE FROM resource_relation WHERE child_uuid = ?", (edge_uuid,)
-                )
+                clear_site_occupancy(conn, material_uuid=edge_uuid)
             version = inst["version"] + 1
             # 单一父不变量：取下即脱离父物料（回到顶层/未分配）
             conn.execute(
@@ -2250,9 +2318,7 @@ class InventoryService:
             if parent_uuid and new_slot:
                 self._tx_upsert_relation(conn, parent_uuid, new_slot, edge_uuid)
             else:
-                conn.execute(
-                    "DELETE FROM resource_relation WHERE child_uuid = ?", (edge_uuid,)
-                )
+                clear_site_occupancy(conn, material_uuid=edge_uuid)
             self._emit(
                 conn, now, "instance", edge_uuid, new_version, "instance.parent_changed",
                 {"from_parent": old_parent, "parent_uuid": parent_uuid,
@@ -2303,7 +2369,7 @@ class InventoryService:
                 related_material_uuids=(str(inst.get("parent_uuid") or ""),),
             )
             inst = self._tx_set_instance_status(conn, inst, target)
-            conn.execute("DELETE FROM resource_relation WHERE child_uuid = ?", (edge_uuid,))
+            clear_site_occupancy(conn, material_uuid=edge_uuid)
             # 终态实例不再是任何物料的组成部分（历史保留在 ledger）
             conn.execute(
                 "UPDATE material_instance SET parent_uuid = '' WHERE edge_uuid = ?",

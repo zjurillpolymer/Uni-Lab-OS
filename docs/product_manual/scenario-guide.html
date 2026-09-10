@@ -5,9 +5,9 @@
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
 <link rel="alternate" type="text/markdown" href="scenario-guide.md">
 <link rel="describedby" type="text/plain" href="llms.txt">
-<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="故障排查" href="troubleshooting.html"><link rel="prev" title="Kubernetes 部署与上线" href="deployment.html">
+<link rel="index" title="索引" href="genindex.html"><link rel="search" title="搜索" href="search.html"><link rel="next" title="Kubernetes 部署与上线" href="deployment.html"><link rel="prev" title="使用 AI 设备包生成器（实验性）" href="repository-builder-skill.html">
 
-    <!-- Generated with Sphinx 8.2.3 and Furo 2025.12.19 -->
+    <!-- Generated with Sphinx 9.0.4 and Furo 2025.12.19 -->
         <title>设备包验收 - Uni-Lab OS 产品使用说明书</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="_static/styles/furo.css?v=7bdb33bb" />
@@ -218,20 +218,18 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="overview.html">认识 Uni-Lab OS</a></li>
 <li class="toctree-l1"><a class="reference internal" href="console.html">Uni-Lab OS 快速上手</a></li>
+<li class="toctree-l1"><a class="reference internal" href="demo-lab.html">示例设备包</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">系统安装与配置</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="installation.html">系统安装</a></li>
 <li class="toctree-l1"><a class="reference internal" href="environment.html">环境与运行配置</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">设备包开发</span></p>
-<ul>
+<p class="caption" role="heading"><span class="caption-text">设备包开发规范</span></p>
+<ul class="current">
 <li class="toctree-l1 has-children"><a class="reference internal" href="unilabos-installation.html">设备包规范与系统启动</a><input aria-label="Toggle navigation of 设备包规范与系统启动" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workspace.html">工作区</a><input aria-label="Toggle navigation of 工作区" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
-<li class="toctree-l3"><a class="reference internal" href="workspace-init.html">初始化工作区（unilab workspace init）</a></li>
-</ul>
-</li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2"><a class="reference internal" href="workspace.html">工作区</a></li>
+<li class="toctree-l2 has-children"><a class="reference internal" href="device-template.html">1. 设备接入模板</a><input aria-label="Toggle navigation of 1. 设备接入模板" class="toctree-checkbox" id="toctree-checkbox-2" name="toctree-checkbox-2" role="switch" type="checkbox"/><label for="toctree-checkbox-2"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="template-library.html">设备模板库与类别选择</a></li>
 <li class="toctree-l3"><a class="reference internal" href="device-registration.html">设备登记、动作表单与设备联动</a></li>
 <li class="toctree-l3"><a class="reference internal" href="generic-device.html">通用设备规范</a></li>
@@ -241,7 +239,7 @@
 <li class="toctree-l3"><a class="reference internal" href="mouse-automation.html">鼠标模拟点击（可选）</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="material-template.html">2. 物料定义模板</a><input aria-label="Toggle navigation of 2. 物料定义模板" class="toctree-checkbox" id="toctree-checkbox-3" name="toctree-checkbox-3" role="switch" type="checkbox"/><label for="toctree-checkbox-3"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="deck-warehouse.html">工作站台面与仓库</a></li>
 <li class="toctree-l3"><a class="reference internal" href="stack.html">光电堆栈与旋转堆栈：物料 + 设备</a></li>
 <li class="toctree-l3"><a class="reference internal" href="plate-tiprack.html">孔板与吸头盒（Plate／Tiprack）</a></li>
@@ -253,25 +251,29 @@
 <li class="toctree-l3"><a class="reference internal" href="other-materials.html">其他可追踪物料</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="startup-files.html">3. 启动文件</a><input aria-label="Toggle navigation of 3. 启动文件" class="toctree-checkbox" id="toctree-checkbox-4" name="toctree-checkbox-4" role="switch" type="checkbox"/><label for="toctree-checkbox-4"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
 <li class="toctree-l3"><a class="reference internal" href="graph-json.html">启动图（Graph JSON）编写指南</a></li>
 </ul>
 </li>
-<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流</a><input aria-label="Toggle navigation of 4. 工作流" class="toctree-checkbox" id="toctree-checkbox-6" name="toctree-checkbox-6" role="switch" type="checkbox"/><label for="toctree-checkbox-6"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l2 has-children"><a class="reference internal" href="workflow.html">4. 工作流运行</a><input aria-label="Toggle navigation of 4. 工作流运行" class="toctree-checkbox" id="toctree-checkbox-5" name="toctree-checkbox-5" role="switch" type="checkbox"/><label for="toctree-checkbox-5"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul>
+<li class="toctree-l3"><a class="reference internal" href="workflow-concepts.html">先理解工作流</a></li>
 <li class="toctree-l3"><a class="reference internal" href="workflow-features.html">工作流编排特性</a></li>
-<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作（子工作流）</a></li>
+<li class="toctree-l3"><a class="reference internal" href="experiment-operations.html">实验操作</a></li>
 <li class="toctree-l3"><a class="reference internal" href="complete-workflow.html">完整工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="first-workflow.html">手写并运行第一个工作流</a></li>
+<li class="toctree-l3"><a class="reference internal" href="ai-workflow-authoring.html">AI 编写工作流（推荐）</a></li>
 </ul>
 </li>
 </ul>
 </li>
-</ul>
-<p class="caption" role="heading"><span class="caption-text">运行、部署与验收</span></p>
-<ul class="current">
-<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
-<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
-<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="repository-builder-skill.html">使用 AI 设备包生成器（实验性）</a></li>
 <li class="toctree-l1 current current-page"><a class="current reference internal" href="#">设备包验收</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">环境、部署、运行</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="deployment.html">Kubernetes 部署与上线</a></li>
+<li class="toctree-l1"><a class="reference internal" href="runtime-safety.html">运行模式、安全与恢复</a></li>
+<li class="toctree-l1"><a class="reference internal" href="workflows.html">工作流发布与任务运行</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">参考</span></p>
 <ul>
@@ -353,7 +355,7 @@
   <span class="ai-docs-status" role="status" aria-live="polite"></span>
 </div>
 <section id="id1">
-<h1>设备包验收<a class="headerlink" href="#id1" title="Link to this heading">¶</a></h1>
+<h1>设备包验收<a class="headerlink" href="#id1" title="链接到此标题。">¶</a></h1>
 <div class="admonition- admonition">
 <p class="admonition-title">阅读角色</p>
 <ul class="simple">
@@ -365,11 +367,11 @@
 <p>本页说明如何验证用户自行准备的设备包。验收目标不是“页面能打开”，而是确认设备、物料、工作流和现场约束在同一个配置版本下能够正确配合。</p>
 <p>开始前先用<a class="reference internal" href="capability-matrix.html"><span class="std std-doc">能力检查表</span></a>确认设备包已经达到“已定义、已加载、已连接、已联调”中的哪一层；验收完成后，按<a class="reference internal" href="evidence.html"><span class="std std-doc">版本与验收记录</span></a>保存系统版本、设备包版本、启动图（Graph JSON）和结果证据。</p>
 <section id="id2">
-<h2>先确认验收范围<a class="headerlink" href="#id2" title="Link to this heading">¶</a></h2>
+<h2>先确认验收范围<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
 <p>设备包负责人应提供：设备包版本、启动图、运行模式、工作流清单、所需物料、可用设备、风险说明和预期结果。安装人员通过 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">package</span> <span class="pre">inspect</span></code> 与 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">status</span></code> 核对实际加载内容，不能使用记忆中的数量或旧截图判断。</p>
 </section>
 <section id="id3">
-<h2>分阶段验收<a class="headerlink" href="#id3" title="Link to this heading">¶</a></h2>
+<h2>分阶段验收<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -405,7 +407,7 @@
 <p>前一阶段没有通过时，不进入下一阶段。</p>
 </section>
 <section id="id4">
-<h2>工作流覆盖建议<a class="headerlink" href="#id4" title="Link to this heading">¶</a></h2>
+<h2>工作流覆盖建议<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
 <p>设备包至少应准备以下类型的验收工作流：</p>
 <ul class="simple">
 <li><p>只读状态检查：不产生设备动作，用于确认实例和连接；</p></li>
@@ -417,7 +419,7 @@
 </ul>
 </section>
 <section id="id5">
-<h2>创建任务前的业务核对<a class="headerlink" href="#id5" title="Link to this heading">¶</a></h2>
+<h2>创建任务前的业务核对<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
 <ol class="arabic simple">
 <li><p>工作流名称、用途和风险与本次验收一致。</p></li>
 <li><p>输入参数标明单位、允许范围和默认值，默认值不会触发危险动作。</p></li>
@@ -429,7 +431,7 @@
 </ol>
 </section>
 <section id="id6">
-<h2>通用端到端示例<a class="headerlink" href="#id6" title="Link to this heading">¶</a></h2>
+<h2>通用端到端示例<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <p>下面是一条与具体行业无关的样品处理流程，用于说明验收思路：</p>
 <ol class="arabic simple">
 <li><p>从原料区取得容器并确认容器类型。</p></li>
@@ -441,11 +443,11 @@
 <p>验收时为每一步记录：调用的设备实例、输入参数、开始/结束时间、输出、物料位置变化和异常。示例中的设备名称必须替换为用户设备包实际定义的实例，不能照抄为生产配置。</p>
 </section>
 <section id="id7">
-<h2>如何判断等待与故障<a class="headerlink" href="#id7" title="Link to this heading">¶</a></h2>
+<h2>如何判断等待与故障<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <p>共享设备、机械臂或唯一库位被占用时，任务可以进入等待。应在任务详情中看到具体等待对象；资源释放后任务继续。以下情况应判为故障并处理，而不是无限等待：设备持续离线、目标库位不存在、输入不合法、互锁未满足、动作超过规定超时。</p>
 </section>
 <section id="id8">
-<h2>结果验收<a class="headerlink" href="#id8" title="Link to this heading">¶</a></h2>
+<h2>结果验收<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -475,7 +477,7 @@
 <p>设备发出的“目标值”不一定等于传感器实测值。设备包应为两类字段使用不同名称，并在页面说明其业务含义。</p>
 </section>
 <section id="id9">
-<h2>验收完成的判据<a class="headerlink" href="#id9" title="Link to this heading">¶</a></h2>
+<h2>验收完成的判据<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>使用的 Uni-Lab OS、设备包和 启动图 版本均有记录；</p></li>
 <li><p>关键工作流在规定模式下通过；</p></li>
@@ -492,23 +494,23 @@
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="troubleshooting.html">
+          <a class="next-page" href="deployment.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">故障排查</div>
+                <div class="title">Kubernetes 部署与上线</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
-          <a class="prev-page" href="deployment.html">
+          <a class="prev-page" href="repository-builder-skill.html">
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
               <div class="page-info">
                 <div class="context">
                   <span>Previous</span>
                 </div>
                 
-                <div class="title">Kubernetes 部署与上线</div>
+                <div class="title">使用 AI 设备包生成器（实验性）</div>
                 
               </div>
             </a>
@@ -564,10 +566,10 @@
     </aside>
   </div>
 </div><script src="_static/documentation_options.js?v=4041f460"></script>
-    <script src="_static/doctools.js?v=9bcbadda"></script>
-    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="_static/sphinx_highlight.js?v=6ffebe34"></script>
     <script src="_static/scripts/furo.js?v=46bd48cc"></script>
-    <script src="_static/translations.js?v=beaddf03"></script>
+    <script src="_static/translations.js?v=540d3cec"></script>
     <script src="_static/ai-docs.js?v=118f57a4"></script>
     </body>
 </html>

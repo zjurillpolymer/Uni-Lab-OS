@@ -4,7 +4,6 @@ from __future__ import annotations
 
 import json
 from collections.abc import Mapping, Sequence
-from copy import deepcopy
 from dataclasses import dataclass
 from typing import Any, Protocol
 
@@ -25,7 +24,14 @@ from unilabos.workflow.composite_compatibility import (
     classify_pinned_published_workflow_invocation,
     published_workflow_compatibility_projection,
 )
-from unilabos.workflow.composite_invocation import _remap_control_references
+from unilabos.workflow.composite_graph_rewrite import (
+    CompositeGraphRewriteError,
+    control_workflow_input_parameters,
+    materialize_control_arguments,
+    merge_expanded_resource_scopes,
+    project_experiment_operation_resource_scopes,
+    remap_control_references,
+)
 from unilabos.workflow.handle_projection import resource_slot_schema
 from unilabos.workflow.models import validate_uuid
 from unilabos.workflow.workflow_io import (
@@ -36,7 +42,9 @@ from unilabos.workflow.workflow_io import (
 from unilabos.workflow.workflow_type import WORKFLOW_TYPE_EXPERIMENT_OPERATION
 
 
-_CONTROL_NODE_TYPES = frozenset({"condition", "repeat_until"})
+_control_workflow_input_parameters = control_workflow_input_parameters
+_materialize_control_arguments = materialize_control_arguments
+_remap_control_references = remap_control_references
 
 
 class PublishedWorkflowSnapshotProvider(Protocol):
@@ -79,9 +87,10 @@ class CompositeExpansion:
     contract_pin: Mapping[str, Any]
     effective_parent_input_contract: Mapping[str, Any]
     diagnostics: tuple[Mapping[str, str], ...]
+    resource_scopes: tuple[Mapping[str, Any], ...] = ()
 
 
-class _CompositeFailure(RuntimeError):
+class _CompositeFailure(CompositeGraphRewriteError):
     """把内部失败收敛成稳定诊断而不泄漏快照内容。"""
 
     def __init__(self, code: str, path: str, message: str | None = None) -> None:
@@ -91,10 +100,7 @@ class _CompositeFailure(RuntimeError):
         具体原因（可省略）。返回：无。异常：无；构造器只保存已判定结果。
         """
 
-        self.code = code
-        self.path = path
-        self.message = message
-        super().__init__(code)
+        super().__init__(code, path, message)
 
 
 class CompositeAuthoring:
@@ -205,7 +211,7 @@ class CompositeAuthoring:
                 parent_input_contract=parent_input_contract,
                 device_bindings=device_bindings,
             )
-        except _CompositeFailure as error:
+        except CompositeGraphRewriteError as error:
             return _failed_expansion(
                 error.code,
                 error.path,
@@ -294,19 +300,29 @@ class CompositeAuthoring:
             input_contract,
             keyword_arguments,
         )
-        nodes, edges, node_uuid_map, effective_child_input_contract = (
-            self._expand_graph(
-                graph,
-                source=source,
+        (
+            nodes,
+            edges,
+            node_uuid_map,
+            effective_child_input_contract,
+            nested_resource_scopes,
+        ) = self._expand_graph(
+            graph,
+            source=source,
+            invocation_uuid=invocation_uuid,
+            parent_workflow_uuid=parent_workflow_uuid,
+            workflow_stack=workflow_stack,
+            input_contract=input_contract,
+        )
+        resource_scopes = merge_expanded_resource_scopes(
+            project_experiment_operation_resource_scopes(
+                workflow,
                 invocation_uuid=invocation_uuid,
-                parent_workflow_uuid=parent_workflow_uuid,
-                workflow_stack=workflow_stack,
-                input_contract=input_contract,
-            )
+                node_uuid_map=node_uuid_map,
+            ),
+            nested_invocations=nested_resource_scopes,
         )
-        executor_requirements, executor_mapping = _snapshot_executor_requirements(
-            graph
-        )
+        executor_requirements, executor_mapping = _snapshot_executor_requirements(graph)
         if device_bindings is not None:
             if set(device_bindings) != set(executor_mapping.values()):
                 raise _CompositeFailure(
@@ -424,6 +440,7 @@ class CompositeAuthoring:
             },
             node_templates=tuple(referenced_nodes),
             handle_templates=tuple(referenced_handles),
+            resource_scopes=resource_scopes,
             contract_pin=contract_pin,
             effective_parent_input_contract=effective_parent_input_contract,
             diagnostics=(),
@@ -443,6 +460,13 @@ class CompositeAuthoring:
         list[dict[str, Any]],
         dict[str, str],
         dict[str, Any],
+        list[
+            tuple[
+                str,
+                tuple[str, ...],
+                tuple[Mapping[str, Any], ...],
+            ]
+        ],
     ]:
         """递归复制直接节点，并把嵌套调用收敛到同一父候选图。
 
@@ -483,6 +507,13 @@ class CompositeAuthoring:
         }
         nodes: list[dict[str, Any]] = []
         nested_edges: list[dict[str, Any]] = []
+        nested_resource_scopes: list[
+            tuple[
+                str,
+                tuple[str, ...],
+                tuple[Mapping[str, Any], ...],
+            ]
+        ] = []
         effective_input_contract = _plain(input_contract)
         next_stack = (*workflow_stack, source.workflow_uuid)
         for node_uuid in sorted(by_uuid):
@@ -557,6 +588,16 @@ class CompositeAuthoring:
             nodes.append(_plain(nested.invocation_node))
             nodes.extend(_plain(nested.nodes))
             nested_edges.extend(_plain(nested.edges))
+            nested_resource_scopes.append(
+                (
+                    mapped_uuid,
+                    (
+                        mapped_uuid,
+                        *(str(item["uuid"]) for item in nested.nodes),
+                    ),
+                    nested.resource_scopes,
+                )
+            )
             effective_input_contract = _plain(nested.effective_parent_input_contract)
         direct_edges = _expand_edges(
             graph["edges"],
@@ -565,7 +606,13 @@ class CompositeAuthoring:
         )
         edges = _unique_edges([*direct_edges, *nested_edges])
         _assert_acyclic(nodes, edges)
-        return nodes, edges, node_uuid_map, effective_input_contract
+        return (
+            nodes,
+            edges,
+            node_uuid_map,
+            effective_input_contract,
+            nested_resource_scopes,
+        )
 
 
 def _published_template(
@@ -773,9 +820,8 @@ def _snapshot_executor_requirements(
             if isinstance(template, Mapping)
             else None
         )
-        if (
-            not isinstance(source_uuid, str)
-            or not isinstance(resource_template_uuid, str)
+        if not isinstance(source_uuid, str) or not isinstance(
+            resource_template_uuid, str
         ):
             raise _CompositeFailure(
                 "composite_catalog_mismatch",
@@ -1080,9 +1126,11 @@ def _structural_mappings(
         # 展示分组和结构化控制区域由调度器解释，不是拥有 ready Handle 的叶动作。
         # 组合边界只需要投影真正的可执行节点入口/出口；否则 repeat_until/
         # condition 会被误当成设备动作，在下一步查找不存在的 ready Handle。
-        node_kind = str(
-            action.template.get("node_type") or node.get("type") or ""
-        ).strip().lower()
+        node_kind = (
+            str(action.template.get("node_type") or node.get("type") or "")
+            .strip()
+            .lower()
+        )
         if node_kind in {"group", "condition", "repeat_until"}:
             continue
         node_ids.add(node_uuid)
@@ -1200,17 +1248,15 @@ def _invocation_node(
     }
     if device_bindings is not None:
         composite["device_bindings"] = _plain(device_bindings)
-    # A composite invocation created by the API may carry the compact legacy
-    # boundary projection.  During source-backed recompilation preserve that
-    # trusted shape when it is the same pinned child; otherwise use the new
-    # canonical projection assembled above.
+    # API 创建的组合调用可能携带紧凑旧边界投影。源码重新编译命中同一子工作流
+    # 固定版本时保留该可信形状，否则采用上面构造的新规范投影。
     if isinstance(base_node, Mapping):
         base_meta = base_node.get("meta_data")
-        base_unilab = base_meta.get("unilab") if isinstance(base_meta, Mapping) else None
+        base_unilab = (
+            base_meta.get("unilab") if isinstance(base_meta, Mapping) else None
+        )
         base_composite = (
-            base_unilab.get("composite")
-            if isinstance(base_unilab, Mapping)
-            else None
+            base_unilab.get("composite") if isinstance(base_unilab, Mapping) else None
         )
         if (
             isinstance(base_composite, Mapping)
@@ -1344,167 +1390,6 @@ def _materialize_boundary_arguments(
                     f"/target_mappings/{name}",
                 )
             param[str(handles[0]["data_key"])] = _plain(value)
-
-
-def _control_workflow_input_parameters(
-    nodes: Sequence[Mapping[str, Any]],
-) -> set[str]:
-    """返回仅由结构化控制区域引用的工作流输入名称。"""
-
-    result: set[str] = set()
-
-    def visit(value: Any) -> None:
-        if isinstance(value, Mapping):
-            if (
-                value.get("kind") == "workflow_input"
-                and isinstance(value.get("parameter"), str)
-            ):
-                result.add(str(value["parameter"]))
-            for child in value.values():
-                visit(child)
-        elif isinstance(value, (list, tuple)):
-            for child in value:
-                visit(child)
-
-    for node in nodes:
-        node_type = str(node.get("type") or "")
-        node_node_type = str(node.get("node_type") or "")
-        if (
-            node_type not in _CONTROL_NODE_TYPES
-            and node_node_type not in _CONTROL_NODE_TYPES
-        ):
-            continue
-        visit(node.get("param"))
-    return result
-
-
-def _replace_control_expression_variable(
-    value: Any,
-    replacements: Mapping[str, Any],
-) -> Any:
-    """把控制表达式中的变量替换为调用方提供的字面量。"""
-
-    if isinstance(value, Mapping):
-        variable = value.get("var")
-        if (
-            set(value) == {"var"}
-            and isinstance(variable, str)
-            and variable in replacements
-        ):
-            return {"lit": _plain(replacements[variable])}
-        return {
-            str(key): _replace_control_expression_variable(child, replacements)
-            for key, child in value.items()
-        }
-    if isinstance(value, (list, tuple)):
-        return [
-            _replace_control_expression_variable(child, replacements)
-            for child in value
-        ]
-    return deepcopy(value)
-
-
-def _materialize_control_binding_value(
-    value: Any,
-    keyword_arguments: Mapping[str, object],
-) -> Any:
-    """递归固化控制区域 carry 中的工作流输入来源。"""
-
-    if isinstance(value, Mapping):
-        if (
-            value.get("kind") == "workflow_input"
-            and isinstance(value.get("parameter"), str)
-            and value["parameter"] in keyword_arguments
-        ):
-            argument = keyword_arguments[str(value["parameter"])]
-            if isinstance(argument, Mapping):
-                kind = argument.get("kind")
-                if kind == "workflow_input" and isinstance(
-                    argument.get("parameter"), str
-                ):
-                    return {
-                        "kind": "workflow_input",
-                        "parameter": str(argument["parameter"]),
-                    }
-                if kind == "node_output":
-                    raise _CompositeFailure(
-                        "composite_boundary_mapping_invalid",
-                        "/keyword_arguments",
-                    )
-            return {"kind": "literal", "value": _plain(argument)}
-        return {
-            str(key): _materialize_control_binding_value(child, keyword_arguments)
-            for key, child in value.items()
-        }
-    if isinstance(value, (list, tuple)):
-        return [
-            _materialize_control_binding_value(child, keyword_arguments)
-            for child in value
-        ]
-    return deepcopy(value)
-
-
-def _materialize_control_arguments(
-    nodes: Sequence[dict[str, Any]],
-    *,
-    keyword_arguments: Mapping[str, object],
-) -> None:
-    """把组合实参固化到 condition/repeat_until 控制区域。"""
-
-    for node in nodes:
-        node_type = str(node.get("type") or "")
-        node_node_type = str(node.get("node_type") or "")
-        if (
-            node_type not in _CONTROL_NODE_TYPES
-            and node_node_type not in _CONTROL_NODE_TYPES
-        ):
-            continue
-        params = node.get("param")
-        if not isinstance(params, dict):
-            continue
-        bindings = params.get("bindings")
-        literal_replacements: dict[str, Any] = {}
-        if isinstance(bindings, dict):
-            for variable, binding in list(bindings.items()):
-                if not isinstance(binding, Mapping):
-                    continue
-                if (
-                    binding.get("kind") != "workflow_input"
-                    or not isinstance(binding.get("parameter"), str)
-                    or binding["parameter"] not in keyword_arguments
-                ):
-                    continue
-                argument = keyword_arguments[str(binding["parameter"])]
-                if isinstance(argument, Mapping):
-                    kind = argument.get("kind")
-                    if kind == "workflow_input" and isinstance(
-                        argument.get("parameter"), str
-                    ):
-                        bindings[str(variable)] = {
-                            "kind": "workflow_input",
-                            "parameter": str(argument["parameter"]),
-                        }
-                        continue
-                    if kind == "node_output":
-                        raise _CompositeFailure(
-                            "composite_boundary_mapping_invalid",
-                            "/keyword_arguments",
-                        )
-                literal_replacements[str(variable)] = _plain(argument)
-                bindings.pop(variable, None)
-
-        for key in ("branches", "until"):
-            if key in params and literal_replacements:
-                params[key] = _replace_control_expression_variable(
-                    params[key],
-                    literal_replacements,
-                )
-        for key in ("initial_carry", "next_carry"):
-            if key in params:
-                params[key] = _materialize_control_binding_value(
-                    params[key],
-                    keyword_arguments,
-                )
 
 
 def _referenced_templates(
@@ -1770,6 +1655,7 @@ def _failed_expansion(
         structural_mappings={},
         node_templates=(),
         handle_templates=(),
+        resource_scopes=(),
         contract_pin={},
         effective_parent_input_contract={},
         diagnostics=(

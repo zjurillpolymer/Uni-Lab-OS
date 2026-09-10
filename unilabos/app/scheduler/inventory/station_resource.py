@@ -15,10 +15,15 @@ from unilabos.app.scheduler.inventory.dispatch_admission import (
     TemporaryDispatchCondition,
     acquire_dispatch_permit,
     acquire_dispatch_permit_candidates,
+    release_task_dispatch_permits,
     release_unprojected_dispatch_permits,
+    release_preheld_dispatch_claims,
+    retain_dispatch_permit_resources,
     transition_dispatch_permit,
+    validate_active_dispatch_permit,
 )
 from unilabos.app.scheduler.inventory.store import InventoryStore
+from unilabos.workflow.resource_lock_key import device_lock_key, site_lock_key
 
 
 class StationResourceError(ValueError):
@@ -76,6 +81,7 @@ class TransferResourceRequest:
     executor_material_uuid: str = ""
     gripper_site_role: str = ""
     require_device_owners: bool = False
+    allow_held_material: bool = False
 
 
 @dataclass(frozen=True, slots=True)
@@ -145,6 +151,11 @@ class MaterialAliquotCommand:
 
 class StationResourceInventory(Protocol):
     """向调度器隐藏库存表、SQL 和资源树遍历的深模块接口。"""
+
+    def plan_transfer_resources(
+        self, *, owner_uuids: Sequence[str], executor_uuid: str, gripper_role: str,
+    ) -> tuple[str, ...]:
+        """读取部署的设备祖先和夹爪身份，不在计划阶段判定运行时占用。"""
 
     def is_device_material(
         self,
@@ -237,6 +248,21 @@ class StationResourceInventory(Protocol):
         返回：无。异常：非法转换或数据库故障原样传播。
         """
 
+    def validate_active_dispatch_permit(
+        self,
+        *,
+        effect_uuid: str,
+        claim_uuid: str,
+        task_uuid: str,
+        job_uuid: str,
+        attempt: int,
+        parameter_hash: str,
+        expected_change_set: Mapping[str, Any],
+        resource_keys: Sequence[str],
+        fences: Mapping[str, int],
+    ) -> None:
+        """在物理派发前复验库存 Permit 仍是同一活动预留。"""
+
     def release_unprojected_dispatch_permits(
         self,
         *,
@@ -248,9 +274,49 @@ class StationResourceInventory(Protocol):
         返回：本次释放的库存 Claim UUID。异常：身份或数据库错误原样传播。
         """
 
+    def release_task_dispatch_permits(self, *, task_uuid: str) -> tuple[str, ...]:
+        """整组释放已由工作流权威确认的异常终态 Task Permit。"""
+
+    def retain_dispatch_permit_resources(
+        self,
+        claim_uuid: str,
+        *,
+        keep_lock_keys: Sequence[str],
+    ) -> None:
+        """只释放连续交接后不再需要的临时 Claim 资源。"""
+
+    def release_preheld_dispatch_claims(
+        self,
+        *,
+        task_uuid: str,
+        job_uuids: Sequence[str],
+        lock_keys: Sequence[str],
+    ) -> tuple[str, ...]:
+        """在后继派发已投影后收敛前一 Job 的物理 Claim。"""
+
 
 class SqliteStationResourceInventory:
     """基于本地库存 SQLite 的工站资源读取与结算适配器。"""
+
+    def plan_transfer_resources(
+        self, *, owner_uuids: Sequence[str], executor_uuid: str, gripper_role: str,
+    ) -> tuple[str, ...]:
+        """冻结两端仓库的设备祖先与执行器夹爪，运行可用性仍由 Gate 7 裁决。"""
+        keys = {
+            device_lock_key(device_uuid)
+            for owner in owner_uuids
+            if (device_uuid := self._owning_device_uuid(owner))
+        }
+        if gripper_role:
+            rows = self._store.query_all(
+                "SELECT uuid, meta_data FROM site WHERE material_uuid = ? "
+                "AND deleted_at IS NULL", (executor_uuid,),
+            )
+            matches = [row for row in rows if _site_role(row.get("meta_data")) == gripper_role]
+            if len(matches) != 1:
+                raise StationResourceError("gripper_site_role_invalid", "夹爪角色必须唯一")
+            keys.add(site_lock_key(executor_uuid, str(matches[0]["uuid"])))
+        return tuple(sorted(keys))
 
     def __init__(
         self,
@@ -497,12 +563,8 @@ class SqliteStationResourceInventory:
         source_site_uuid = str(source["uuid"])
         source_owner_uuid = str(source["material_uuid"])
         source_device_uuid = self._owning_device_uuid(source_owner_uuid)
-        target_device_uuid = self._owning_device_uuid(
-            request.target_owner_material_uuid
-        )
-        if request.require_device_owners and (
-            not source_device_uuid or not target_device_uuid
-        ):
+        target_device_uuid = self._owning_device_uuid(request.target_owner_material_uuid)
+        if request.require_device_owners and (not source_device_uuid or not target_device_uuid):
             raise StationResourceError(
                 "transfer_device_owner_missing",
                 "机械臂转运的来源库位和目标库位必须能追溯到设备",
@@ -519,6 +581,11 @@ class SqliteStationResourceInventory:
             gripper_site_uuid = self._empty_role_site_uuid(
                 owner_material_uuid=executor_uuid,
                 role=gripper_role,
+                allowed_material_uuid=(
+                    request.resource_material_uuid
+                    if request.allow_held_material and source_owner_uuid == executor_uuid
+                    else ""
+                ),
             )
         return TransferResourceFacts(
             source_site_uuid=source_site_uuid,
@@ -662,6 +729,35 @@ class SqliteStationResourceInventory:
                 target_state=target_state,
             )
 
+    def validate_active_dispatch_permit(
+        self,
+        *,
+        effect_uuid: str,
+        claim_uuid: str,
+        task_uuid: str,
+        job_uuid: str,
+        attempt: int,
+        parameter_hash: str,
+        expected_change_set: Mapping[str, Any],
+        resource_keys: Sequence[str],
+        fences: Mapping[str, int],
+    ) -> None:
+        """在库存事务内关闭式复验物理派发 Permit。"""
+
+        with self._store.transaction() as connection:
+            validate_active_dispatch_permit(
+                connection,
+                effect_uuid=effect_uuid,
+                claim_uuid=claim_uuid,
+                task_uuid=task_uuid,
+                job_uuid=job_uuid,
+                attempt=attempt,
+                parameter_hash=parameter_hash,
+                expected_change_set=expected_change_set,
+                resource_keys=resource_keys,
+                fences=fences,
+            )
+
     def release_unprojected_dispatch_permits(
         self,
         *,
@@ -677,6 +773,47 @@ class SqliteStationResourceInventory:
             return release_unprojected_dispatch_permits(
                 connection,
                 known_claim_uuids=known_claim_uuids,
+            )
+
+    def release_task_dispatch_permits(self, *, task_uuid: str) -> tuple[str, ...]:
+        """在单个库存事务内整组释放终态 Task 的活动 Permit。"""
+
+        with self._store.transaction() as connection:
+            return release_task_dispatch_permits(
+                connection,
+                task_uuid=task_uuid,
+            )
+
+    def retain_dispatch_permit_resources(
+        self,
+        claim_uuid: str,
+        *,
+        keep_lock_keys: Sequence[str],
+    ) -> None:
+        """在库存事务中保留连续区间资源并释放其余资源。"""
+
+        with self._store.transaction() as connection:
+            retain_dispatch_permit_resources(
+                connection,
+                claim_uuid=claim_uuid,
+                keep_lock_keys=keep_lock_keys,
+            )
+
+    def release_preheld_dispatch_claims(
+        self,
+        *,
+        task_uuid: str,
+        job_uuids: Sequence[str],
+        lock_keys: Sequence[str],
+    ) -> tuple[str, ...]:
+        """在库存事务中收敛前一 Job 的 Claim。"""
+
+        with self._store.transaction() as connection:
+            return release_preheld_dispatch_claims(
+                connection,
+                task_uuid=task_uuid,
+                job_uuids=job_uuids,
+                lock_keys=lock_keys,
             )
 
     def _site_candidates(
@@ -822,6 +959,7 @@ class SqliteStationResourceInventory:
         *,
         owner_material_uuid: str,
         role: str,
+        allowed_material_uuid: str = "",
     ) -> str:
         """选择执行器下唯一且空闲的具名角色库位。
 
@@ -843,7 +981,7 @@ class SqliteStationResourceInventory:
                 f"机械臂夹爪库位角色 {role} 必须且只能配置一个，当前为 {len(matches)} 个",
             )
         occupied = str(matches[0].get("occupied_material_uuid") or "").strip()
-        if occupied:
+        if occupied and occupied != allowed_material_uuid:
             raise StationResourceError(
                 "gripper_site_occupied",
                 f"机械臂夹爪库位已有物料 {occupied}，不能开始新的转运",

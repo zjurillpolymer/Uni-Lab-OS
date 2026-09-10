@@ -12,6 +12,7 @@ from unilabos.app.scheduler.inventory.station_resource import (
 )
 from unilabos.app.scheduler.resource_lock import material_lock_key, site_lock_key
 from unilabos.app.scheduler.site_target import ResolvedSiteTarget
+from unilabos.workflow.resource_lock_key import device_lock_key
 
 
 class TransferResourceSetError(ValueError):
@@ -58,6 +59,7 @@ def resolve_transfer_resource_set(
     executor_material_uuid: str = "",
     gripper_site_role: str = "",
     require_device_owners: bool = False,
+    allow_held_material: bool = False,
 ) -> TransferResourceSet:
     """解析机械臂转运一次性需要的物料、位置和设备完整资源集。
 
@@ -79,6 +81,7 @@ def resolve_transfer_resource_set(
                 executor_material_uuid=executor_material_uuid,
                 gripper_site_role=gripper_site_role,
                 require_device_owners=require_device_owners,
+                allow_held_material=allow_held_material,
             )
         )
     except StationResourceError as error:
@@ -99,11 +102,11 @@ def resolve_transfer_resource_set(
         facts.source_device_material_uuid,
         facts.target_device_material_uuid,
     } - {""}:
-        keys.add(f"/devices/{owner_uuid}")
+        keys.add(device_lock_key(owner_uuid))
     executor_uuid = str(executor_material_uuid or "").strip()
     gripper_role = str(gripper_site_role or "").strip()
     if gripper_role:
-        keys.add(f"/devices/{executor_uuid}")
+        keys.add(device_lock_key(executor_uuid))
         keys.add(site_lock_key(executor_uuid, facts.gripper_site_uuid))
     return TransferResourceSet(
         lock_keys=tuple(sorted(keys)),
