@@ -539,8 +539,23 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>--help
 <p>四条命令都成功，才说明 OS 已经安装。此时即使本机还没有任何用户设备包，安装也已经完成。</p>
 </section>
 <section id="id9">
-<h2>6. 下载并安装示例设备包<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
-<p>当前分支尚未提供 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span></code>，不能通过命令自动生成设备包。首次体验请先下载已经准备好的示例设备包：</p>
+<h2>6. 准备并安装设备包<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
+<p>安装 OS 后，按用途选择下面一种方式准备设备包，再执行本节末尾的安装和检查命令。</p>
+<section id="id10">
+<h3>方式一：命令创建最小设备包<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h3>
+<p>准备开发自己的设备包时，先确认当前环境包含初始化命令，再创建一个新目录：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--help
+unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--output<span class="w"> </span>./sample-lab
+<span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;</span><span class="k">$(</span><span class="nb">pwd</span><span class="k">)</span><span class="s2">/sample-lab&quot;</span>
+<span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span>
+</pre></div>
+</div>
+<p>生成内容包括示例设备、<code class="docutils literal notranslate"><span class="pre">echo</span></code> 动作、普通工作流、启动图和测试，共 15 个文件。目标目录必须尚不存在。<code class="docutils literal notranslate"><span class="pre">--name</span></code>、<code class="docutils literal notranslate"><span class="pre">--json</span></code> 参数和完整文件清单见<a class="reference internal" href="workspace.html#id2"><span class="std std-ref">初始化工作区</span></a>。</p>
+<p>若当前版本没有 <code class="docutils literal notranslate"><span class="pre">init</span></code> 子命令，使用包含该功能的版本，或选择下面的示例包下载方式。</p>
+</section>
+<section id="id11">
+<h3>方式二：下载完整演示设备包<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h3>
+<p>希望体验“标准样品称量分装”流程时，下载已准备好的示例设备包：</p>
 <div class="note admonition">
 <p class="admonition-title">示例文件下载</p>
 <ul class="simple">
@@ -554,7 +569,10 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>--help
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span>
 </pre></div>
 </div>
-<p>安装示例设备包并执行本地检查：</p>
+</section>
+<section id="id12">
+<h3>安装并检查所选设备包<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h3>
+<p>完成任意一种准备方式后，在对应设备包根目录运行：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
 python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
 unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>dist/inspect
@@ -562,9 +580,10 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </div>
 <p>这些检查通过后，只能说明教学设备包可以被发现和静态解析，不表示任何真实设备已经接入。</p>
 </section>
-<section id="id10">
-<h2>7. 以安全模式启动<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
-<p>第一次启动显式指定示例设备包自带的启动图，避免读取其他项目或旧环境的默认配置：</p>
+</section>
+<section id="id13">
+<h2>7. 以安全模式启动<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h2>
+<p>第一次启动显式指定所选设备包自带的启动图。以上两种方式都提供 <code class="docutils literal notranslate"><span class="pre">deployment/graphs/dry-run.json</span></code>：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--component<span class="w"> </span>all<span class="w"> </span><span class="se">\</span>
@@ -596,8 +615,8 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </pre></div>
 </div>
 </section>
-<section id="id11">
-<h2>8. 从示例转为真实设备包<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
+<section id="id14">
+<h2>8. 从示例转为真实设备包<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h2>
 <p>确认 OS、设备包示例和 <code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 都能正常工作后，再按以下顺序替换示例内容：</p>
 <ol class="arabic simple">
 <li><p>填写 <code class="docutils literal notranslate"><span class="pre">DEVICE_PACKAGE_REQUIREMENTS.md</span></code>，记录设备型号、协议、动作、单位和安全边界；</p></li>
@@ -646,7 +665,7 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
             
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 2026-09-08</div>
+              Last updated on 2026-09-10</div>
           </div>
           <div class="right-details">
             
@@ -682,9 +701,14 @@ unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class=
 </ul>
 </li>
 <li><a class="reference internal" href="#os">5. 验证 OS 安装</a></li>
-<li><a class="reference internal" href="#id9">6. 下载并安装示例设备包</a></li>
-<li><a class="reference internal" href="#id10">7. 以安全模式启动</a></li>
-<li><a class="reference internal" href="#id11">8. 从示例转为真实设备包</a></li>
+<li><a class="reference internal" href="#id9">6. 准备并安装设备包</a><ul>
+<li><a class="reference internal" href="#id10">方式一：命令创建最小设备包</a></li>
+<li><a class="reference internal" href="#id11">方式二：下载完整演示设备包</a></li>
+<li><a class="reference internal" href="#id12">安装并检查所选设备包</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id13">7. 以安全模式启动</a></li>
+<li><a class="reference internal" href="#id14">8. 从示例转为真实设备包</a></li>
 </ul>
 </li>
 </ul>

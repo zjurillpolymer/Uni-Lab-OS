@@ -3,7 +3,7 @@
 产品定位、业务能力和核心对象统一见[认识 Uni-Lab OS](overview.md)。本页只用于选择适合当前任务的阅读入口。
 
 <div class="manual-meta">
-适用环境：通用安装与接入场景　·　手册版本：2026.09.08　·　设备包可在安装 OS 后创建
+适用环境：通用安装与接入场景　·　手册版本：2026.09.10　·　设备包可在安装 OS 后创建
 </div>
 
 <div class="entry-links">
@@ -18,7 +18,7 @@
 
 - **已有可用环境**：先读[认识产品](overview.md)，再进入[Uni-Lab OS 快速上手](console.md)。
 - **从零建设环境**：先完成[系统安装](installation.md)，再下载并启动[示例设备包](demo-lab.md)，最后按[设备包规范与系统启动](unilabos-installation.md)替换为真实设备。
-- **编写设备包**：在[设备包规范与系统启动](unilabos-installation.md)中依次完成工作区、设备、物料、启动图和工作流。
+- **编写设备包**：先用[初始化工作区](workspace.md#初始化工作区)中的 `unilab workspace init` 创建设备包骨架，再按[设备包规范与系统启动](unilabos-installation.md)补充设备、物料、启动图和工作流。
 - **发布并运行**：进入[工作流发布与任务运行](workflows.md)，生产上线前完成[运行模式、安全与恢复](runtime-safety.md)和[Kubernetes 部署](deployment.md)。
 - **验收与排查**：使用[设备包验收](scenario-guide.md)、[故障排查](troubleshooting.md)和[API 使用参考](api-reference.md)。
 

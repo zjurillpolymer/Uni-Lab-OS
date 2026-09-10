@@ -6,6 +6,11 @@ import json
 import os
 from typing import Any
 
+from unilabos.package_manager import (
+    WorkspaceInitError,
+    initialize_workspace,
+)
+
 from .client import WorkspaceHostClient, ensure_workspace_host
 from .model import COMPONENT_NAMES, WorkspaceHostError
 
@@ -14,7 +19,7 @@ def register_workspace_subcommands(subparsers: Any) -> None:
     """注册 ``unilab workspace`` 的公开生命周期命令。
 
     参数：``subparsers`` 是顶层 CLI 提供的 argparse 子命令容器。返回：无；
-    原地注册 status/start/stop/restart/reset-local。异常：argparse 配置错误由
+    原地注册 init/status/start/stop/restart/reset-local。异常：argparse 配置错误由
     标准库原样抛出；默认 ``all`` 只用于统一双进程生命周期，显式组件仍保留。
     """
 
@@ -23,6 +28,19 @@ def register_workspace_subcommands(subparsers: Any) -> None:
         help="Control the per-workspace Local Backend, OS, PLC-Sim, and renderer",
     )
     actions = parser.add_subparsers(dest="workspace_action", required=True)
+    init = actions.add_parser("init", help="Create a new device-package workspace")
+    init.add_argument(
+        "--output",
+        required=True,
+        help="待创建的工作区目录；目标必须不存在",
+    )
+    init.add_argument(
+        "--name",
+        default=None,
+        dest="workspace_package_name",
+        help="包名；支持 sample-lab 或 sample_lab，省略时从输出目录名派生",
+    )
+    init.add_argument("--json", action="store_true", dest="workspace_json")
     for action in ("status", "start", "stop", "restart", "reset-local"):
         leaf = actions.add_parser(action)
         leaf.add_argument("--workspace", dest="workspace_cli_path", default=None)
@@ -79,7 +97,17 @@ def dispatch_workspace_command(args: dict[str, Any]) -> bool:
     action = str(args.get("workspace_action") or "")
     output_json = bool(args.get("workspace_json"))
     try:
-        if action == "status":
+        if action == "init":
+            initialized = initialize_workspace(
+                args.get("output"),
+                package_name=args.get("workspace_package_name"),
+            )
+            result = (
+                initialized.as_dict()
+                if output_json
+                else {"content": initialized.render_text()}
+            )
+        elif action == "status":
             result = WorkspaceHostClient.status(workspace)
         elif action == "logs":
             client = WorkspaceHostClient.discover(workspace)
@@ -129,7 +157,7 @@ def dispatch_workspace_command(args: dict[str, Any]) -> bool:
                 operation_id=args.get("operation_id"),
                 timeout=float(args.get("wait") or 120.0),
             )
-    except WorkspaceHostError as error:
+    except (WorkspaceHostError, WorkspaceInitError) as error:
         _print({"ok": False, "error": error.as_dict()}, output_json=True)
         raise SystemExit(1) from error
     _print(result, output_json=output_json)

@@ -56,7 +56,7 @@ python -m pip check
 
 启动图 是本次激活设备实例和物料拓扑的权威；规范 import package 是设备与资源定义来源；`package.yaml` 只是 Workflow Source 白名单。`devices/`、`resources/` 是推荐的组织目录，不是特殊注册入口，系统会递归静态扫描整个规范 import package。只安装 Python 包但不给 启动图，运行时不会猜测或从远端自动下载设备图。
 
-需要自己建立目录、设备定义、启动图和工作流清单时，按[工作区](workspace.md)完成经过验证的最小闭环。
+需要新建设备包时，先用[初始化工作区](workspace.md#初始化工作区)生成最小骨架，再按[工作区](workspace.md)补充设备定义、启动图和工作流清单，完成验证。
 
 ## Workspace Host 环境文件
 

@@ -29,6 +29,11 @@ from .generation import (
     candidate_fingerprint,
     restart_reasons,
 )
+from .initialization import (
+    InitializedWorkspace,
+    WorkspaceInitError,
+    initialize_workspace,
+)
 from .lifecycle import (
     PreparedWorkspaceProductGeneration,
     WorkspaceGenerationChangedError,
@@ -52,7 +57,9 @@ __all__ = [
     "AuthoringWorkerResult",
     "StableWorkspaceFileMonitor",
     "StableWorkspaceGenerationMonitor",
+    "InitializedWorkspace",
     "WorkspaceGenerationChangedError",
+    "WorkspaceInitError",
     "WorkspaceGenerationIdentity",
     "WorkspaceGenerationPublisher",
     "WorkspaceInputGeneration",
@@ -74,6 +81,7 @@ __all__ = [
     "compose_workspace_product_lifecycle",
     "get_workspace_product_lifecycle",
     "install_workspace_product_lifecycle",
+    "initialize_workspace",
     "prepare_stable_workspace_product_generation",
     "prepare_stable_workspace_product_generation_in_worker",
     "prepare_workspace_registry_runtime",

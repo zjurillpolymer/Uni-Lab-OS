@@ -366,8 +366,84 @@
 </div>
 <p>工作区是用户设备包的项目根目录。它把设备类型、物料模板、启动图（Graph JSON）、工作流和测试放在同一个可交付版本中，供 Uni-Lab OS 检查和加载。</p>
 <p>设备包由用户自行准备。Uni-Lab OS 不会从任意目录猜测要加载哪些文件；启动时必须通过 <code class="docutils literal notranslate"><span class="pre">--workspace</span></code> 指向一个明确的设备包根目录。</p>
-<section id="uni-lab-os">
-<h2>Uni-Lab OS 如何读取设备包<a class="headerlink" href="#uni-lab-os" title="链接到此标题。">¶</a></h2>
+<section id="workspace-initialization">
+<span id="id2"></span><h2>初始化工作区<a class="headerlink" href="#workspace-initialization" title="链接到此标题。">¶</a></h2>
+<p>安装 Uni-Lab OS 后，可以用 <code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">workspace</span> <span class="pre">init</span></code> 创建一个设备包工作区。命令生成 15 个文件，包含一个无硬件副作用的示例设备、一个 <code class="docutils literal notranslate"><span class="pre">echo</span></code> 动作和一个调用该动作的普通工作流。</p>
+<section id="id3">
+<h3>创建命令<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h3>
+<p>在已经安装 Uni-Lab OS 的 Python 环境中运行：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>若提示没有 <code class="docutils literal notranslate"><span class="pre">init</span></code> 子命令，当前安装的版本尚未包含此功能，需要更新到包含该功能的版本；也可以先使用<a class="reference internal" href="demo-lab.html"><span class="std std-doc">已准备好的示例设备包</span></a>。命令可用后创建工作区：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--output<span class="w"> </span>./sample-lab
+</pre></div>
+</div>
+<p>目标目录必须尚不存在，已有空目录也会被拒绝。命令只生成文件；依赖安装、设备包检查和工作区启动由后续命令完成。</p>
+<p>默认使用输出目录名派生包身份：<code class="docutils literal notranslate"><span class="pre">sample-lab</span></code> 对应发布名称 <code class="docutils literal notranslate"><span class="pre">sample-lab</span></code>、Python 包目录 <code class="docutils literal notranslate"><span class="pre">sample_lab/</span></code> 和类型命名空间 <code class="docutils literal notranslate"><span class="pre">community.sample_lab</span></code>。需要单独指定名称或供脚本读取时：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>init<span class="w"> </span>--output<span class="w"> </span>./device-workspace<span class="w"> </span>--name<span class="w"> </span>sample_lab<span class="w"> </span>--json
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">--name</span></code> 以小写英文字母开头，以字母或数字结尾，中间可以使用小写字母、数字、点、连字符和下划线。连续分隔符统一折叠为一个下划线；规范化后不能是 <code class="docutils literal notranslate"><span class="pre">class</span></code>、<code class="docutils literal notranslate"><span class="pre">import</span></code> 等 Python 关键字。省略 <code class="docutils literal notranslate"><span class="pre">--name</span></code> 时，目录名先转为小写再按相同规则检查。</p>
+<p><code class="docutils literal notranslate"><span class="pre">--json</span></code> 返回工作区绝对路径、发布名称、Python 包名、创建的文件清单和下一步命令。非法名称、目标已存在或写入失败时，命令以非零状态退出并返回错误码；不会覆盖已有目录。</p>
+</section>
+<section id="id4">
+<h3>生成内容<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h3>
+<div class="highlight-text notranslate"><div class="highlight"><pre><span></span>sample-lab/
+├── .gitignore
+├── DEVICE_PACKAGE_REQUIREMENTS.md
+├── README.md
+├── pyproject.toml
+├── package.yaml
+├── deployment/
+│   ├── local_config.py
+│   └── graphs/
+│       └── dry-run.json
+├── sample_lab/
+│   ├── __init__.py
+│   ├── devices/
+│   │   ├── __init__.py
+│   │   └── demo_device.py
+│   ├── resources/
+│   │   └── __init__.py
+│   ├── experiment_operations/
+│   │   └── __init__.py
+│   └── workflows/
+│       ├── __init__.py
+│       └── demo_workflow.py
+└── tests/
+    └── test_workspace_contract.py
+</pre></div>
+</div>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>：一致的包身份、构建配置、开发依赖以及默认启动图和配置文件。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">package.yaml</span></code>：登记示例工作流的源文件和 UUID，与源码装饰器保持一致。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo_device.py</span></code>：定义 <code class="docutils literal notranslate"><span class="pre">DemoDevice.echo(text)</span></code>，返回 <code class="docutils literal notranslate"><span class="pre">success</span></code> 和 <code class="docutils literal notranslate"><span class="pre">echoed_text</span></code>。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">demo_workflow.py</span></code>：调用 <code class="docutils literal notranslate"><span class="pre">demo_device_01</span></code> 的 <code class="docutils literal notranslate"><span class="pre">echo</span></code> 动作并返回结果。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">dry-run.json</span></code>：包含一个示例设备实例，其 <code class="docutils literal notranslate"><span class="pre">class</span></code> 与生成的设备类型一致。</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">local_config.py</span></code>：关闭自动打开浏览器和更新反馈，设置 INFO 日志级别。</p></li>
+<li><p>需求卡、README 和测试：记录待确认的业务事实，并验证包身份、启动文件、目录发现和回显动作。</p></li>
+</ul>
+<p><code class="docutils literal notranslate"><span class="pre">resources/</span></code> 和 <code class="docutils literal notranslate"><span class="pre">experiment_operations/</span></code> 当前只有 <code class="docutils literal notranslate"><span class="pre">__init__.py</span></code>，分别预留给物料模板和可复用实验操作。初始化没有生成物料类型、PLC 协议适配、PLC-Sim 配置或生产图。按下文规范补充实际需要的内容；<code class="docutils literal notranslate"><span class="pre">common/</span></code> 等共享代码目录按需创建。</p>
+</section>
+<section id="id5">
+<h3>验证和继续开发<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h3>
+<p>先进入生成的目录并执行：</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">cd</span><span class="w"> </span>sample-lab
+python<span class="w"> </span>-m<span class="w"> </span>pip<span class="w"> </span>install<span class="w"> </span>-e<span class="w"> </span><span class="s1">&#39;.[dev]&#39;</span>
+python<span class="w"> </span>-m<span class="w"> </span>pytest<span class="w"> </span>-q
+unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>dist/inspect
+unilab<span class="w"> </span>package<span class="w"> </span>build<span class="w"> </span>--path<span class="w"> </span>.<span class="w"> </span>--out<span class="w"> </span>dist/build
+</pre></div>
+</div>
+<p>预期自带的两项测试通过，设备包目录中有一个设备类型和一个普通工作流，并成功生成 wheel。<code class="docutils literal notranslate"><span class="pre">unilab</span> <span class="pre">package</span> <span class="pre">build</span></code> 会把默认启动图和本地配置收录到构建产物；后续新增的图片、模型等资产仍需按工作区规范声明打包规则。</p>
+<p>需要验证运行时加载时，继续完成<a class="reference internal" href="#workspace-validation">下文的四道验证门</a>，使用 <code class="docutils literal notranslate"><span class="pre">dry-run</span> <span class="pre">+</span> <span class="pre">develop</span></code> 启动并检查状态。示例回显和构建通过仅证明基础骨架可用。</p>
+<p>接入实际设备前，填写 <code class="docutils literal notranslate"><span class="pre">DEVICE_PACKAGE_REQUIREMENTS.md</span></code> 中的设备型号、协议、动作、参数单位、状态、异常和验收要求，再按<a class="reference internal" href="device-template.html"><span class="std std-doc">设备接入模板</span></a>、<a class="reference internal" href="material-template.html"><span class="std std-doc">物料定义模板</span></a>和<a class="reference internal" href="workflow.html"><span class="std std-doc">工作流</span></a>逐步替换教学示例。</p>
+<p>下文说明设备包的文件职责和扩展规范。初始化已生成的文件可直接检查，并按实际业务补充；文档中的 <code class="docutils literal notranslate"><span class="pre">example_lab</span></code> 请替换为自己的 Python 包名。</p>
+</section>
+</section>
+<section id="id6">
+<h2>设备包的文件组成与作用<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>pyproject.toml ───────────────► 包名称、版本、依赖和 Python 导入目录
 Python 包中的设备与物料定义 ─► 可用类型、动作、状态和资源合同
 package.yaml ────────────────► 本次允许加载的工作流源文件
@@ -407,8 +483,8 @@ package.yaml ────────────────► 本次允许加
 </table>
 </div>
 </section>
-<section id="id2">
-<h2>步骤一：确定规范目录<a class="headerlink" href="#id2" title="链接到此标题。">¶</a></h2>
+<section id="id7">
+<h2>步骤一：确定规范目录<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h2>
 <p>下面的结构适合从零创建并长期维护一个设备包。<code class="docutils literal notranslate"><span class="pre">example_lab</span></code> 是示例 Python 包名，请替换为自己的业务名称，并在所有配置中保持一致。</p>
 <div class="highlight-text notranslate"><div class="highlight"><pre><span></span>device-package/
 ├── pyproject.toml
@@ -435,8 +511,8 @@ package.yaml ────────────────► 本次允许加
 </div>
 <p>只创建实际需要的目录。设备和物料可以按业务领域继续分层，但工作流源文件必须在 <code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 中逐项登记。</p>
 </section>
-<section id="id3">
-<h2>步骤二：统一包身份<a class="headerlink" href="#id3" title="链接到此标题。">¶</a></h2>
+<section id="id8">
+<h2>步骤二：统一包身份<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code> 中声明设备包的名称、版本、依赖和启动文件：</p>
 <div class="highlight-toml notranslate"><div class="highlight"><pre><span></span><span class="k">[build-system]</span>
 <span class="n">requires</span><span class="w"> </span><span class="o">=</span><span class="w"> </span><span class="p">[</span><span class="s2">&quot;setuptools&gt;=68&quot;</span><span class="p">,</span><span class="w"> </span><span class="s2">&quot;wheel&quot;</span><span class="p">]</span>
@@ -492,8 +568,8 @@ package.yaml ────────────────► 本次允许加
 <p>如需随包发布 CSV、JSON、YAML、图片或三维模型，应把相应扩展名加入 setuptools 的 package data。否则本地开发可能正常，构建后的安装包却会缺少资产。</p>
 <p>设备驱动使用的第三方库应声明在 <code class="docutils literal notranslate"><span class="pre">dependencies</span></code> 中。密码、令牌和生产密钥不得写入 <code class="docutils literal notranslate"><span class="pre">pyproject.toml</span></code>、启动图或源码，应由运行环境的密钥配置提供。</p>
 </section>
-<section id="id4">
-<h2>步骤三：登记工作流<a class="headerlink" href="#id4" title="链接到此标题。">¶</a></h2>
+<section id="id9">
+<h2>步骤三：登记工作流<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 是允许加载的工作流清单：</p>
 <div class="highlight-yaml notranslate"><div class="highlight"><pre><span></span><span class="nt">package</span><span class="p">:</span>
 <span class="w">  </span><span class="nt">name</span><span class="p">:</span><span class="w"> </span><span class="l l-Scalar l-Scalar-Plain">example_lab</span>
@@ -517,8 +593,8 @@ package.yaml ────────────────► 本次允许加
 </ul>
 <p>设备和物料类型由 Python 包中的规范定义形成目录，具体写法见<a class="reference internal" href="device-template.html"><span class="std std-doc">设备接入模板</span></a>和<a class="reference internal" href="material-template.html"><span class="std std-doc">物料定义模板</span></a>。实例、连接参数和父子关系写入<a class="reference internal" href="startup-files.html"><span class="std std-doc">启动文件</span></a>，流程源码按<a class="reference internal" href="workflow.html"><span class="std std-doc">工作流</span></a>中的规范登记。</p>
 </section>
-<section id="id5">
-<h2>步骤四：准备本地配置<a class="headerlink" href="#id5" title="链接到此标题。">¶</a></h2>
+<section id="id10">
+<h2>步骤四：准备本地配置<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
 <p>在 <code class="docutils literal notranslate"><span class="pre">deployment/local_config.py</span></code> 中保存非敏感的本地运行设置：</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="k">class</span><span class="w"> </span><span class="nc">BasicConfig</span><span class="p">:</span>
     <span class="n">ak</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
@@ -530,8 +606,8 @@ package.yaml ────────────────► 本次允许加
 </div>
 <p>本地开发时 <code class="docutils literal notranslate"><span class="pre">ak</span></code>、<code class="docutils literal notranslate"><span class="pre">sk</span></code> 保持为空。真实凭证使用环境变量或部署密钥注入，不得提交到设备包。</p>
 </section>
-<section id="id6">
-<h2>步骤五：通过四道验证门<a class="headerlink" href="#id6" title="链接到此标题。">¶</a></h2>
+<section id="workspace-validation">
+<span id="id11"></span><h2>步骤五：通过四道验证门<a class="headerlink" href="#workspace-validation" title="链接到此标题。">¶</a></h2>
 <p>先把命令中的路径替换为实际设备包绝对路径：</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span><span class="nb">export</span><span class="w"> </span><span class="nv">DEVICE_PACKAGE_ROOT</span><span class="o">=</span><span class="s2">&quot;/absolute/path/to/device-package&quot;</span>
 <span class="nb">cd</span><span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span>
@@ -546,8 +622,8 @@ python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w
 </div>
 <p>只有三条命令都成功，才能继续。若 Python 包名不是 <code class="docutils literal notranslate"><span class="pre">example_lab</span></code>，最后一条命令使用实际目录名。</p>
 </section>
-<section id="id7">
-<h3>验证门二：设备包目录与合同<a class="headerlink" href="#id7" title="链接到此标题。">¶</a></h3>
+<section id="id12">
+<h3>验证门二：设备包目录与合同<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>inspect<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/inspect&quot;</span>
@@ -555,8 +631,8 @@ python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w
 </div>
 <p>检查报告中不得出现语法错误、重复 ID、重复 UUID、缺失源文件或无法解析的设备与物料类型。启动图中的 <code class="docutils literal notranslate"><span class="pre">class</span></code> 应从检查结果复制，不能依靠猜测填写。</p>
 </section>
-<section id="id8">
-<h3>验证门三：构建交付物<a class="headerlink" href="#id8" title="链接到此标题。">¶</a></h3>
+<section id="id13">
+<h3>验证门三：构建交付物<a class="headerlink" href="#id13" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>package<span class="w"> </span>build<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--path<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--out<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">/dist/build&quot;</span>
@@ -564,8 +640,8 @@ python<span class="w"> </span>-m<span class="w"> </span>compileall<span class="w
 </div>
 <p>构建完成后检查安装包和 Catalog 是否同时生成，并确认配置表、模型和图片等运行资产已经进入交付物。构建成功不代表真机已经连接。</p>
 </section>
-<section id="id9">
-<h3>验证门四：安全加载工作区<a class="headerlink" href="#id9" title="链接到此标题。">¶</a></h3>
+<section id="id14">
+<h3>验证门四：安全加载工作区<a class="headerlink" href="#id14" title="链接到此标题。">¶</a></h3>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>unilab<span class="w"> </span>workspace<span class="w"> </span>start<span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--workspace<span class="w"> </span><span class="s2">&quot;</span><span class="nv">$DEVICE_PACKAGE_ROOT</span><span class="s2">&quot;</span><span class="w"> </span><span class="se">\</span>
 <span class="w">  </span>--graph<span class="w"> </span>deployment/graphs/dry-run.json<span class="w"> </span><span class="se">\</span>
@@ -589,8 +665,8 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 <p><code class="docutils literal notranslate"><span class="pre">dry-run</span></code> 只证明设备包发现、合同解析、启动图和工作流能够安全加载，不能证明真实驱动、现场联锁或物理动作已经通过验收。切换 <code class="docutils literal notranslate"><span class="pre">normal</span></code> 前必须另做隔离模拟器或受控真机验收。</p>
 </section>
 </section>
-<section id="id10">
-<h2>步骤六：按小闭环逐步扩展<a class="headerlink" href="#id10" title="链接到此标题。">¶</a></h2>
+<section id="id15">
+<h2>步骤六：按小闭环逐步扩展<a class="headerlink" href="#id15" title="链接到此标题。">¶</a></h2>
 <p>不要一次接入全部设备。推荐每次完成一个可验证的小闭环：</p>
 <ol class="arabic simple">
 <li><p>增加一个设备或物料类型；</p></li>
@@ -602,8 +678,8 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 </ol>
 <p>多个工站共用同一控制器时，只建立一个控制器连接，由各业务设备引用该连接；不要让每个设备重复建立会话。真实实现与模拟实现可以使用不同通信方式，但动作名称、参数、结果和状态合同必须一致。</p>
 </section>
-<section id="id11">
-<h2>常见问题<a class="headerlink" href="#id11" title="链接到此标题。">¶</a></h2>
+<section id="id16">
+<h2>常见问题<a class="headerlink" href="#id16" title="链接到此标题。">¶</a></h2>
 <div class="table-wrapper colwidths-auto docutils container">
 <table class="docutils align-default">
 <thead>
@@ -645,8 +721,8 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
 </table>
 </div>
 </section>
-<section id="id12">
-<h2>交付前核对<a class="headerlink" href="#id12" title="链接到此标题。">¶</a></h2>
+<section id="id17">
+<h2>交付前核对<a class="headerlink" href="#id17" title="链接到此标题。">¶</a></h2>
 <ul class="simple">
 <li><p>[ ] <code class="docutils literal notranslate"><span class="pre">project.name</span></code>、Python 包目录、<code class="docutils literal notranslate"><span class="pre">package.yaml</span></code> 和类型命名空间一致；</p></li>
 <li><p>[ ] 设备、物料、放置位和工作流身份稳定且唯一；</p></li>
@@ -695,7 +771,7 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
             
             <a href="https://github.com/pradyunsg/furo">Furo</a>
             <div class="last-updated">
-              Last updated on 2026-09-08</div>
+              Last updated on 2026-09-10</div>
           </div>
           <div class="right-details">
             
@@ -717,21 +793,27 @@ unilab<span class="w"> </span>workspace<span class="w"> </span>status<span class
           <div class="toc-tree">
             <ul>
 <li><a class="reference internal" href="#">工作区</a><ul>
-<li><a class="reference internal" href="#uni-lab-os">Uni-Lab OS 如何读取设备包</a></li>
-<li><a class="reference internal" href="#id2">步骤一：确定规范目录</a></li>
-<li><a class="reference internal" href="#id3">步骤二：统一包身份</a></li>
-<li><a class="reference internal" href="#id4">步骤三：登记工作流</a></li>
-<li><a class="reference internal" href="#id5">步骤四：准备本地配置</a></li>
-<li><a class="reference internal" href="#id6">步骤五：通过四道验证门</a><ul>
-<li><a class="reference internal" href="#python">验证门一：依赖与 Python 包</a></li>
-<li><a class="reference internal" href="#id7">验证门二：设备包目录与合同</a></li>
-<li><a class="reference internal" href="#id8">验证门三：构建交付物</a></li>
-<li><a class="reference internal" href="#id9">验证门四：安全加载工作区</a></li>
+<li><a class="reference internal" href="#workspace-initialization">初始化工作区</a><ul>
+<li><a class="reference internal" href="#id3">创建命令</a></li>
+<li><a class="reference internal" href="#id4">生成内容</a></li>
+<li><a class="reference internal" href="#id5">验证和继续开发</a></li>
 </ul>
 </li>
-<li><a class="reference internal" href="#id10">步骤六：按小闭环逐步扩展</a></li>
-<li><a class="reference internal" href="#id11">常见问题</a></li>
-<li><a class="reference internal" href="#id12">交付前核对</a></li>
+<li><a class="reference internal" href="#id6">设备包的文件组成与作用</a></li>
+<li><a class="reference internal" href="#id7">步骤一：确定规范目录</a></li>
+<li><a class="reference internal" href="#id8">步骤二：统一包身份</a></li>
+<li><a class="reference internal" href="#id9">步骤三：登记工作流</a></li>
+<li><a class="reference internal" href="#id10">步骤四：准备本地配置</a></li>
+<li><a class="reference internal" href="#workspace-validation">步骤五：通过四道验证门</a><ul>
+<li><a class="reference internal" href="#python">验证门一：依赖与 Python 包</a></li>
+<li><a class="reference internal" href="#id12">验证门二：设备包目录与合同</a></li>
+<li><a class="reference internal" href="#id13">验证门三：构建交付物</a></li>
+<li><a class="reference internal" href="#id14">验证门四：安全加载工作区</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id15">步骤六：按小闭环逐步扩展</a></li>
+<li><a class="reference internal" href="#id16">常见问题</a></li>
+<li><a class="reference internal" href="#id17">交付前核对</a></li>
 </ul>
 </li>
 </ul>

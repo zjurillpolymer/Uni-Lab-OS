@@ -141,9 +141,28 @@ unilab workspace --help
 
 四条命令都成功，才说明 OS 已经安装。此时即使本机还没有任何用户设备包，安装也已经完成。
 
-## 6. 下载并安装示例设备包
+## 6. 准备并安装设备包
 
-当前分支尚未提供 `unilab workspace init`，不能通过命令自动生成设备包。首次体验请先下载已经准备好的示例设备包：
+安装 OS 后，按用途选择下面一种方式准备设备包，再执行本节末尾的安装和检查命令。
+
+### 方式一：命令创建最小设备包
+
+准备开发自己的设备包时，先确认当前环境包含初始化命令，再创建一个新目录：
+
+```bash
+unilab workspace init --help
+unilab workspace init --output ./sample-lab
+export DEVICE_PACKAGE_ROOT="$(pwd)/sample-lab"
+cd "$DEVICE_PACKAGE_ROOT"
+```
+
+生成内容包括示例设备、`echo` 动作、普通工作流、启动图和测试，共 15 个文件。目标目录必须尚不存在。`--name`、`--json` 参数和完整文件清单见[初始化工作区](workspace.md#初始化工作区)。
+
+若当前版本没有 `init` 子命令，使用包含该功能的版本，或选择下面的示例包下载方式。
+
+### 方式二：下载完整演示设备包
+
+希望体验“标准样品称量分装”流程时，下载已准备好的示例设备包：
 
 :::{admonition} 示例文件下载
 :class: note
@@ -160,7 +179,9 @@ export DEVICE_PACKAGE_ROOT="$(pwd)/demo-lab"
 cd "$DEVICE_PACKAGE_ROOT"
 ```
 
-安装示例设备包并执行本地检查：
+### 安装并检查所选设备包
+
+完成任意一种准备方式后，在对应设备包根目录运行：
 
 ```bash
 python -m pip install -e '.[dev]'
@@ -172,7 +193,7 @@ unilab package inspect --path . --out dist/inspect
 
 ## 7. 以安全模式启动
 
-第一次启动显式指定示例设备包自带的启动图，避免读取其他项目或旧环境的默认配置：
+第一次启动显式指定所选设备包自带的启动图。以上两种方式都提供 `deployment/graphs/dry-run.json`：
 
 ```bash
 unilab workspace start \
