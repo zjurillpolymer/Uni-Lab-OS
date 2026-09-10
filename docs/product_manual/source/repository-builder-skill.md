@@ -64,7 +64,7 @@ test -f "$DEVICE_PACKAGE_ROOT/package.yaml"
 test -f "$DEVICE_PACKAGE_ROOT/deployment/local_config.py"
 ```
 
-如果文件缺失，不要从其他项目复制现场数据。新项目应先按[手工初始化工作区](workspace-init.md)创建空骨架，再填写自己的包身份和配置。
+如果文件缺失，不要从其他项目复制现场数据。新项目应先按[初始化工作区](workspace.md#初始化工作区)创建带教学示例的最小骨架，再填写需求卡和自己的配置；已有项目按[工作区规范](workspace.md)补齐，初始化命令不会覆盖已有目录。
 
 ## 第二步：填写需求卡
 

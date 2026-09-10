@@ -3,10 +3,6 @@ orphan: true
 nosearch: true
 ---
 
-# 初始化工作区（暂未提供）
+# 初始化工作区
 
-:::{warning}
-当前 `product/durable-scheduler-kernel-v2` 分支尚未提供 `unilab workspace init` 命令，本页不提供不可执行的命令示例。
-:::
-
-首次体验请按[系统安装](installation.md)安装 Uni-Lab OS，再下载并启动[示例设备包](demo-lab.md)。设备包开发人员可以参考[工作区](workspace.md)手工准备目录和必要文件。
+初始化命令、生成文件清单和验证步骤已合并到[工作区页面的“初始化工作区”章节](workspace.md#初始化工作区)。

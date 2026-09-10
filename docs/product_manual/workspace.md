@@ -10,7 +10,97 @@
 
 设备包由用户自行准备。Uni-Lab OS 不会从任意目录猜测要加载哪些文件；启动时必须通过 `--workspace` 指向一个明确的设备包根目录。
 
-## Uni-Lab OS 如何读取设备包
+(workspace-initialization)=
+## 初始化工作区
+
+安装 Uni-Lab OS 后，可以用 `unilab workspace init` 创建一个设备包工作区。命令生成 15 个文件，包含一个无硬件副作用的示例设备、一个 `echo` 动作和一个调用该动作的普通工作流。
+
+### 创建命令
+
+在已经安装 Uni-Lab OS 的 Python 环境中运行：
+
+```bash
+unilab workspace init --help
+```
+
+若提示没有 `init` 子命令，当前安装的版本尚未包含此功能，需要更新到包含该功能的版本；也可以先使用[已准备好的示例设备包](demo-lab.md)。命令可用后创建工作区：
+
+```bash
+unilab workspace init --output ./sample-lab
+```
+
+目标目录必须尚不存在，已有空目录也会被拒绝。命令只生成文件；依赖安装、设备包检查和工作区启动由后续命令完成。
+
+默认使用输出目录名派生包身份：`sample-lab` 对应发布名称 `sample-lab`、Python 包目录 `sample_lab/` 和类型命名空间 `community.sample_lab`。需要单独指定名称或供脚本读取时：
+
+```bash
+unilab workspace init --output ./device-workspace --name sample_lab --json
+```
+
+`--name` 以小写英文字母开头，以字母或数字结尾，中间可以使用小写字母、数字、点、连字符和下划线。连续分隔符统一折叠为一个下划线；规范化后不能是 `class`、`import` 等 Python 关键字。省略 `--name` 时，目录名先转为小写再按相同规则检查。
+
+`--json` 返回工作区绝对路径、发布名称、Python 包名、创建的文件清单和下一步命令。非法名称、目标已存在或写入失败时，命令以非零状态退出并返回错误码；不会覆盖已有目录。
+
+### 生成内容
+
+```text
+sample-lab/
+├── .gitignore
+├── DEVICE_PACKAGE_REQUIREMENTS.md
+├── README.md
+├── pyproject.toml
+├── package.yaml
+├── deployment/
+│   ├── local_config.py
+│   └── graphs/
+│       └── dry-run.json
+├── sample_lab/
+│   ├── __init__.py
+│   ├── devices/
+│   │   ├── __init__.py
+│   │   └── demo_device.py
+│   ├── resources/
+│   │   └── __init__.py
+│   ├── experiment_operations/
+│   │   └── __init__.py
+│   └── workflows/
+│       ├── __init__.py
+│       └── demo_workflow.py
+└── tests/
+    └── test_workspace_contract.py
+```
+
+- `pyproject.toml`：一致的包身份、构建配置、开发依赖以及默认启动图和配置文件。
+- `package.yaml`：登记示例工作流的源文件和 UUID，与源码装饰器保持一致。
+- `demo_device.py`：定义 `DemoDevice.echo(text)`，返回 `success` 和 `echoed_text`。
+- `demo_workflow.py`：调用 `demo_device_01` 的 `echo` 动作并返回结果。
+- `dry-run.json`：包含一个示例设备实例，其 `class` 与生成的设备类型一致。
+- `local_config.py`：关闭自动打开浏览器和更新反馈，设置 INFO 日志级别。
+- 需求卡、README 和测试：记录待确认的业务事实，并验证包身份、启动文件、目录发现和回显动作。
+
+`resources/` 和 `experiment_operations/` 当前只有 `__init__.py`，分别预留给物料模板和可复用实验操作。初始化没有生成物料类型、PLC 协议适配、PLC-Sim 配置或生产图。按下文规范补充实际需要的内容；`common/` 等共享代码目录按需创建。
+
+### 验证和继续开发
+
+先进入生成的目录并执行：
+
+```bash
+cd sample-lab
+python -m pip install -e '.[dev]'
+python -m pytest -q
+unilab package inspect --path . --out dist/inspect
+unilab package build --path . --out dist/build
+```
+
+预期自带的两项测试通过，设备包目录中有一个设备类型和一个普通工作流，并成功生成 wheel。`unilab package build` 会把默认启动图和本地配置收录到构建产物；后续新增的图片、模型等资产仍需按工作区规范声明打包规则。
+
+需要验证运行时加载时，继续完成[下文的四道验证门](#workspace-validation)，使用 `dry-run + develop` 启动并检查状态。示例回显和构建通过仅证明基础骨架可用。
+
+接入实际设备前，填写 `DEVICE_PACKAGE_REQUIREMENTS.md` 中的设备型号、协议、动作、参数单位、状态、异常和验收要求，再按[设备接入模板](device-template.md)、[物料定义模板](material-template.md)和[工作流](workflow.md)逐步替换教学示例。
+
+下文说明设备包的文件职责和扩展规范。初始化已生成的文件可直接检查，并按实际业务补充；文档中的 `example_lab` 请替换为自己的 Python 包名。
+
+## 设备包的文件组成与作用
 
 ```text
 pyproject.toml ───────────────► 包名称、版本、依赖和 Python 导入目录
@@ -143,6 +233,7 @@ class BasicConfig:
 
 本地开发时 `ak`、`sk` 保持为空。真实凭证使用环境变量或部署密钥注入，不得提交到设备包。
 
+(workspace-validation)=
 ## 步骤五：通过四道验证门
 
 先把命令中的路径替换为实际设备包绝对路径：
