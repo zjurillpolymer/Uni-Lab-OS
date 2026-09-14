@@ -132,6 +132,8 @@ class WorkflowNode:
     resource_plan_id: str = ""
     resource_interval_ids: List[str] = field(default_factory=list)
     resource_acquire_set_id: str = ""
+    # 显式执行实例归属；同一 Task 下的多个 WorkflowRun 不能仅靠 node_id 区分。
+    run_id: str = ""
 
     @property
     def device_action_key(self) -> str:
@@ -201,10 +203,14 @@ class WorkflowSpec:
     # WorkflowSpecCompiler 写入，spec_from_dict 不接收；区间完成判断只能跳过
     # 这个显式集合，不能把任意缺失物理节点都推断成成功。
     resource_coordinator_node_ids: List[str] = field(default_factory=list)
+    # 一次 WorkflowRun 的稳定身份；旧调用默认退化为 workflow_id。
+    run_id: str = ""
 
     def __post_init__(self) -> None:
         if not self.task_id:
             self.task_id = self.workflow_id
+        if not self.run_id:
+            self.run_id = self.workflow_id
 
     def material_requirements_by_node(self) -> Dict[str, List[MaterialRequirement]]:
         """按节点汇总物料需求（无需求节点不出现；空 dict = 全 DAG 无物料）。"""
@@ -244,6 +250,11 @@ class ReadyTask:
     node: WorkflowNode
     priority_weight: float
     submitted_at: float
+    run_id: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.run_id:
+            self.run_id = self.workflow_id
 
 
 @dataclass
@@ -276,6 +287,11 @@ class DispatchedJob:
     # 下发时刻的预估执行时长（泳道图预估终点）与来源（declared/historical/default）
     estimated_s: float = 0.0
     estimate_source: str = "default"
+    run_id: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.run_id:
+            self.run_id = self.workflow_id
 
 
 # 与 lab-scheduler api/schemas.py PRIORITY_WEIGHTS 一致
@@ -359,6 +375,7 @@ def node_from_dict(data: Dict[str, Any]) -> WorkflowNode:
         resource_plan_id=str(data.get("resource_plan_id") or ""),
         resource_interval_ids=[str(value) for value in raw_interval_ids],
         resource_acquire_set_id=str(data.get("resource_acquire_set_id") or ""),
+        run_id=str(data.get("run_id") or ""),
     )
 
 
@@ -399,6 +416,7 @@ def spec_from_dict(data: Dict[str, Any]) -> WorkflowSpec:
         lab_id=str(data.get("lab_id", "") or ""),
         task_id=str(data.get("task_id", "") or ""),
         run_mode=str(data.get("run_mode", "normal") or "normal"),
+        run_id=str(data.get("run_id") or ""),
         resource_plan=(
             dict(data["resource_plan"])
             if isinstance(data.get("resource_plan"), Mapping)

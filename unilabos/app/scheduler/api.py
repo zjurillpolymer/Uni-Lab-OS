@@ -95,12 +95,20 @@ class EdgeIn(BaseModel):
 
 class WorkflowSubmitIn(BaseModel):
     workflow_id: str
+    run_id: str = ""
     nodes: List[NodeIn]
     edges: List[EdgeIn] = Field(default_factory=list)
     handles: List[HandleIn] = Field(default_factory=list)
     priority: Any = 1.0
     lab_id: str = ""
     task_id: str = ""
+
+
+class WorkflowRunsSubmitIn(BaseModel):
+    """一次逻辑 Task 的多个独立 WorkflowRun。"""
+
+    task_id: str = ""
+    runs: List[WorkflowSubmitIn]
 
 
 class JobFinishIn(BaseModel):
@@ -196,6 +204,18 @@ def create_scheduler_router(
             spec = spec_from_dict(body.model_dump())
             try:
                 return _sched().submit_workflow(spec)
+            except WorkflowCycleError as exc:
+                raise HTTPException(status_code=422, detail=str(exc)) from exc
+            except ValueError as exc:
+                raise HTTPException(status_code=409, detail=str(exc)) from exc
+
+        @router.post("/workflow-runs")
+        def submit_workflow_runs(body: WorkflowRunsSubmitIn) -> Dict[str, Any]:
+            """在同一 Task 下登记多组工作流，并由全局调度器统一排程。"""
+
+            specs = [spec_from_dict(run.model_dump()) for run in body.runs]
+            try:
+                return _sched().submit_workflow_runs(specs, task_id=body.task_id)
             except WorkflowCycleError as exc:
                 raise HTTPException(status_code=422, detail=str(exc)) from exc
             except ValueError as exc:

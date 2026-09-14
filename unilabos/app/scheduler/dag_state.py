@@ -54,6 +54,18 @@ class WorkflowRun:
 
     def __init__(self, spec: WorkflowSpec):
         self.spec = spec
+        # 一个 Task 可以包含多个 WorkflowRun；Run 身份必须在构图时冻结，不能
+        # 让后续回调仅凭 workflow_id 或 node_id 猜测归属。
+        self.run_id = spec.run_id or spec.workflow_id
+        spec.run_id = self.run_id
+        for node in spec.nodes:
+            if not node.run_id:
+                node.run_id = self.run_id
+            elif node.run_id != self.run_id:
+                raise ValueError(
+                    f"node {node.id} belongs to run {node.run_id}, "
+                    f"cannot attach to run {self.run_id}"
+                )
         # ``run_mode`` 是冻结的创建事实；运行期间的自动/单步切换只修改这里的
         # 调度闸门，不能反向篡改 ExecutionPlan。
         self.execution_mode = "step" if spec.run_mode == "step" else "normal"
@@ -1258,6 +1270,7 @@ class WorkflowRun:
         return {
             "workflow_id": self.spec.workflow_id,
             "task_id": self.spec.task_id,
+            "run_id": self.run_id,
             "state": self.state.value,
             "execution_mode": self.execution_mode,
             "nodes": {
@@ -1269,6 +1282,7 @@ class WorkflowRun:
                     "device_id": self._nodes[node_id].device_id,
                     "action_name": self._nodes[node_id].action_name,
                     "node_type": self._nodes[node_id].node_type,
+                    "run_id": self._nodes[node_id].run_id,
                     "reason": self._node_errors.get(node_id),
                     "selected_branch": self._selected_branches.get(node_id),
                 }

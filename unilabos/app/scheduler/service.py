@@ -1043,13 +1043,23 @@ class EdgeScheduler:
 
     # ── 触发点 1：任务进来 ────────────────────────────────────
 
-    def submit_workflow(self, spec: WorkflowSpec) -> dict[str, Any]:
+    def submit_workflow(
+        self,
+        spec: WorkflowSpec,
+        *,
+        trigger_reconcile: bool = True,
+    ) -> dict[str, Any]:
+        """提交一个 WorkflowRun；可由组提交入口延迟到统一重排。"""
+        run_identity = spec.run_id or spec.workflow_id
         with self._lock:
             if (
                 spec.workflow_id in self._workflows
                 or spec.workflow_id in self._workflow_spans
+                or any(run.run_id == run_identity for run in self._workflows.values())
             ):
-                raise ValueError(f"workflow {spec.workflow_id} already submitted")
+                raise ValueError(
+                    f"workflow/run {spec.workflow_id}/{run_identity} already submitted"
+                )
             workflow_trace = start_detached_span(
                 "workflow.task.run",
                 attributes={
@@ -1073,10 +1083,14 @@ class EdgeScheduler:
                     attributes={
                         "workflow.uuid": spec.workflow_id,
                         "workflow.task.uuid": spec.task_id,
+                        "workflow.run.uuid": run_identity,
                     },
                 ),
             ):
-                result = self._submit_workflow(spec)
+                result = self._submit_workflow(
+                    spec,
+                    trigger_reconcile=trigger_reconcile,
+                )
                 trace_context = getattr(workflow_trace, "trace_context", None)
                 result["trace_context"] = (
                     trace_context() if callable(trace_context) else {}
@@ -1088,7 +1102,12 @@ class EdgeScheduler:
             self._workflow_spans.pop(spec.workflow_id, None)
             raise
 
-    def _submit_workflow(self, spec: WorkflowSpec) -> dict[str, Any]:
+    def _submit_workflow(
+        self,
+        spec: WorkflowSpec,
+        *,
+        trigger_reconcile: bool = True,
+    ) -> dict[str, Any]:
         """提交工作流并立即重排。返回本次下发结果。
 
         带物料需求时：入队前整 DAG all-or-nothing 预留；不足则置
@@ -1135,7 +1154,7 @@ class EdgeScheduler:
         # 线程只登记 WorkflowRun 并唤醒循环，不能在请求线程直接完成资源判定和
         # 物理派发，否则并发 Task 会让调度线程亲和性失效。为保持既有返回合同，
         # 当前调用方仍等待该串行轮次完成，但等待不占用 Scheduler 执行线程。
-        dispatched = self._wake_reconcile()
+        dispatched = self._wake_reconcile() if trigger_reconcile else []
         with self._lock:
             notifications = self._collect_terminal_notifications()
             state = run.state.value
@@ -1143,6 +1162,64 @@ class EdgeScheduler:
         return {
             "workflow_id": spec.workflow_id,
             "state": state,
+            "dispatched": dispatched,
+        }
+
+    def submit_workflow_runs(
+        self,
+        specs: list[WorkflowSpec],
+        *,
+        task_id: str = "",
+    ) -> dict[str, Any]:
+        """在同一个逻辑 Task 中原子登记多个 WorkflowRun。
+
+        每个 spec 仍保持独立 DAG、Job 和资源锁；这里只延迟各实例的首次
+        reconcile，注册完成后统一进入同一套全局排程，因此不引入第二个调度器。
+        """
+
+        if not specs:
+            raise ValueError("at least one workflow run is required")
+        normalized_task_id = str(task_id or "").strip()
+        if not normalized_task_id:
+            normalized_task_id = specs[0].task_id or specs[0].workflow_id
+
+        # 先构图校验整组输入，再触碰调度器状态，避免半组进入队列。
+        validated = [WorkflowRun(spec) for spec in specs]
+        workflow_ids = [spec.workflow_id for spec in specs]
+        run_ids = [run.run_id for run in validated]
+        if len(set(workflow_ids)) != len(workflow_ids):
+            raise ValueError("workflow runs must have unique workflow_id values")
+        if len(set(run_ids)) != len(run_ids):
+            raise ValueError("workflow runs must have unique run_id values")
+        with self._lock:
+            existing_workflows = set(self._workflows) | set(self._workflow_spans)
+            existing_runs = {run.run_id for run in self._workflows.values()}
+            if existing_workflows.intersection(workflow_ids):
+                raise ValueError("one or more workflow_id values already submitted")
+            if existing_runs.intersection(run_ids):
+                raise ValueError("one or more run_id values already submitted")
+
+        created: list[str] = []
+        try:
+            results = []
+            for spec in specs:
+                spec.task_id = normalized_task_id
+                results.append(self.submit_workflow(spec, trigger_reconcile=False))
+                results[-1]["run_id"] = spec.run_id or spec.workflow_id
+                results[-1]["task_id"] = normalized_task_id
+                created.append(spec.workflow_id)
+            dispatched = self._wake_reconcile()
+        except BaseException:
+            # 只回滚本次已经登记的 workflow，绝不取消调用前已存在的运行。
+            for workflow_id in created:
+                try:
+                    self.cancel_workflow(workflow_id)
+                except Exception:
+                    logger.exception("[EdgeScheduler] group rollback failed: %s", workflow_id)
+            raise
+        return {
+            "task_id": normalized_task_id,
+            "runs": results,
             "dispatched": dispatched,
         }
 
@@ -1759,6 +1836,8 @@ class EdgeScheduler:
         success: bool,
         ret_value: Any = None,
         suc_type: str = "normal",
+        *,
+        run_id: str | None = None,
     ) -> dict[str, Any]:
         """结算旧执行适配器的四参数完成回调。
 
@@ -1767,6 +1846,13 @@ class EdgeScheduler:
         :meth:`on_job_outcome`，本方法只保留旧执行适配器兼容。
         """
 
+        if run_id is not None:
+            with self._lock:
+                job = self._inflight.get(job_id)
+                if job is not None and job.run_id != str(run_id):
+                    raise ValueError(
+                        f"job {job_id} belongs to run {job.run_id}, not run {run_id}"
+                    )
         return self._finish_job_with_trace(job_id, success, ret_value, suc_type)
 
     def _finish_job_with_trace(
@@ -2061,6 +2147,7 @@ class EdgeScheduler:
             action_type=node.action_type,
             action_args=job.resolved_args,
             always_free=node.always_free,
+            run_id=job.run_id,
         )
         payload.update(deepcopy(job.dispatch_credentials))
         job.manual_action_dispatched = True
@@ -2286,6 +2373,7 @@ class EdgeScheduler:
                         node=node,
                         priority_weight=weight,
                         submitted_at=run.spec.submitted_at,
+                        run_id=run.run_id,
                     )
                 )
 
@@ -2889,6 +2977,7 @@ class EdgeScheduler:
                 action_type=task.node.action_type,
                 action_args=resolved_args,
                 always_free=task.node.always_free,
+                run_id=task.run_id,
             )
             # 预估基于 sjson 覆写后的 resolved 参数：父节点经 gjson/sjson 传下来的
             # 实际值（如 time）直接决定声明式预估结果
@@ -3059,6 +3148,7 @@ class EdgeScheduler:
                     self._inflight[job_id] = DispatchedJob(
                         job_id=job_id,
                         workflow_id=task.workflow_id,
+                        run_id=task.run_id,
                         node_id=task.node.id,
                         device_action_key=action_key,
                         dispatched_at=self._clock(),
@@ -3122,6 +3212,8 @@ class EdgeScheduler:
                 "estimated_s": round(estimated_s, 3),
                 "estimate_source": estimate_source,
             }
+            if task.run_id != task.workflow_id:
+                dispatched_item["run_id"] = task.run_id
             dispatched.append(dispatched_item)
             self._emit_monitor(
                 "action",
@@ -3129,6 +3221,7 @@ class EdgeScheduler:
                 {
                     "job_id": job_id,
                     "workflow_id": task.workflow_id,
+                    "run_id": task.run_id,
                     "node_id": task.node.id,
                     "device_id": selected_device_id,
                     "action_name": task.node.action_name,
@@ -4295,6 +4388,8 @@ class EdgeScheduler:
             "state": state,
             "suc_type": suc_type,
         }
+        if job.run_id != job.workflow_id:
+            entry["run_id"] = job.run_id
         self._timeline.append(entry)
         # 历史库落盘（独立 SQLite；含截断后的返回值，供审计/回放）
         self._safe_history("record_job", entry, ret_value)
@@ -4338,6 +4433,7 @@ class EdgeScheduler:
                 {
                     "job_id": j.job_id,
                     "workflow_id": j.workflow_id,
+                    "run_id": j.run_id,
                     "node_id": j.node_id,
                     "device_id": j.device_id,
                     "action_name": j.action_name,
@@ -4388,6 +4484,7 @@ class EdgeScheduler:
                     "action_name": j.action_name,
                     "job_id": j.job_id,
                     "workflow_id": j.workflow_id,
+                    "run_id": j.run_id,
                     "started_at": j.dispatched_at,
                     "elapsed_s": round(max(0.0, now - j.dispatched_at), 3),
                     "estimated_s": round(j.estimated_s, 3),
@@ -4530,6 +4627,7 @@ class EdgeScheduler:
                 "inflight_jobs": {
                     job_id: {
                         "workflow_id": j.workflow_id,
+                        "run_id": j.run_id,
                         "node_id": j.node_id,
                         "device_action_key": j.device_action_key,
                         "resource_locks": sorted(

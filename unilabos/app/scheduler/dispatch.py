@@ -150,6 +150,7 @@ def build_job_start_payload(
     action_type: str,
     action_args: Any,
     always_free: bool = False,
+    run_id: str = "",
 ) -> DispatchPayload:
     """构造与云端 ``job_start`` 同形状的执行载荷。
 
@@ -172,6 +173,8 @@ def build_job_start_payload(
     # 普通动作 wire 形状完全不变。
     if always_free:
         payload["always_free"] = True
+    if run_id and run_id != workflow_id:
+        payload["run_id"] = run_id
     return payload
 
 
